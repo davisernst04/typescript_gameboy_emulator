@@ -84,439 +84,439 @@ const cpu = {
 
   ops: {
     // Load opcode
-    LOADrr_b_b: () => {
+    LDb_b: () => {
       cpu.reg.b = cpu.reg.b;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_b_c: () => {
+    LDb_c: () => {
       cpu.reg.b = cpu.reg.c;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_b_d: () => {
+    LDb_d: () => {
       cpu.reg.b = cpu.reg.d;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_b_e: () => {
+    LDb_e: () => {
       cpu.reg.b = cpu.reg.e;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_b_h: () => {
+    LDb_h: () => {
       cpu.reg.b = cpu.reg.h;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_b_l: () => {
+    LDb_l: () => {
       cpu.reg.b = cpu.reg.l;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_b_a: () => {
+    LDb_a: () => {
       cpu.reg.b = cpu.reg.a;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_c_b: () => {
+    LDc_b: () => {
       cpu.reg.c = cpu.reg.b;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_c_c: () => {
+    LDc_c: () => {
       cpu.reg.c = cpu.reg.c;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_c_d: () => {
+    LDc_d: () => {
       cpu.reg.c = cpu.reg.d;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_c_e: () => {
+    LDc_e: () => {
       cpu.reg.c = cpu.reg.e;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_c_h: () => {
+    LDc_h: () => {
       cpu.reg.c = cpu.reg.h;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_c_l: () => {
+    LDc_l: () => {
       cpu.reg.c = cpu.reg.l;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_c_a: () => {
+    LDc_a: () => {
       cpu.reg.c = cpu.reg.a;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_d_b: () => {
+    LDd_b: () => {
       cpu.reg.d = cpu.reg.b;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_d_c: () => {
+    LDd_c: () => {
       cpu.reg.d = cpu.reg.c;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_d_d: () => {
+    LDd_d: () => {
       cpu.reg.d = cpu.reg.d;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_d_e: () => {
+    LDd_e: () => {
       cpu.reg.d = cpu.reg.e;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_d_h: () => {
+    LDd_h: () => {
       cpu.reg.d = cpu.reg.h;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_d_l: () => {
+    LDd_l: () => {
       cpu.reg.d = cpu.reg.l;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_d_a: () => {
+    LDd_a: () => {
       cpu.reg.d = cpu.reg.a;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_e_b: () => {
+    LDe_b: () => {
       cpu.reg.e = cpu.reg.b;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_e_c: () => {
+    LDe_c: () => {
       cpu.reg.e = cpu.reg.c;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_e_d: () => {
+    LDe_d: () => {
       cpu.reg.e = cpu.reg.d;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_e_e: () => {
+    LDe_e: () => {
       cpu.reg.e = cpu.reg.e;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_e_h: () => {
+    LDe_h: () => {
       cpu.reg.e = cpu.reg.h;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_e_l: () => {
+    LDe_l: () => {
       cpu.reg.e = cpu.reg.l;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_e_a: () => {
+    LDe_a: () => {
       cpu.reg.e = cpu.reg.a;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_h_b: () => {
+    LDh_b: () => {
       cpu.reg.h = cpu.reg.b;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_h_c: () => {
+    LDh_c: () => {
       cpu.reg.h = cpu.reg.c;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_h_d: () => {
+    LDh_d: () => {
       cpu.reg.h = cpu.reg.d;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_h_e: () => {
+    LDh_e: () => {
       cpu.reg.h = cpu.reg.e;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_h_h: () => {
+    LDh_h: () => {
       cpu.reg.h = cpu.reg.h;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_h_l: () => {
+    LDh_l: () => {
       cpu.reg.h = cpu.reg.l;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_h_a: () => {
+    LDh_a: () => {
       cpu.reg.h = cpu.reg.a;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_l_b: () => {
+    LDl_b: () => {
       cpu.reg.l = cpu.reg.b;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_lc: () => {
+    LDlc: () => {
       cpu.reg.l = cpu.reg.c;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_l_d: () => {
+    LDl_d: () => {
       cpu.reg.l = cpu.reg.d;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_l_e: () => {
+    LDl_e: () => {
       cpu.reg.l = cpu.reg.e;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_l_h: () => {
+    LDl_h: () => {
       cpu.reg.l = cpu.reg.h;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_l_l: () => {
+    LDl_l: () => {
       cpu.reg.l = cpu.reg.l;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_l_a: () => {
+    LDl_a: () => {
       cpu.reg.l = cpu.reg.a;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_a_b: () => {
+    LDa_b: () => {
       cpu.reg.a = cpu.reg.b;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_a_c: () => {
+    LDa_c: () => {
       cpu.reg.a = cpu.reg.c;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_a_d: () => {
+    LDa_d: () => {
       cpu.reg.a = cpu.reg.d;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_a_e: () => {
+    LDa_e: () => {
       cpu.reg.a = cpu.reg.e;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_a_h: () => {
+    LDa_h: () => {
       cpu.reg.a = cpu.reg.h;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_a_l: () => {
+    LDa_l: () => {
       cpu.reg.a = cpu.reg.l;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LOADrr_a_a: () => {
+    LDa_a: () => {
       cpu.reg.a = cpu.reg.a;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
 
-    LOADrm_b_hl: () => {
+    LDb_hl: () => {
       cpu.reg.b = mmu.rb((cpu.reg.h << 8) + cpu.reg.l);
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    LOADrm_c_hl: () => {
+    LDc_hl: () => {
       cpu.reg.c = mmu.rb((cpu.reg.h << 8) + cpu.reg.l);
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    LOADrm_d_hl: () => {
+    LDd_hl: () => {
       cpu.reg.d = mmu.rb((cpu.reg.h << 8) + cpu.reg.l);
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    LOADrm_e_hl: () => {
+    LDe_hl: () => {
       cpu.reg.e = mmu.rb((cpu.reg.h << 8) + cpu.reg.l);
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    LOADrm_h_hl: () => {
+    LDh_hl: () => {
       cpu.reg.h = mmu.rb((cpu.reg.h << 8) + cpu.reg.l);
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    LOADrm_l_hl: () => {
+    LDl_hl: () => {
       cpu.reg.l = mmu.rb((cpu.reg.h << 8) + cpu.reg.l);
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    LOADrm_a_hl: () => {
+    LDa_hl: () => {
       cpu.reg.a = mmu.rb((cpu.reg.h << 8) + cpu.reg.l);
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    LOADmr_hl_b: () => {
+    LDhl_b: () => {
       mmu.wb((cpu.reg.h << 8) + cpu.reg.l, cpu.reg.b);
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    LOADmr_hl_c: () => {
+    LDhl_c: () => {
       mmu.wb((cpu.reg.h << 8) + cpu.reg.l, cpu.reg.c);
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    LOADmr_hl_d: () => {
+    LDhl_d: () => {
       mmu.wb((cpu.reg.h << 8) + cpu.reg.l, cpu.reg.d);
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    LOADmr_hl_e: () => {
+    LDhl_e: () => {
       mmu.wb((cpu.reg.h << 8) + cpu.reg.l, cpu.reg.e);
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    LOADmr_hl_h: () => {
+    LDhl_h: () => {
       mmu.wb((cpu.reg.h << 8) + cpu.reg.l, cpu.reg.h);
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    LOADmr_hl_l: () => {
+    LDhl_l: () => {
       mmu.wb((cpu.reg.h << 8) + cpu.reg.l, cpu.reg.l);
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    LOADmr_hl_a: () => {
+    LDhl_a: () => {
       mmu.wb((cpu.reg.h << 8) + cpu.reg.l, cpu.reg.a);
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
 
-    LOADrn_b: () => {
+    LDb_n: () => {
       cpu.reg.b = mmu.rb(cpu.reg.pc);
       cpu.reg.pc++;
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
 
-    LOADrn_c: () => {
+    LDc_n: () => {
       cpu.reg.c = mmu.rb(cpu.reg.pc);
       cpu.reg.pc++;
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    LOADrn_d: () => {
+    LDd_n: () => {
       cpu.reg.d = mmu.rb(cpu.reg.pc);
       cpu.reg.pc++;
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    LOADrn_e: () => {
+    LDe_n: () => {
       cpu.reg.e = mmu.rb(cpu.reg.pc);
       cpu.reg.pc++;
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    LOADrn_h: () => {
+    LDh_n: () => {
       cpu.reg.h = mmu.rb(cpu.reg.pc);
       cpu.reg.pc++;
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    LOADrn_l: () => {
+    LDl_n: () => {
       cpu.reg.l = mmu.rb(cpu.reg.pc);
       cpu.reg.pc++;
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    LOADrn_a: () => {
+    LDa_n: () => {
       cpu.reg.a = mmu.rb(cpu.reg.pc);
       cpu.reg.pc++;
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    LOADmn_hl: () => {
+    LDhl_n: () => {
       mmu.wb((cpu.reg.h << 8) + cpu.reg.l, mmu.rb(cpu.reg.pc));
       cpu.reg.pc++;
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
 
-    LOADmr_bc_a: () => {
+    LDbc_a: () => {
       mmu.wb((cpu.reg.b << 8) + cpu.reg.c, cpu.reg.a);
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
 
-    LOADmr_de_a: () => {
+    LDde_a: () => {
       mmu.wb((cpu.reg.d << 8) + cpu.reg.e, cpu.reg.a);
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    LOADmmr_a: () => {
+    LD_nn_a: () => {
       mmu.wb(mmu.rw(cpu.reg.pc), cpu.reg.a);
       cpu.reg.pc += 2;
       cpu.reg.m = 4;
       cpu.reg.t = 16;
     },
 
-    LOADrm_a_bc: () => {
+    LDa_bc: () => {
       cpu.reg.a = mmu.rb((cpu.reg.b << 8) + cpu.reg.c);
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
 
-    LOADrm_a_de: () => {
+    LDa_de: () => {
       cpu.reg.a = mmu.rb((cpu.reg.d << 8) + cpu.reg.c);
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
 
-    LOADrmm_a: () => {
+    LDa_nn: () => {
       cpu.reg.a = mmu.rb(mmu.rw(cpu.reg.pc));
       cpu.reg.pc += 2;
       cpu.reg.m = 4;
       cpu.reg.t = 16;
     },
 
-    LOADrnrn_bc: () => {
+    LDbc_nn: () => {
       cpu.reg.c = mmu.rb(cpu.reg.pc);
       cpu.reg.b = mmu.rb(cpu.reg.pc + 1);
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
 
-    LOADrnrn_de: () => {
+    LDde_nn: () => {
       cpu.reg.e = mmu.rb(cpu.reg.pc);
       cpu.reg.d = mmu.rb(cpu.reg.pc + 1);
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
 
-    LOADrnrn_hl: () => {
+    LDhl_nn: () => {
       cpu.reg.l = mmu.rb(cpu.reg.pc);
       cpu.reg.h = mmu.rb(cpu.reg.pc + 1);
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
 
-    LOADrm_sp: () => {
+    LDsp_nn: () => {
       cpu.reg.sp = mmu.rw(cpu.reg.pc);
       cpu.reg.pc += 2;
       cpu.reg.m = 3;
       cpu.reg.t = 3;
     },
 
-    LOADmm_m_hl: () => {
+    LDhl_mnn: () => {
       let i = mmu.rw(cpu.reg.pc);
       cpu.reg.pc += 2;
       cpu.reg.l = mmu.rb(i);
@@ -525,7 +525,7 @@ const cpu = {
       cpu.reg.t = 20;
     },
 
-    LOADm_mm_hl: () => {
+    LDmnn_hl: () => {
       let i = mmu.rw(cpu.reg.pc);
       cpu.reg.pc += 2;
       mmu.ww(i, (cpu.reg.h << 8) + cpu.reg.l);
