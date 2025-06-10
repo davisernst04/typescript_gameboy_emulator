@@ -1700,8 +1700,336 @@ const cpu = {
       cpu.reg.t = 4;
     },
 
-    // Bit Manipulation (NEXT)
+    // Bit Manipulation 
+
+    BIT0_b: () => {
+      cpu.ops.fz(cpu.reg.b & 0x01);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT0_c: () => {
+      cpu.ops.fz(cpu.reg.c & 0x01);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT0_d: () => {
+      cpu.ops.fz(cpu.reg.d & 0x01);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT0_e: () => {
+      cpu.ops.fz(cpu.reg.e & 0x01);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT0_h: () => {
+      cpu.ops.fz(cpu.reg.h & 0x01);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT0_l: () => {
+      cpu.ops.fz(cpu.reg.l & 0x01);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT0_a: () => {
+      cpu.ops.fz(cpu.reg.a & 0x01);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    }, 
+    BIT0_hl: () => {
+      cpu.ops.fz(mmu.rb((cpu.reg.h << 8) + cpu.reg.l) & 0x01);
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    }, 
     
+    BIT1_b: () => {
+      cpu.ops.fz(cpu.reg.b & 0x02);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT1_c: () => {
+      cpu.ops.fz(cpu.reg.c & 0x02);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT1_d: () => {
+      cpu.ops.fz(cpu.reg.d & 0x02);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT1_e: () => {
+      cpu.ops.fz(cpu.reg.e & 0x02);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT1_h: () => {
+      cpu.ops.fz(cpu.reg.h & 0x02);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT1_l: () => {
+      cpu.ops.fz(cpu.reg.l & 0x02);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT1_a: () => {
+      cpu.ops.fz(cpu.reg.a & 0x02);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    }, 
+    BIT1_hl: () => {
+      cpu.ops.fz(mmu.rb((cpu.reg.h << 8) + cpu.reg.l) & 0x02);
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    }, 
+    
+    BIT2_b: () => {
+      cpu.ops.fz(cpu.reg.b & 0x03);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT2_c: () => {
+      cpu.ops.fz(cpu.reg.c & 0x03);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT2_d: () => {
+      cpu.ops.fz(cpu.reg.d & 0x03);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT2_e: () => {
+      cpu.ops.fz(cpu.reg.e & 0x03);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT2_h: () => {
+      cpu.ops.fz(cpu.reg.h & 0x03);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT2_l: () => {
+      cpu.ops.fz(cpu.reg.l & 0x03);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT2_a: () => {
+      cpu.ops.fz(cpu.reg.a & 0x03);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    }, 
+    BIT2_hl: () => {
+      cpu.ops.fz(mmu.rb((cpu.reg.h << 8) + cpu.reg.l) & 0x03);
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    }, 
+    
+    BIT3_b: () => {
+      cpu.ops.fz(cpu.reg.b & 0x04);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT3_c: () => {
+      cpu.ops.fz(cpu.reg.c & 0x04);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT3_d: () => {
+      cpu.ops.fz(cpu.reg.d & 0x04);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT3_e: () => {
+      cpu.ops.fz(cpu.reg.e & 0x04);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT3_h: () => {
+      cpu.ops.fz(cpu.reg.h & 0x04);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT3_l: () => {
+      cpu.ops.fz(cpu.reg.l & 0x04);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT3_a: () => {
+      cpu.ops.fz(cpu.reg.a & 0x04);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    }, 
+    BIT3_hl: () => {
+      cpu.ops.fz(mmu.rb((cpu.reg.h << 8) + cpu.reg.l) & 0x04);
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    }, 
+    
+    BIT4_b: () => {
+      cpu.ops.fz(cpu.reg.b & 0x05);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT4_c: () => {
+      cpu.ops.fz(cpu.reg.c & 0x05);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT4_d: () => {
+      cpu.ops.fz(cpu.reg.d & 0x05);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT4_e: () => {
+      cpu.ops.fz(cpu.reg.e & 0x05);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT4_h: () => {
+      cpu.ops.fz(cpu.reg.h & 0x05);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT4_l: () => {
+      cpu.ops.fz(cpu.reg.l & 0x05);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT4_a: () => {
+      cpu.ops.fz(cpu.reg.a & 0x05);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    }, 
+    BIT4_hl: () => {
+      cpu.ops.fz(mmu.rb((cpu.reg.h << 8) + cpu.reg.l) & 0x05);
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    }, 
+    
+    BIT5_b: () => {
+      cpu.ops.fz(cpu.reg.b & 0x06);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT5_c: () => {
+      cpu.ops.fz(cpu.reg.c & 0x06);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT5_d: () => {
+      cpu.ops.fz(cpu.reg.d & 0x06);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT5_e: () => {
+      cpu.ops.fz(cpu.reg.e & 0x06);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT5_h: () => {
+      cpu.ops.fz(cpu.reg.h & 0x06);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT5_l: () => {
+      cpu.ops.fz(cpu.reg.l & 0x06);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT5_a: () => {
+      cpu.ops.fz(cpu.reg.a & 0x06);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    }, 
+    BIT5_hl: () => {
+      cpu.ops.fz(mmu.rb((cpu.reg.h << 8) + cpu.reg.l) & 0x06);
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    }, 
+    
+    BIT6_b: () => {
+      cpu.ops.fz(cpu.reg.b & 0x07);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT6_c: () => {
+      cpu.ops.fz(cpu.reg.c & 0x07);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT6_d: () => {
+      cpu.ops.fz(cpu.reg.d & 0x07);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT6_e: () => {
+      cpu.ops.fz(cpu.reg.e & 0x07);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT6_h: () => {
+      cpu.ops.fz(cpu.reg.h & 0x07);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT6_l: () => {
+      cpu.ops.fz(cpu.reg.l & 0x07);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT6_a: () => {
+      cpu.ops.fz(cpu.reg.a & 0x07);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    }, 
+    BIT6_hl: () => {
+      cpu.ops.fz(mmu.rb((cpu.reg.h << 8) + cpu.reg.l) & 0x07);
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    }, 
+    
+    BIT7_b: () => {
+      cpu.ops.fz(cpu.reg.b & 0x08);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT7_c: () => {
+      cpu.ops.fz(cpu.reg.c & 0x08);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT7_d: () => {
+      cpu.ops.fz(cpu.reg.d & 0x08);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT7_e: () => {
+      cpu.ops.fz(cpu.reg.e & 0x08);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT7_h: () => {
+      cpu.ops.fz(cpu.reg.h & 0x08);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT7_l: () => {
+      cpu.ops.fz(cpu.reg.l & 0x08);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    BIT7_a: () => {
+      cpu.ops.fz(cpu.reg.a & 0x08);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    }, 
+    BIT7_hl: () => {
+      cpu.ops.fz(mmu.rb((cpu.reg.h << 8) + cpu.reg.l) & 0x08);
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    }, 
+
     // Helper Functions
     fz: (i: number, as: number = 0) => {
       cpu.reg.f = 0;
