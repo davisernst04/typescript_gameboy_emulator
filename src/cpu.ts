@@ -957,6 +957,237 @@ const cpu = {
       cpu.reg.t = 8;
     },
 
+    SUB_a_b: () => {
+      cpu.reg.a -= cpu.reg.b;
+      cpu.ops.fz(cpu.reg.a, 1);
+
+      if (cpu.reg.a < 0) {
+        cpu.reg.f |= 0x10;
+      }
+      cpu.reg.a &= 255;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+
+    SUB_a_c: () => {
+      cpu.reg.a -= cpu.reg.c;
+      cpu.ops.fz(cpu.reg.a, 1);
+
+      if (cpu.reg.a < 0) {
+        cpu.reg.f |= 0x10;
+      }
+      cpu.reg.a &= 255;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+
+    SUB_a_d: () => {
+      cpu.reg.a -= cpu.reg.d;
+      cpu.ops.fz(cpu.reg.a, 1);
+
+      if (cpu.reg.a < 0) {
+        cpu.reg.f |= 0x10;
+      }
+      cpu.reg.a &= 255;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+
+    SUB_a_e: () => {
+      cpu.reg.a -= cpu.reg.e;
+      cpu.ops.fz(cpu.reg.a, 1);
+
+      if (cpu.reg.a < 0) {
+        cpu.reg.f |= 0x10;
+      }
+      cpu.reg.a &= 255;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+
+    SUB_a_h: () => {
+      cpu.reg.a -= cpu.reg.h;
+      cpu.ops.fz(cpu.reg.a, 1);
+
+      if (cpu.reg.a < 0) {
+        cpu.reg.f |= 0x10;
+      }
+      cpu.reg.a &= 255;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    SUB_a_l: () => {
+      cpu.reg.a -= cpu.reg.l;
+      cpu.ops.fz(cpu.reg.a, 1);
+
+      if (cpu.reg.a < 0) {
+        cpu.reg.f |= 0x10;
+      }
+      cpu.reg.a &= 255;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    SUB_a_a: () => {
+      cpu.reg.a -= cpu.reg.a;
+      cpu.ops.fz(cpu.reg.a, 1);
+
+      if (cpu.reg.a < 0) {
+        cpu.reg.f |= 0x10;
+      }
+      cpu.reg.a &= 255;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+
+    SUB_a_hl: () => {
+      cpu.reg.a -= mmu.rb((cpu.reg.h << 8) + cpu.reg.l);
+      cpu.ops.fz(cpu.reg.a, 1);
+      if (cpu.reg.a < 0) {
+        cpu.reg.f |= 0x10;
+      }
+
+      cpu.reg.a &= 255;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+
+    SUB_a_n: () => {
+      cpu.reg.a -= mmu.rb(cpu.reg.pc);
+      cpu.reg.pc++;
+      cpu.ops.fz(cpu.reg.a, 1);
+
+      if (cpu.reg.a < 0) {
+        cpu.reg.f |= 0x10;
+      }
+
+      cpu.reg.a &= 255;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+
+    SBC_a_b: () => {
+      cpu.reg.a -= cpu.reg.b;
+      cpu.reg.a -= cpu.reg.f & 0x10 ? 1 : 0;
+      cpu.ops.fz(cpu.reg.a, 1);
+
+      if (cpu.reg.a < 0) {
+        cpu.reg.f |= 0x10;
+      }
+
+      cpu.reg.a &= 255;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    SBC_a_c: () => {
+      cpu.reg.a -= cpu.reg.c;
+      cpu.reg.a -= cpu.reg.f & 0x10 ? 1 : 0;
+      cpu.ops.fz(cpu.reg.a, 1);
+
+      if (cpu.reg.a < 0) {
+        cpu.reg.f |= 0x10;
+      }
+
+      cpu.reg.a &= 255;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+
+    SBC_a_d: () => {
+      cpu.reg.a -= cpu.reg.d;
+      cpu.reg.a -= cpu.reg.f & 0x10 ? 1 : 0;
+      cpu.ops.fz(cpu.reg.a, 1);
+
+      if (cpu.reg.a < 0) {
+        cpu.reg.f |= 0x10;
+      }
+
+      cpu.reg.a &= 255;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    SBC_a_e: () => {
+      cpu.reg.a -= cpu.reg.e;
+      cpu.reg.a -= cpu.reg.f & 0x10 ? 1 : 0;
+      cpu.ops.fz(cpu.reg.a, 1);
+
+      if (cpu.reg.a < 0) {
+        cpu.reg.f |= 0x10;
+      }
+
+      cpu.reg.a &= 255;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    SBC_a_h: () => {
+      cpu.reg.a -= cpu.reg.h;
+      cpu.reg.a -= cpu.reg.f & 0x10 ? 1 : 0;
+      cpu.ops.fz(cpu.reg.a, 1);
+
+      if (cpu.reg.a < 0) {
+        cpu.reg.f |= 0x10;
+      }
+
+      cpu.reg.a &= 255;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    SBC_a_l: () => {
+      cpu.reg.a -= cpu.reg.l;
+      cpu.reg.a -= cpu.reg.f & 0x10 ? 1 : 0;
+      cpu.ops.fz(cpu.reg.a, 1);
+
+      if (cpu.reg.a < 0) {
+        cpu.reg.f |= 0x10;
+      }
+
+      cpu.reg.a &= 255;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    SBC_a_a: () => {
+      cpu.reg.a -= cpu.reg.a;
+      cpu.reg.a -= cpu.reg.f & 0x10 ? 1 : 0;
+      cpu.ops.fz(cpu.reg.a, 1);
+
+      if (cpu.reg.a < 0) {
+        cpu.reg.f |= 0x10;
+      }
+
+      cpu.reg.a &= 255;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+
+    SBC_a_hl: () => {
+      cpu.reg.a -= mmu.rb((cpu.reg.h << 8) + cpu.reg.l);
+      cpu.reg.a -= cpu.reg.f & 0x10 ? 1 : 0;
+      cpu.ops.fz(cpu.reg.a, 1);
+
+      if (cpu.reg.a < 0) {
+        cpu.reg.f |= 0x10;
+      }
+
+      cpu.reg.a &= 255;
+
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+
+    SBC_a_n: () => {
+      cpu.reg.a -= mmu.rb(cpu.reg.pc);
+      cpu.reg.pc++;
+      cpu.reg.a -= cpu.reg.f & 0x10 ? 1 : 0;
+      cpu.ops.fz(cpu.reg.a, 1);
+
+      if (cpu.reg.a < 0) {
+        cpu.reg.f |= 0x10;
+      }
+
+      cpu.reg.a &= 255;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+
     fz: (i: number, as: number = 0) => {
       cpu.reg.f = 0;
       if (!(i & 255)) {
