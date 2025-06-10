@@ -1188,6 +1188,521 @@ const cpu = {
       cpu.reg.t = 8;
     },
 
+    CP_a_b: () => {
+      let i = cpu.reg.a;
+      i -= cpu.reg.b;
+      cpu.ops.fz(i, 1);
+      if (i < 0) {
+        cpu.reg.f |= 0x10;
+      }
+
+      i &= 255;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    
+    CP_a_c: () => {
+      let i = cpu.reg.a;
+      i -= cpu.reg.c;
+      cpu.ops.fz(i, 1);
+      if (i < 0) {
+        cpu.reg.f |= 0x10;
+      }
+
+      i &= 255;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    
+    CP_a_d: () => {
+      let i = cpu.reg.a;
+      i -= cpu.reg.d;
+      cpu.ops.fz(i, 1);
+      if (i < 0) {
+        cpu.reg.f |= 0x10;
+      }
+
+      i &= 255;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    CP_a_e: () => {
+      let i = cpu.reg.a;
+      i -= cpu.reg.e;
+      cpu.ops.fz(i, 1);
+      if (i < 0) {
+        cpu.reg.f |= 0x10;
+      }
+
+      i &= 255;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    CP_a_h: () => {
+      let i = cpu.reg.a;
+      i -= cpu.reg.h;
+      cpu.ops.fz(i, 1);
+      if (i < 0) {
+        cpu.reg.f |= 0x10;
+      }
+
+      i &= 255;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    CP_a_l: () => {
+      let i = cpu.reg.a;
+      i -= cpu.reg.l;
+      cpu.ops.fz(i, 1);
+      if (i < 0) {
+        cpu.reg.f |= 0x10;
+      }
+
+      i &= 255;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    CP_a_a: () => {
+      let i = cpu.reg.a;
+      i -= cpu.reg.a;
+      cpu.ops.fz(i, 1);
+      if (i < 0) {
+        cpu.reg.f |= 0x10;
+      }
+
+      i &= 255;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    
+    CP_a_hl: () => {
+      let i = cpu.reg.a;
+      i -= mmu.rb((cpu.reg.h << 8) + cpu.reg.l);
+      cpu.ops.fz(i, 1);
+      if (i < 0) {
+        cpu.reg.f |= 0x10;
+      }
+
+      i &= 255;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    CP_a_n: () => {
+      let i = cpu.reg.a;
+      i -= mmu.rb(cpu.reg.pc);
+      cpu.reg.pc++;
+      cpu.ops.fz(i, 1);
+      if (i < 0) {
+        cpu.reg.f |= 0x10;
+      }
+
+      i &= 255;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+
+    AND_a_b: () => {
+      cpu.reg.a &= cpu.reg.b;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    AND_a_c: () => {
+      cpu.reg.a &= cpu.reg.c;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    AND_a_d: () => {
+      cpu.reg.a &= cpu.reg.d;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    AND_a_e: () => {
+      cpu.reg.a &= cpu.reg.e;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    AND_a_h: () => {
+      cpu.reg.a &= cpu.reg.h;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    AND_a_l: () => {
+      cpu.reg.a &= cpu.reg.l;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    AND_a_a: () => {
+      cpu.reg.a &= cpu.reg.a;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    AND_a_hl: () => {
+      cpu.reg.a &= mmu.rb((cpu.reg.h << 8) + cpu.reg.l);
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    AND_a_n: () => {
+      cpu.reg.a &= mmu.rb(cpu.reg.pc);
+      cpu.reg.pc++;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    OR_a_b: () => {
+      cpu.reg.a |= cpu.reg.b;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    OR_a_c: () => {
+      cpu.reg.a |= cpu.reg.c;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    
+    OR_a_d: () => {
+      cpu.reg.a |= cpu.reg.d;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    
+    OR_a_e: () => {
+      cpu.reg.a |= cpu.reg.e;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    OR_a_h: () => {
+      cpu.reg.a |= cpu.reg.h;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    OR_a_l: () => {
+      cpu.reg.a |= cpu.reg.l;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    OR_a_a: () => {
+      cpu.reg.a |= cpu.reg.a;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    
+    OR_a_hl: () => {
+      cpu.reg.a |= mmu.rb((cpu.reg.h << 8) + cpu.reg.l);
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    OR_a_n: () => {
+      cpu.reg.a |= mmu.rb(cpu.reg.pc);
+      cpu.reg.pc++;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    XOR_a_b: () => {
+      cpu.reg.a ^= cpu.reg.b;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    XOR_a_c: () => {
+      cpu.reg.a ^= cpu.reg.c;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    
+    XOR_a_d: () => {
+      cpu.reg.a ^= cpu.reg.d;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    
+    XOR_a_e: () => {
+      cpu.reg.a ^= cpu.reg.e;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    XOR_a_h: () => {
+      cpu.reg.a ^= cpu.reg.h;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    XOR_a_l: () => {
+      cpu.reg.a ^= cpu.reg.l;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    XOR_a_a: () => {
+      cpu.reg.a ^= cpu.reg.a;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    
+    XOR_a_hl: () => {
+      cpu.reg.a ^= mmu.rb((cpu.reg.h << 8) + cpu.reg.l);
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    XOR_a_n: () => {
+      cpu.reg.a ^= mmu.rb(cpu.reg.pc);
+      cpu.reg.pc++;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+
+
+    INC_b: () => {
+      cpu.reg.b++;
+      cpu.reg.b &= 255;
+      cpu.ops.fz(cpu.reg.b);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    INC_c: () => {
+      cpu.reg.c++;
+      cpu.reg.c &= 255;
+      cpu.ops.fz(cpu.reg.c);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    
+    INC_d: () => {
+      cpu.reg.d++;
+      cpu.reg.d &= 255;
+      cpu.ops.fz(cpu.reg.d);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    
+    INC_e: () => {
+      cpu.reg.e++;
+      cpu.reg.e &= 255;
+      cpu.ops.fz(cpu.reg.e);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    INC_h: () => {
+      cpu.reg.h++;
+      cpu.reg.h &= 255;
+      cpu.ops.fz(cpu.reg.h);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    INC_l: () => {
+      cpu.reg.l++;
+      cpu.reg.l &= 255;
+      cpu.ops.fz(cpu.reg.l);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    INC_a: () => {
+      cpu.reg.a++; 
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    
+    INC_hlm: () => {
+      let i = mmu.rb((cpu.reg.h << 8) + cpu.reg.l) + 1;
+      i &= 255;
+      mmu.wb((cpu.reg.h << 8) + cpu.reg.l, i);
+      cpu.ops.fz(i);
+
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    },
+    
+    DEC_b: () => {
+      cpu.reg.b--;
+      cpu.reg.b &= 255;
+      cpu.ops.fz(cpu.reg.b);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    DEC_c: () => {
+      cpu.reg.c--;
+      cpu.reg.c &= 255;
+      cpu.ops.fz(cpu.reg.c);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    
+    DEC_d: () => {
+      cpu.reg.d--;
+      cpu.reg.d &= 255;
+      cpu.ops.fz(cpu.reg.d);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    
+    DEC_e: () => {
+      cpu.reg.e--;
+      cpu.reg.e &= 255;
+      cpu.ops.fz(cpu.reg.e);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    DEC_h: () => {
+      cpu.reg.h--;
+      cpu.reg.h &= 255;
+      cpu.ops.fz(cpu.reg.h);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    DEC_l: () => {
+      cpu.reg.l--;
+      cpu.reg.l &= 255;
+      cpu.ops.fz(cpu.reg.l);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    DEC_a: () => {
+      cpu.reg.a--;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    
+    DEC_hlm: () => {
+      let i = mmu.rb((cpu.reg.h << 8) + cpu.reg.l) - 1;
+      i &= 255;
+      mmu.wb((cpu.reg.h << 8) + cpu.reg.l, i);
+      cpu.ops.fz(i);
+
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    },
+
+    INC_bc: () => {
+      cpu.reg.c = (cpu.reg.c + 1) & 255;
+      
+      if (!cpu.reg.c) {
+        cpu.reg.b = (cpu.reg.b + 1) & 255;
+      }
+
+      cpu.reg.m = 1;
+    },
+    
+    INC_de: () => {
+      cpu.reg.e = (cpu.reg.e + 1) & 255;
+      
+      if (!cpu.reg.e) {
+        cpu.reg.d = (cpu.reg.d + 1) & 255;
+      }
+
+      cpu.reg.m = 1;
+    },
+    
+    INC_hl: () => {
+      cpu.reg.l = (cpu.reg.l + 1) & 255;
+      
+      if (!cpu.reg.e) {
+        cpu.reg.h = (cpu.reg.h + 1) & 255;
+      }
+
+      cpu.reg.m = 1;
+    },
+
+    INC_sp: () => {
+      cpu.reg.sp = (cpu.reg.sp + 1) & 65535;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    
+    DEC_bc: () => {
+      cpu.reg.c = (cpu.reg.c - 1) & 255;
+      
+      if (!cpu.reg.c) {
+        cpu.reg.b = (cpu.reg.b - 1) & 255;
+      }
+
+      cpu.reg.m = 1;
+    },
+    
+    DEC_de: () => {
+      cpu.reg.e = (cpu.reg.e - 1) & 255;
+      
+      if (!cpu.reg.e) {
+        cpu.reg.d = (cpu.reg.d - 1) & 255;
+      }
+
+      cpu.reg.m = 1;
+    },
+    
+    DEC_hl: () => {
+      cpu.reg.l = (cpu.reg.l - 1) & 255;
+      
+      if (!cpu.reg.e) {
+        cpu.reg.h = (cpu.reg.h - 1) & 255;
+      }
+
+      cpu.reg.m = 1;
+    },
+
+    DEC_sp: () => {
+      cpu.reg.sp = (cpu.reg.sp - 1) & 65535;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+
+    // Bit Manipulation (NEXT)
+    
+    // Helper Functions
     fz: (i: number, as: number = 0) => {
       cpu.reg.f = 0;
       if (!(i & 255)) {
