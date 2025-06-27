@@ -2028,8 +2028,407 @@ const cpu = {
       cpu.ops.fz(mmu.rb((cpu.reg.h << 8) + cpu.reg.l) & 0x08);
       cpu.reg.m = 3;
       cpu.reg.t = 12;
-    }, 
+    },
 
+    RLA: () => {
+      let ci = cpu.reg.f & 0x10 ? 1 : 0;
+      let co = cpu.reg.a & 0x80 ? 0x10 : 0;
+      cpu.reg.a = (cpu.reg.a << 1) + ci;
+      cpu.reg.a &= 255;
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+
+    RLCA: () => {
+      let ci = cpu.reg.a & 0x80 ? 1 : 0;
+      let co = cpu.reg.a & 0x80 ? 0x10 : 0;
+
+      cpu.reg.a = (cpu.reg.a << 1) + ci;
+      cpu.reg.a &= 255;
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+
+    RRA: () => {
+      let ci = cpu.reg.f & 0x10 ? 0x80 : 0; 
+      let co = cpu.reg.a & 1 ? 0x10 : 0; 
+      cpu.reg.a = (cpu.reg.a >> 1) + ci; 
+      cpu.reg.a &= 255; 
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co; 
+      cpu.reg.m = 1; 
+      cpu.reg.t = 4; 
+    },
+
+
+    RRCA: () => {
+      let ci = cpu.reg.a & 1 ? 0x80 : 0;
+      let co = cpu.reg.a & 1 ? 0x10 : 0;
+      cpu.reg.a = (cpu.reg.a >> 1) + ci;
+      cpu.reg.a &= 255;
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+
+    RL_b: () => {
+      let ci = cpu.reg.f & 0x10 ? 1 : 0;
+      let co = cpu.reg.b & 0x80 ? 0x10 : 0;
+      cpu.reg.b = (cpu.reg.b << 1) + ci;
+      cpu.reg.b &= 255;
+      cpu.ops.fz(cpu.reg.b);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+
+    RL_c: () => {
+      let ci = cpu.reg.f & 0x10 ? 1 : 0;
+      let co = cpu.reg.c & 0x80 ? 0x10 : 0;
+      cpu.reg.c = (cpu.reg.c << 1) + ci;
+      cpu.reg.c &= 255;
+      cpu.ops.fz(cpu.reg.c);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    RL_d: () => {
+      let ci = cpu.reg.f & 0x10 ? 1 : 0;
+      let co = cpu.reg.d & 0x80 ? 0x10 : 0;
+      cpu.reg.d = (cpu.reg.d << 1) + ci;
+      cpu.reg.d &= 255;
+      cpu.ops.fz(cpu.reg.d);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    RL_e: () => {
+      let ci = cpu.reg.f & 0x10 ? 1 : 0;
+      let co = cpu.reg.e & 0x80 ? 0x10 : 0;
+      cpu.reg.e = (cpu.reg.e << 1) + ci;
+      cpu.reg.e &= 255;
+      cpu.ops.fz(cpu.reg.e);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    RL_h: () => {
+      let ci = cpu.reg.f & 0x10 ? 1 : 0;
+      let co = cpu.reg.h & 0x80 ? 0x10 : 0;
+      cpu.reg.h = (cpu.reg.h << 1) + ci;
+      cpu.reg.h &= 255;
+      cpu.ops.fz(cpu.reg.h);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    RL_l: () => {
+      let ci = cpu.reg.f & 0x10 ? 1 : 0;
+      let co = cpu.reg.l & 0x80 ? 0x10 : 0;
+      cpu.reg.l = (cpu.reg.l << 1) + ci;
+      cpu.reg.l &= 255;
+      cpu.ops.fz(cpu.reg.l);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+
+    RL_a: () => {
+      let ci = cpu.reg.f & 0x10 ? 1 : 0;
+      let co = cpu.reg.a & 0x80 ? 0x10 : 0;
+      cpu.reg.a = (cpu.reg.a << 1) + ci;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    RL_hl: () => {
+      let i = mmu.rb((cpu.reg.h << 8) + cpu.reg.l);
+      let ci = cpu.reg.f & 0x10 ? 1 : 0;
+      let co = i & 0x80 ? 0x10 : 0;
+      i = (i << 1) + ci;
+      i &= 255;
+      cpu.ops.fz(i);
+      mmu.wb((cpu.reg.h << 8) + cpu.reg.l, i);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 4;
+      cpu.reg.t = 16;
+    },
+
+
+    RLC_b: () => {
+      let ci = cpu.reg.b & 0x80 ? 1 : 0;
+      let co = cpu.reg.b & 0x80 ? 0x10 : 0;
+      cpu.reg.b = (cpu.reg.b << 1) + ci;
+      cpu.reg.b &= 255;
+      cpu.ops.fz(cpu.reg.b);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    RLC_c: () => {
+      let ci = cpu.reg.c & 0x80 ? 1 : 0;
+      let co = cpu.reg.c & 0x80 ? 0x10 : 0;
+      cpu.reg.c = (cpu.reg.c << 1) + ci;
+      cpu.reg.c &= 255;
+      cpu.ops.fz(cpu.reg.c);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    RLC_d: () => {
+      let ci = cpu.reg.d & 0x80 ? 1 : 0;
+      let co = cpu.reg.d & 0x80 ? 0x10 : 0;
+      cpu.reg.d = (cpu.reg.d << 1) + ci;
+      cpu.reg.d &= 255;
+      cpu.ops.fz(cpu.reg.d);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    RLC_e: () => {
+      let ci = cpu.reg.e & 0x80 ? 1 : 0;
+      let co = cpu.reg.e & 0x80 ? 0x10 : 0;
+      cpu.reg.e = (cpu.reg.e << 1) + ci;
+      cpu.reg.e &= 255;
+      cpu.ops.fz(cpu.reg.e);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    RLC_h: () => {
+      let ci = cpu.reg.h & 0x80 ? 1 : 0;
+      let co = cpu.reg.h & 0x80 ? 0x10 : 0;
+      cpu.reg.h = (cpu.reg.h << 1) + ci;
+      cpu.reg.h &= 255;
+      cpu.ops.fz(cpu.reg.h);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    RLC_l: () => {
+      let ci = cpu.reg.l & 0x80 ? 1 : 0;
+      let co = cpu.reg.l & 0x80 ? 0x10 : 0;
+      cpu.reg.l = (cpu.reg.l << 1) + ci;
+      cpu.reg.l &= 255;
+      cpu.ops.fz(cpu.reg.l);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    RLC_a: () => {
+      let ci = cpu.reg.a & 0x80 ? 1 : 0;
+      let co = cpu.reg.a & 0x80 ? 0x10 : 0;
+      cpu.reg.a = (cpu.reg.a << 1) + ci;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+
+    RLC_hl: () => {
+      let i = mmu.rb((cpu.reg.h << 8) + cpu.reg.l);
+      let ci = i & 0x80 ? 1 : 0;
+      let co = i & 0x80 ? 0x10 : 0;
+      i = (i << 8) + ci;
+      i &= 255;
+      cpu.ops.fz(i);
+      mmu.wb((cpu.reg.h << 8) + cpu.reg.l, i);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 4;
+      cpu.reg.t = 16;
+    },
+
+    RR_b: () => {
+      let ci = cpu.reg.f & 0x10 ? 0x80 : 0;
+      let co = cpu.reg.b & 1 ? 0x10 : 0;
+      cpu.reg.b = (cpu.reg.b >> 1) + ci;
+      cpu.reg.b &= 255;
+      cpu.ops.fz(cpu.reg.b);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    RR_c: () => {
+      let ci = cpu.reg.f & 0x10 ? 0x80 : 0;
+      let co = cpu.reg.c & 1 ? 0x10 : 0;
+      cpu.reg.c = (cpu.reg.c >> 1) + ci;
+      cpu.reg.c &= 255;
+      cpu.ops.fz(cpu.reg.c);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    RR_d: () => {
+      let ci = cpu.reg.f & 0x10 ? 0x80 : 0;
+      let co = cpu.reg.d & 1 ? 0x10 : 0;
+      cpu.reg.d = (cpu.reg.d >> 1) + ci;
+      cpu.reg.d &= 255;
+      cpu.ops.fz(cpu.reg.d);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    RR_e: () => {
+      let ci = cpu.reg.f & 0x10 ? 0x80 : 0;
+      let co = cpu.reg.e & 1 ? 0x10 : 0;
+      cpu.reg.e = (cpu.reg.e >> 1) + ci;
+      cpu.reg.e &= 255;
+      cpu.ops.fz(cpu.reg.e);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    RR_h: () => {
+      let ci = cpu.reg.f & 0x10 ? 0x80 : 0;
+      let co = cpu.reg.h & 1 ? 0x10 : 0;
+      cpu.reg.h = (cpu.reg.h >> 1) + ci;
+      cpu.reg.h &= 255;
+      cpu.ops.fz(cpu.reg.h);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    RR_l: () => {
+      let ci = cpu.reg.f & 0x10 ? 0x80 : 0;
+      let co = cpu.reg.l & 1 ? 0x10 : 0;
+      cpu.reg.l = (cpu.reg.l >> 1) + ci;
+      cpu.reg.l &= 255;
+      cpu.ops.fz(cpu.reg.l);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    RR_a: () => {
+      let ci = cpu.reg.f & 0x10 ? 0x80 : 0;
+      let co = cpu.reg.a & 1 ? 0x10 : 0;
+      cpu.reg.a = (cpu.reg.a >> 1) + ci;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    RR_hl: () => {
+      let i = mmu.rb((cpu.reg.h << 8) + cpu.reg.l); 
+      let ci = cpu.reg.f & 0x10 ? 0x80 : 0;
+      let co = i & 1 ? 0x10 : 0; 
+      i = (i >> 1) + ci; 
+      i &= 255; 
+      mmu.wb((cpu.reg.h << 8) + cpu.reg.l, i); 
+      cpu.ops.fz(i); 
+      cpu.reg.f=(cpu.reg.f & 0xEF) + co; 
+      cpu.reg.m = 4; 
+      cpu.reg.t = 16; },
+
+    
+    RRC_b: () => {
+      let ci = cpu.reg.b & 1 ? 0x80 : 0;
+      let co = cpu.reg.b & 1 ? 0x10 : 0;
+      cpu.reg.b = (cpu.reg.b >> 1) + ci;
+      cpu.reg.b &= 255;
+      cpu.ops.fz(cpu.reg.b);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    RRC_c: () => {
+      let ci = cpu.reg.c & 1 ? 0x80 : 0;
+      let co = cpu.reg.c & 1 ? 0x10 : 0;
+      cpu.reg.c = (cpu.reg.c >> 1) + ci;
+      cpu.reg.c &= 255;
+      cpu.ops.fz(cpu.reg.c);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    RRC_d: () => {
+      let ci = cpu.reg.d & 1 ? 0x80 : 0;
+      let co = cpu.reg.d & 1 ? 0x10 : 0;
+      cpu.reg.d = (cpu.reg.d >> 1) + ci;
+      cpu.reg.d &= 255;
+      cpu.ops.fz(cpu.reg.d);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    RRC_e: () => {
+      let ci = cpu.reg.e & 1 ? 0x80 : 0;
+      let co = cpu.reg.e & 1 ? 0x10 : 0;
+      cpu.reg.e = (cpu.reg.e >> 1) + ci;
+      cpu.reg.e &= 255;
+      cpu.ops.fz(cpu.reg.e);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    RRC_h: () => {
+      let ci = cpu.reg.h & 1 ? 0x80 : 0;
+      let co = cpu.reg.h & 1 ? 0x10 : 0;
+      cpu.reg.h = (cpu.reg.h >> 1) + ci;
+      cpu.reg.h &= 255;
+      cpu.ops.fz(cpu.reg.h);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    RRC_l: () => {
+      let ci = cpu.reg.l & 1 ? 0x80 : 0;
+      let co = cpu.reg.l & 1 ? 0x10 : 0;
+      cpu.reg.l = (cpu.reg.l >> 1) + ci;
+      cpu.reg.l &= 255;
+      cpu.ops.fz(cpu.reg.l);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    RRC_a: () => {
+      let ci = cpu.reg.a & 1 ? 0x80 : 0;
+      let co = cpu.reg.a & 1 ? 0x10 : 0;
+      cpu.reg.a = (cpu.reg.a >> 1) + ci;
+      cpu.reg.a &= 255;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    RRC_hl: () => { let i = mmu.rb((cpu.reg.h << 8) + cpu.reg.l); 
+      let ci = i & 1 ? 0x80 : 0;
+      let co = i & 1 ? 0x10 : 0; 
+      i = (i >> 1) + ci; 
+      i &= 255; 
+      mmu.wb((cpu.reg.h << 8) + cpu.reg.l, i); 
+      cpu.ops.fz(i); 
+      cpu.reg.f=(cpu.reg.f & 0xEF) + co; cpu.reg.m = 4; 
+      cpu.reg.t=16; 
+    },
+    
     // Helper Functions
     fz: (i: number, as: number = 0) => {
       cpu.reg.f = 0;
