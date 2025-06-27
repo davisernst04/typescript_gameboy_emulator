@@ -2718,6 +2718,79 @@ const cpu = {
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
+
+    PUSH_bc: () => {
+      cpu.reg.sp--;
+      mmu.wb(cpu.reg.sp, cpu.reg.b);
+      cpu.reg.sp--;
+      mmu.wb(cpu.reg.sp, cpu.reg.c);
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    },
+    
+    PUSH_de: () => {
+      cpu.reg.sp--;
+      mmu.wb(cpu.reg.sp, cpu.reg.d);
+      cpu.reg.sp--;
+      mmu.wb(cpu.reg.sp, cpu.reg.e);
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    },
+    
+    PUSH_hl: () => {
+      cpu.reg.sp--;
+      mmu.wb(cpu.reg.sp, cpu.reg.h);
+      cpu.reg.sp--;
+      mmu.wb(cpu.reg.sp, cpu.reg.l);
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    },
+    
+    PUSH_af: () => {
+      cpu.reg.sp--;
+      mmu.wb(cpu.reg.sp, cpu.reg.a);
+      cpu.reg.sp--;
+      mmu.wb(cpu.reg.sp, cpu.reg.f);
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    },
+    
+    POP_bc: () => {
+      cpu.reg.c = mmu.rb(cpu.reg.sp);
+      cpu.reg.sp++;
+      cpu.reg.b = mmu.rb(cpu.reg.sp);
+      cpu.reg.sp++;
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    },
+    
+    POP_de: () => {
+      cpu.reg.e = mmu.rb(cpu.reg.sp);
+      cpu.reg.sp++;
+      cpu.reg.d = mmu.rb(cpu.reg.sp);
+      cpu.reg.sp++;
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    },
+    
+    POP_hl: () => {
+      cpu.reg.l = mmu.rb(cpu.reg.sp);
+      cpu.reg.sp++;
+      cpu.reg.h = mmu.rb(cpu.reg.sp);
+      cpu.reg.sp++;
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    },
+    
+    POP_af: () => {
+      cpu.reg.f = mmu.rb(cpu.reg.sp);
+      cpu.reg.sp++;
+      cpu.reg.a = mmu.rb(cpu.reg.sp);
+      cpu.reg.sp++;
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    },
+
     // Helper Functions
     fz: (i: number, as: number = 0) => {
       cpu.reg.f = 0;
