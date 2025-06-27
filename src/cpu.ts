@@ -2428,7 +2428,296 @@ const cpu = {
       cpu.reg.f=(cpu.reg.f & 0xEF) + co; cpu.reg.m = 4; 
       cpu.reg.t=16; 
     },
+
+
+    SLA_b: () => {
+      let co = cpu.reg.b & 0x80 ? 0x10 : 0;
+      cpu.reg.b = (cpu.reg.b << 1) & 0xFF;
+      cpu.ops.fz(cpu.reg.b);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
     
+    SLA_c: () => {
+      let co = cpu.reg.c & 0x80 ? 0x10 : 0;
+      cpu.reg.c = (cpu.reg.c << 1) & 0xFF;
+      cpu.ops.fz(cpu.reg.c);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    SLA_d: () => {
+      let co = cpu.reg.d & 0x80 ? 0x10 : 0;
+      cpu.reg.d = (cpu.reg.d << 1) & 0xFF;
+      cpu.ops.fz(cpu.reg.d);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    SLA_e: () => {
+      let co = cpu.reg.e & 0x80 ? 0x10 : 0;
+      cpu.reg.e = (cpu.reg.e << 1) & 0xFF;
+      cpu.ops.fz(cpu.reg.e);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+
+    SLL_b: () => {
+      let co = cpu.reg.b & 0x80 ? 0x10 : 0;
+      cpu.reg.b = ((cpu.reg.b << 1) | 1) & 0xFF;
+      cpu.ops.fz(cpu.reg.b);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    SLL_c: () => {
+      let co = cpu.reg.c & 0x80 ? 0x10 : 0;
+      cpu.reg.c = ((cpu.reg.c << 1) | 1) & 0xFF;
+      cpu.ops.fz(cpu.reg.c);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    SLL_d: () => {
+      let co = cpu.reg.d & 0x80 ? 0x10 : 0;
+      cpu.reg.d = ((cpu.reg.d << 1) | 1) & 0xFF;
+      cpu.ops.fz(cpu.reg.d);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    SLL_e: () => {
+      let co = cpu.reg.e & 0x80 ? 0x10 : 0;
+      cpu.reg.e = ((cpu.reg.e << 1) | 1) & 0xFF;
+      cpu.ops.fz(cpu.reg.e);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    SLL_h: () => {
+      let co = cpu.reg.h & 0x80 ? 0x10 : 0;
+      cpu.reg.h = ((cpu.reg.h << 1) | 1) & 0xFF;
+      cpu.ops.fz(cpu.reg.h);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    SLL_l: () => {
+      let co = cpu.reg.l & 0x80 ? 0x10 : 0;
+      cpu.reg.l = ((cpu.reg.l << 1) | 1) & 0xFF;
+      cpu.ops.fz(cpu.reg.l);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    SLL_a: () => {
+      let co = cpu.reg.a & 0x80 ? 0x10 : 0;
+      cpu.reg.a = ((cpu.reg.a << 1) | 1) & 0xFF;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    SLA_h: () => {
+      let co = cpu.reg.h & 0x80 ? 0x10 : 0;
+      cpu.reg.h = (cpu.reg.h << 1) & 0xFF;
+      cpu.ops.fz(cpu.reg.h);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    SLA_l: () => {
+      let co = cpu.reg.l & 0x80 ? 0x10 : 0;
+      cpu.reg.l = (cpu.reg.l << 1) & 0xFF;
+      cpu.ops.fz(cpu.reg.l);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    SLA_a: () => {
+      let co = cpu.reg.a & 0x80 ? 0x10 : 0;
+      cpu.reg.a = (cpu.reg.a << 1) & 0xFF;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    SRA_b: () => {
+      let ci = cpu.reg.b & 0x80;
+      let co = cpu.reg.b & 1 ? 0x10 : 0;
+      cpu.reg.b = ((cpu.reg.b >> 1) | ci) & 0xFF;
+      cpu.ops.fz(cpu.reg.b);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    SRA_c: () => {
+      let ci = cpu.reg.c & 0x80;
+      let co = cpu.reg.c & 1 ? 0x10 : 0;
+      cpu.reg.c = ((cpu.reg.c >> 1) | ci) & 0xFF;
+      cpu.ops.fz(cpu.reg.c);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    SRA_d: () => {
+      let ci = cpu.reg.d & 0x80;
+      let co = cpu.reg.d & 1 ? 0x10 : 0;
+      cpu.reg.d = ((cpu.reg.d >> 1) | ci) & 0xFF;
+      cpu.ops.fz(cpu.reg.d);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    SRA_e: () => {
+      let ci = cpu.reg.e & 0x80;
+      let co = cpu.reg.e & 1 ? 0x10 : 0;
+      cpu.reg.e = ((cpu.reg.e >> 1) | ci) & 0xFF;
+      cpu.ops.fz(cpu.reg.e);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    SRA_h: () => {
+      let ci = cpu.reg.h & 0x80;
+      let co = cpu.reg.h & 1 ? 0x10 : 0;
+      cpu.reg.h = ((cpu.reg.h >> 1) | ci) & 0xFF;
+      cpu.ops.fz(cpu.reg.h);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    SRA_l: () => {
+      let ci = cpu.reg.l & 0x80;
+      let co = cpu.reg.l & 1 ? 0x10 : 0;
+      cpu.reg.l = ((cpu.reg.l >> 1) | ci) & 0xFF;
+      cpu.ops.fz(cpu.reg.l);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    SRA_a: () => {
+      let ci = cpu.reg.a & 0x80;
+      let co = cpu.reg.a & 1 ? 0x10 : 0;
+      cpu.reg.a = ((cpu.reg.a >> 1) | ci) & 0xFF;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+
+
+    SRL_b: () => {
+      let co = cpu.reg.b & 1 ? 0x10 : 0;
+      cpu.reg.b = (cpu.reg.b >> 1) & 0xFF;
+      cpu.ops.fz(cpu.reg.b);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    SRL_c: () => {
+      let co = cpu.reg.c & 1 ? 0x10 : 0;
+      cpu.reg.c = (cpu.reg.c >> 1) & 0xFF;
+      cpu.ops.fz(cpu.reg.c);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    SRL_d: () => {
+      let co = cpu.reg.d & 1 ? 0x10 : 0;
+      cpu.reg.d = (cpu.reg.d >> 1) & 0xFF;
+      cpu.ops.fz(cpu.reg.d);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    SRL_e: () => {
+      let co = cpu.reg.e & 1 ? 0x10 : 0;
+      cpu.reg.e = (cpu.reg.e >> 1) & 0xFF;
+      cpu.ops.fz(cpu.reg.e);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    SRL_h: () => {
+      let co = cpu.reg.h & 1 ? 0x10 : 0;
+      cpu.reg.h = (cpu.reg.h >> 1) & 0xFF;
+      cpu.ops.fz(cpu.reg.h);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    SRL_l: () => {
+      let co = cpu.reg.l & 1 ? 0x10 : 0;
+      cpu.reg.l = (cpu.reg.l >> 1) & 0xFF;
+      cpu.ops.fz(cpu.reg.l);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    SRL_a: () => {
+      let co = cpu.reg.a & 1 ? 0x10 : 0;
+      cpu.reg.a = (cpu.reg.a >> 1) & 0xFF;
+      cpu.ops.fz(cpu.reg.a);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+
+    CPL: () => {
+      cpu.reg.a = (~cpu.reg.a) & 0xFF;
+      cpu.ops.fz(cpu.reg.a, 1);
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    
+    NEG: () => {
+      cpu.reg.a = 0 - cpu.reg.a;
+      cpu.ops.fz(cpu.reg.a, 1);
+      if (cpu.reg.a < 0) cpu.reg.f |= 0x10;
+      cpu.reg.a &= 0xFF;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
+    
+    CCF: () => {
+      let ci = (cpu.reg.f & 0x10) ? 0 : 0x10;
+      cpu.reg.f = (cpu.reg.f & 0xEF) + ci;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    
+    SCF: () => {
+      cpu.reg.f |= 0x10;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
     // Helper Functions
     fz: (i: number, as: number = 0) => {
       cpu.reg.f = 0;
