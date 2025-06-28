@@ -458,7 +458,7 @@ const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    LD__nn_a: () => {
+    LD_nn_a: () => {
       mmu.wb(mmu.rw(cpu.reg.pc), cpu.reg.a);
       cpu.reg.pc += 2;
       cpu.reg.m = 4;
@@ -605,6 +605,15 @@ const cpu = {
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
+
+    LD_nn_sp: () => {
+      cpu.reg.pc += 2;
+      mmu.ww(mmu.rw(cpu.reg.pc), cpu.reg.sp);
+    
+      cpu.reg.m = 5;
+      cpu.reg.t = 20;
+    },
+
     SWAP_b: () => {
       let tr = cpu.reg.b;
       cpu.reg.b = ((tr & 0xf) << 4) | ((tr & 0xf0) >> 4);
@@ -3319,9 +3328,26 @@ const cpu = {
 };
 
 cpu.map = [
+  // 00
   cpu.ops.NOP,
   cpu.ops.LD_bc_nn,
   cpu.ops.LD_bc_a,
+  cpu.ops.INC_bc,
+  cpu.ops.INC_b,
+  cpu.ops.DEC_b,
+  cpu.ops.LD_b_n,
+  cpu.ops.RLCA,
+  cpu.ops.LD_nn_sp,
+  cpu.ops.ADD_hl_bc,
+  cpu.ops.LD_a_bc,
+  cpu.ops.DEC_bc,
+  cpu.ops.INC_c,
+  cpu.ops.DEC_c,
+  cpu.ops.LD_c_n,
+  cpu.ops.RRCA,
+
+  // 10
+
 ];
 
 cpu.cbmap = [cpu.ops.RLC_b,
