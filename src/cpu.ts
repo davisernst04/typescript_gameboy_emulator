@@ -77,10 +77,6 @@ const cpu = {
     cpu.reg.sp--;
   },
 
-  NOP: () => {
-    cpu.reg.m = 1;
-    cpu.reg.t = 4;
-  },
 
   ops: {
     // Load opcode
@@ -3268,6 +3264,29 @@ const cpu = {
       cpu.reg.t = 12;
     },
 
+    NOP: () => {
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+
+    HALT: () => {
+      cpu.halt = 1;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+
+    DI: () => {
+      cpu.reg.ime = 0;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+
+    EI: () => {
+      cpu.reg.ime = 1;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+
     // Helper Functions
     fz: (i: number, as: number = 0) => {
       cpu.reg.f = 0;
@@ -3281,8 +3300,11 @@ const cpu = {
       let i = mmu.rb(cpu.reg.pc);
       cpu.reg.pc++;
       cpu.reg.pc &= 65535;
-
-      // FINISH LATER
+      if (cpu.cbmap[i]) {
+        cpu.cbmap[i]();
+      } else {
+        alert(i)
+      }
     },
 
     XX: () => {
@@ -3292,8 +3314,15 @@ const cpu = {
     },
   },
 
-  map: [],
-  cbmap: [],
+  map: [] as (() => void)[],
+  cbmap: [] as (() => void)[],
 };
 
-cpu.map = [];
+cpu.map = [
+  cpu.ops.NOP,
+  cpu.ops.LD_bc_nn,
+  cpu.ops.LD_bc_a,
+];
+
+cpu.cbmap = [cpu.ops.RLC_b,
+cpu.ops.RLC_c,];
