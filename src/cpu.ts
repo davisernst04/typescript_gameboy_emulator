@@ -3124,7 +3124,149 @@ const cpu = {
       }
     },
 
-
+    RST00: () => {
+    
+      cpu.reg.sp -= 2;
+    
+      mmu.ww(cpu.reg.sp, cpu.reg.pc);
+    
+      cpu.reg.pc = 0x00;
+    
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    },
+    RST08: () => {
+    
+      cpu.reg.sp -= 2;
+    
+      mmu.ww(cpu.reg.sp, cpu.reg.pc);
+    
+      cpu.reg.pc = 0x08;
+    
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    },
+    RST10: () => {
+    
+      cpu.reg.sp -= 2;
+    
+      mmu.ww(cpu.reg.sp, cpu.reg.pc);
+    
+      cpu.reg.pc = 0x10;
+    
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    },
+    RST18: () => {
+    
+      cpu.reg.sp -= 2;
+    
+      mmu.ww(cpu.reg.sp, cpu.reg.pc);
+    
+      cpu.reg.pc = 0x18;
+    
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    },
+    RST20: () => {
+    
+      cpu.reg.sp -= 2;
+    
+      mmu.ww(cpu.reg.sp, cpu.reg.pc);
+    
+      cpu.reg.pc = 0x20;
+    
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    },
+    RST28: () => {
+    
+      cpu.reg.sp -= 2;
+    
+      mmu.ww(cpu.reg.sp, cpu.reg.pc);
+    
+      cpu.reg.pc = 0x28;
+    
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    },
+    RST30: () => {
+    
+      cpu.reg.sp -= 2;
+    
+      mmu.ww(cpu.reg.sp, cpu.reg.pc);
+    
+      cpu.reg.pc = 0x30;
+    
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    },
+    RST38: () => {
+    
+      cpu.reg.sp -= 2;
+    
+      mmu.ww(cpu.reg.sp, cpu.reg.pc);
+    
+      cpu.reg.pc = 0x38;
+    
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    },
+    RST40: () => {
+    
+      cpu.reg.sp -= 2;
+    
+      mmu.ww(cpu.reg.sp, cpu.reg.pc);
+    
+      cpu.reg.pc = 0x40;
+    
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    },
+    RST48: () => {
+    
+      cpu.reg.sp -= 2;
+    
+      mmu.ww(cpu.reg.sp, cpu.reg.pc);
+    
+      cpu.reg.pc = 0x48;
+    
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    },
+    RST50: () => {
+    
+      cpu.reg.sp -= 2;
+    
+      mmu.ww(cpu.reg.sp, cpu.reg.pc);
+    
+      cpu.reg.pc = 0x50;
+    
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    },
+    RST58: () => {
+    
+      cpu.reg.sp -= 2;
+    
+      mmu.ww(cpu.reg.sp, cpu.reg.pc);
+    
+      cpu.reg.pc = 0x58;
+    
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    },
+    RST60: () => {
+    
+      cpu.reg.sp -= 2;
+    
+      mmu.ww(cpu.reg.sp, cpu.reg.pc);
+    
+      cpu.reg.pc = 0x60;
+    
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    },
 
     // Helper Functions
     fz: (i: number, as: number = 0) => {
