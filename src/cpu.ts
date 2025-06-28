@@ -2791,6 +2791,341 @@ const cpu = {
       cpu.reg.t = 12;
     },
 
+    JP_nn: () => {
+      cpu.reg.pc = mmu.rw(cpu.reg.pc);
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    },
+    
+    JP_hl: () => {
+      cpu.reg.pc = (cpu.reg.h << 8) | cpu.reg.l;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+
+    JPNZ_nn: () => {
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+
+      if ((cpu.reg.f & 0x80) === 0x00) {
+        cpu.reg.pc = mmu.rw(cpu.reg.pc);
+        cpu.reg.m++;
+        cpu.reg.t += 4;
+      } else {
+        cpu.reg.pc += 2;
+      }
+    },
+
+    JPZ_nn: () => {
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+
+      if ((cpu.reg.f & 0x80) === 0x80) {
+        cpu.reg.pc = mmu.rw(cpu.reg.pc);
+        cpu.reg.m++;
+        cpu.reg.t = 4;
+      } else {
+        cpu.reg.pc += 2;
+      }
+    },
+
+    JPNC_nn: () => {
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+      
+      if ((cpu.reg.f & 0x10) === 0x00) {
+        cpu.reg.pc = mmu.rw(cpu.reg.pc);
+        cpu.reg.m++;
+        cpu.reg.t += 4;
+      } else {
+        cpu.reg.pc += 2;
+      }
+    },
+
+    JPC_nn: () => {
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+      
+      if ((cpu.reg.f & 0x10) === 0x10) {
+        cpu.reg.pc = mmu.rw(cpu.reg.pc);
+        cpu.reg.m++;
+        cpu.reg.t += 4;
+      } else {
+        cpu.reg.pc += 2;
+      }
+    },
+
+    JR_n: () => {
+      let i = mmu.rb(cpu.reg.pc);
+      
+      if (i > 127) {
+          i = -((~i + 1) & 0xFF);
+      }
+      cpu.reg.pc++;
+      
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+      
+      cpu.reg.pc += i;
+      
+      cpu.reg.m++;
+      cpu.reg.t += 4;
+    },
+
+    JRNZ_n: () => {
+      let i = mmu.rb(cpu.reg.pc);
+    
+      if (i > 127) {
+        i = -((~i + 1) & 0xFF);
+      }
+    
+      cpu.reg.pc++;
+    
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    
+      if ((cpu.reg.f & 0x80) === 0x00) {
+        cpu.reg.pc += i;
+        cpu.reg.m++;
+        cpu.reg.t += 4;
+      }
+    },
+
+    JRZ_n: () => {
+      let i = mmu.rb(cpu.reg.pc);
+    
+      if (i > 127) {
+        i = -((~i + 1) & 0xFF);
+      }
+    
+      cpu.reg.pc++;
+    
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    
+      if ((cpu.reg.f & 0x80) === 0x80) {
+        cpu.reg.pc += i;
+        cpu.reg.m++;
+        cpu.reg.t += 4;
+      }
+    },
+
+    JRNC_n: () => {
+      let i = mmu.rb(cpu.reg.pc);
+    
+      if (i > 127) {
+        i = -((~i + 1) & 0xFF);
+      }
+    
+      cpu.reg.pc++;
+    
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    
+      if ((cpu.reg.f & 0x10) === 0x00) {
+        cpu.reg.pc += i;
+        cpu.reg.m++;
+        cpu.reg.t += 4;
+      }
+    },
+
+    JRC_n: () => {
+      let i = mmu.rb(cpu.reg.pc);
+    
+      if (i > 127) {
+        i = -((~i + 1) & 0xFF);
+      }
+      
+      cpu.reg.pc++;
+    
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    
+      if ((cpu.reg.f & 0x10) === 0x10) {
+        cpu.reg.pc += i;
+        cpu.reg.m++;
+        cpu.reg.t += 4;
+      }
+    },
+
+    DJNZ_n: () => {
+      let i = mmu.rb(cpu.reg.pc);
+    
+      if (i > 127) {
+        i = -((~i + 1) & 0xFF);
+      }
+    
+      cpu.reg.pc++;
+    
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    
+      cpu.reg.b--;
+    
+      if (cpu.reg.b !== 0) {
+        cpu.reg.pc += i;
+        cpu.reg.m++;
+        cpu.reg.t += 4;
+      }
+    },
+
+    CALL_nn: () => {
+      cpu.reg.sp -= 2;
+    
+      mmu.ww(cpu.reg.sp, cpu.reg.pc + 2);
+    
+      cpu.reg.pc = mmu.rw(cpu.reg.pc);
+    
+      cpu.reg.m = 5;
+      cpu.reg.t = 20;
+    },
+
+    CALLNZ_nn: () => {
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    
+      if ((cpu.reg.f & 0x80) === 0x00) {
+    
+        cpu.reg.sp -= 2;
+        mmu.ww(cpu.reg.sp, cpu.reg.pc + 2);
+    
+        cpu.reg.pc = mmu.rw(cpu.reg.pc);
+    
+        cpu.reg.m += 2;
+        cpu.reg.t += 8;
+      } else {
+        cpu.reg.pc += 2;
+      }
+    },
+
+    CALLZ_nn: () => {
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    
+      if ((cpu.reg.f & 0x80) === 0x80) {
+    
+        cpu.reg.sp -= 2;
+        mmu.ww(cpu.reg.sp, cpu.reg.pc + 2);
+    
+        cpu.reg.pc = mmu.rw(cpu.reg.pc);
+    
+        cpu.reg.m += 2;
+        cpu.reg.t += 8;
+      } else {
+        cpu.reg.pc += 2;
+      }
+    },
+
+    CALLNC_nn: () => {
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    
+      if ((cpu.reg.f & 0x10) === 0x00) {
+    
+        cpu.reg.sp -= 2;
+        mmu.ww(cpu.reg.sp, cpu.reg.pc + 2);
+    
+        cpu.reg.pc = mmu.rw(cpu.reg.pc);
+    
+        cpu.reg.m += 2;
+        cpu.reg.t += 8;
+      } else {
+        cpu.reg.pc += 2;
+      }
+    },
+
+    CALLC_nn: () => {
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    
+      if ((cpu.reg.f & 0x10) === 0x10) {
+    
+        cpu.reg.sp -= 2;
+        mmu.ww(cpu.reg.sp, cpu.reg.pc + 2);
+    
+        cpu.reg.pc = mmu.rw(cpu.reg.pc);
+    
+        cpu.reg.m += 2;
+        cpu.reg.t += 8;
+      } else {
+        cpu.reg.pc += 2;
+      }
+    },
+
+    RET_: () => {
+      cpu.reg.pc = mmu.rw(cpu.reg.sp);
+    
+      cpu.reg.sp += 2;
+    
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    },
+
+    RETI: () => {
+      cpu.reg.ime = 1;
+    
+      cpu.reg.pc = mmu.rw(cpu.reg.sp);
+    
+      cpu.reg.sp += 2;
+    
+      cpu.reg.m = 3;
+      cpu.reg.t = 12;
+    },
+
+    RETNZ: () => {
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    
+      if ((cpu.reg.f & 0x80) === 0x00) {
+        cpu.reg.pc = mmu.rw(cpu.reg.sp);
+        cpu.reg.sp += 2;
+    
+        cpu.reg.m += 2;
+        cpu.reg.t += 8;
+      }
+    },
+
+    RETZ: () => {
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    
+      if ((cpu.reg.f & 0x80) === 0x80) {
+        cpu.reg.pc = mmu.rw(cpu.reg.sp);
+        cpu.reg.sp += 2;
+    
+        cpu.reg.m += 2;
+        cpu.reg.t += 8;
+      }
+    },
+
+    RETNC: () => {
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    
+      if ((cpu.reg.f & 0x10) === 0x00) {
+        cpu.reg.pc = mmu.rw(cpu.reg.sp);
+        cpu.reg.sp += 2;
+    
+        cpu.reg.m += 2;
+        cpu.reg.t += 8;
+      }
+    },
+
+    RETC: () => {
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    
+      if ((cpu.reg.f & 0x10) === 0x10) {
+        cpu.reg.pc = mmu.rw(cpu.reg.sp);
+        cpu.reg.sp += 2;
+    
+        cpu.reg.m += 2;
+        cpu.reg.t += 8;
+      }
+    },
+
+
+
     // Helper Functions
     fz: (i: number, as: number = 0) => {
       cpu.reg.f = 0;
