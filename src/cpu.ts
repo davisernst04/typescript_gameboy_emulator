@@ -260,7 +260,7 @@ const cpu = {
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    LD_lc: () => {
+    LD_l_c: () => {
       cpu.reg.l = cpu.reg.c;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
@@ -3347,6 +3347,151 @@ cpu.map = [
   cpu.ops.RRCA,
 
   // 10
+  cpu.ops.DJNZ_n,
+  cpu.ops.LD_de_nn,
+  cpu.ops.LD_de_a,
+  cpu.ops.INC_d,
+  cpu.ops.DEC_d,
+  cpu.ops.LD_d_n,
+  cpu.ops.RLA,
+  cpu.ops.JR_n,
+  cpu.ops.ADD_hl_de,
+  cpu.ops.LD_a_de,
+  cpu.ops.DEC_de,
+  cpu.ops.INC_e,
+  cpu.ops.DEC_e,
+  cpu.ops.LD_e_n,
+  cpu.ops.RRA,
+
+  // 20
+  cpu.ops.JRNZ_n,
+  cpu.ops.LD_hl_nn,
+  cpu.ops.LD_hl_inc_a,
+  cpu.ops.INC_hl,
+  cpu.ops.INC_h,
+  cpu.ops.DEC_h,
+  cpu.ops.LD_h_n,
+  cpu.ops.XX,
+  cpu.ops.JRZ_n,
+  cpu.ops.ADD_hl_hl,
+  cpu.ops.LD_a_hl_inc,
+  cpu.ops.DEC_hl,
+  cpu.ops.INC_l,
+  cpu.ops.DEC_l,
+  cpu.ops.LD_l_n,
+  cpu.ops.CPL,
+
+  // 30
+  cpu.ops.JRNC_n,
+  cpu.ops.LD_sp_nn,
+  cpu.ops.LD_hl_dec_a,
+  cpu.ops.INC_sp,
+  cpu.ops.INC_hlm,
+  cpu.ops.DEC_hlm,
+  cpu.ops.LD_hl_mnn,
+  cpu.ops.SCF,
+  cpu.ops.JRC_n,
+  cpu.ops.ADD_hl_sp,
+  cpu.ops.LD_a_hl_dec,
+  cpu.ops.DEC_sp,
+  cpu.ops.INC_a,
+  cpu.ops.DEC_a,
+  cpu.ops.LD_a_n,
+  cpu.ops.CCF,
+
+  // 40
+  
+  cpu.ops.LD_b_b,
+  cpu.ops.LD_b_c,
+  cpu.ops.LD_b_d,
+  cpu.ops.LD_b_e,
+  cpu.ops.LD_b_h, 
+  cpu.ops.LD_b_l,
+  cpu.ops.LD_b_hl,
+  cpu.ops.LD_b_a,
+  cpu.ops.LD_c_b,
+  cpu.ops.LD_c_c,
+  cpu.ops.LD_c_d,
+  cpu.ops.LD_c_e,
+  cpu.ops.LD_c_h,
+  cpu.ops.LD_c_l,
+  cpu.ops.LD_c_hl,
+  cpu.ops.LD_c_a,
+
+  // 50
+  cpu.ops.LD_d_b,
+  cpu.ops.LD_d_c,
+  cpu.ops.LD_d_d,
+  cpu.ops.LD_d_e,
+  cpu.ops.LD_d_h,
+  cpu.ops.LD_d_l,
+  cpu.ops.LD_d_hl,
+  cpu.ops.LD_d_a,
+  cpu.ops.LD_e_b,
+  cpu.ops.LD_e_c,
+  cpu.ops.LD_e_d,
+  cpu.ops.LD_e_e,
+  cpu.ops.LD_e_h,
+  cpu.ops.LD_e_l,
+  cpu.ops.LD_e_hl,
+  cpu.ops.LD_e_a,
+
+  // 60
+  cpu.ops.LD_h_b,
+  cpu.ops.LD_h_c,
+  cpu.ops.LD_h_d,
+  cpu.ops.LD_h_e,
+  cpu.ops.LD_h_h,
+  cpu.ops.LD_h_l,
+  cpu.ops.LD_h_hl,
+  cpu.ops.LD_h_a,
+  cpu.ops.LD_l_b,
+  cpu.ops.LD_l_c,
+  cpu.ops.LD_l_d,
+  cpu.ops.LD_l_e,
+  cpu.ops.LD_l_h,
+  cpu.ops.LD_l_l,
+  cpu.ops.LD_l_hl,
+  cpu.ops.LD_l_a,
+
+  // 70
+  cpu.ops.LD_hl_b,
+  cpu.ops.LD_hl_c,
+  cpu.ops.LD_hl_d,
+  cpu.ops.LD_hl_e,
+  cpu.ops.LD_hl_h,
+  cpu.ops.LD_hl_l,
+  cpu.ops.HALT,
+  cpu.ops.LD_hl_a,
+  cpu.ops.LD_a_b,
+  cpu.ops.LD_a_c,
+  cpu.ops.LD_a_d,
+  cpu.ops.LD_a_e,
+  cpu.ops.LD_a_h,
+  cpu.ops.LD_a_l,
+  cpu.ops.LD_a_hl,
+  cpu.ops.LD_a_a,
+
+  // 80
+  cpu.ops.ADD_a_b,
+  cpu.ops.ADD_a_c,
+  cpu.ops.ADD_a_d,
+  cpu.ops.ADD_a_e,
+  cpu.ops.ADD_a_h,
+  cpu.ops.ADD_a_l,
+  cpu.ops.ADD_a_hl,
+  cpu.ops.ADD_a_a,
+  cpu.ops.ADC_a_b,
+  cpu.ops.ADC_a_c,
+  cpu.ops.ADC_a_d,
+  cpu.ops.ADC_a_e,
+  cpu.ops.ADC_a_h,
+  cpu.ops.ADC_a_l,
+  cpu.ops.ADC_a_hl,
+  cpu.ops.ADC_a_a,
+
+  // 90
+  
 
 ];
 
