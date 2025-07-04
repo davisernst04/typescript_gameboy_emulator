@@ -1,6 +1,6 @@
 import { mmu } from "./mmu";
 
-const cpu = {
+export const cpu = {
   // Internal State
   clock: {
     m: 0,
