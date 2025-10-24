@@ -1,5 +1,8 @@
 import { mmu } from "./mmu";
 
+/**
+ * CPU object.
+ */
 export const cpu = {
   // Internal State
   clock: {
@@ -609,7 +612,7 @@ export const cpu = {
     LD_nn_sp: () => {
       cpu.reg.pc += 2;
       mmu.ww(mmu.rw(cpu.reg.pc), cpu.reg.sp);
-    
+
       cpu.reg.m = 5;
       cpu.reg.t = 20;
     },
@@ -1205,7 +1208,7 @@ export const cpu = {
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    
+
     CP_a_c: () => {
       let i = cpu.reg.a;
       i -= cpu.reg.c;
@@ -1218,7 +1221,7 @@ export const cpu = {
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    
+
     CP_a_d: () => {
       let i = cpu.reg.a;
       i -= cpu.reg.d;
@@ -1279,7 +1282,7 @@ export const cpu = {
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    
+
     CP_a_hl: () => {
       let i = cpu.reg.a;
       i -= mmu.rb((cpu.reg.h << 8) + cpu.reg.l);
@@ -1292,7 +1295,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     CP_a_n: () => {
       let i = cpu.reg.a;
       i -= mmu.rb(cpu.reg.pc);
@@ -1371,7 +1374,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     OR_a_b: () => {
       cpu.reg.a |= cpu.reg.b;
       cpu.reg.a &= 255;
@@ -1386,7 +1389,7 @@ export const cpu = {
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    
+
     OR_a_d: () => {
       cpu.reg.a |= cpu.reg.d;
       cpu.reg.a &= 255;
@@ -1394,7 +1397,7 @@ export const cpu = {
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    
+
     OR_a_e: () => {
       cpu.reg.a |= cpu.reg.e;
       cpu.reg.a &= 255;
@@ -1423,7 +1426,7 @@ export const cpu = {
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    
+
     OR_a_hl: () => {
       cpu.reg.a |= mmu.rb((cpu.reg.h << 8) + cpu.reg.l);
       cpu.reg.a &= 255;
@@ -1439,7 +1442,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     XOR_a_b: () => {
       cpu.reg.a ^= cpu.reg.b;
       cpu.reg.a &= 255;
@@ -1454,7 +1457,7 @@ export const cpu = {
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    
+
     XOR_a_d: () => {
       cpu.reg.a ^= cpu.reg.d;
       cpu.reg.a &= 255;
@@ -1462,7 +1465,7 @@ export const cpu = {
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    
+
     XOR_a_e: () => {
       cpu.reg.a ^= cpu.reg.e;
       cpu.reg.a &= 255;
@@ -1491,7 +1494,7 @@ export const cpu = {
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    
+
     XOR_a_hl: () => {
       cpu.reg.a ^= mmu.rb((cpu.reg.h << 8) + cpu.reg.l);
       cpu.reg.a &= 255;
@@ -1523,7 +1526,7 @@ export const cpu = {
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    
+
     INC_d: () => {
       cpu.reg.d++;
       cpu.reg.d &= 255;
@@ -1531,7 +1534,7 @@ export const cpu = {
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    
+
     INC_e: () => {
       cpu.reg.e++;
       cpu.reg.e &= 255;
@@ -1554,13 +1557,13 @@ export const cpu = {
       cpu.reg.t = 4;
     },
     INC_a: () => {
-      cpu.reg.a++; 
+      cpu.reg.a++;
       cpu.reg.a &= 255;
       cpu.ops.fz(cpu.reg.a);
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    
+
     INC_hlm: () => {
       let i = mmu.rb((cpu.reg.h << 8) + cpu.reg.l) + 1;
       i &= 255;
@@ -1570,7 +1573,7 @@ export const cpu = {
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
-    
+
     DEC_b: () => {
       cpu.reg.b--;
       cpu.reg.b &= 255;
@@ -1585,7 +1588,7 @@ export const cpu = {
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    
+
     DEC_d: () => {
       cpu.reg.d--;
       cpu.reg.d &= 255;
@@ -1593,7 +1596,7 @@ export const cpu = {
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    
+
     DEC_e: () => {
       cpu.reg.e--;
       cpu.reg.e &= 255;
@@ -1622,7 +1625,7 @@ export const cpu = {
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    
+
     DEC_hlm: () => {
       let i = mmu.rb((cpu.reg.h << 8) + cpu.reg.l) - 1;
       i &= 255;
@@ -1635,27 +1638,27 @@ export const cpu = {
 
     INC_bc: () => {
       cpu.reg.c = (cpu.reg.c + 1) & 255;
-      
+
       if (!cpu.reg.c) {
         cpu.reg.b = (cpu.reg.b + 1) & 255;
       }
 
       cpu.reg.m = 1;
     },
-    
+
     INC_de: () => {
       cpu.reg.e = (cpu.reg.e + 1) & 255;
-      
+
       if (!cpu.reg.e) {
         cpu.reg.d = (cpu.reg.d + 1) & 255;
       }
 
       cpu.reg.m = 1;
     },
-    
+
     INC_hl: () => {
       cpu.reg.l = (cpu.reg.l + 1) & 255;
-      
+
       if (!cpu.reg.e) {
         cpu.reg.h = (cpu.reg.h + 1) & 255;
       }
@@ -1668,30 +1671,30 @@ export const cpu = {
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    
+
     DEC_bc: () => {
       cpu.reg.c = (cpu.reg.c - 1) & 255;
-      
+
       if (!cpu.reg.c) {
         cpu.reg.b = (cpu.reg.b - 1) & 255;
       }
 
       cpu.reg.m = 1;
     },
-    
+
     DEC_de: () => {
       cpu.reg.e = (cpu.reg.e - 1) & 255;
-      
+
       if (!cpu.reg.e) {
         cpu.reg.d = (cpu.reg.d - 1) & 255;
       }
 
       cpu.reg.m = 1;
     },
-    
+
     DEC_hl: () => {
       cpu.reg.l = (cpu.reg.l - 1) & 255;
-      
+
       if (!cpu.reg.e) {
         cpu.reg.h = (cpu.reg.h - 1) & 255;
       }
@@ -1741,13 +1744,13 @@ export const cpu = {
       cpu.ops.fz(cpu.reg.a & 0x01);
       cpu.reg.m = 2;
       cpu.reg.t = 8;
-    }, 
+    },
     BIT0_hl: () => {
       cpu.ops.fz(mmu.rb((cpu.reg.h << 8) + cpu.reg.l) & 0x01);
       cpu.reg.m = 3;
       cpu.reg.t = 12;
-    }, 
-    
+    },
+
     BIT1_b: () => {
       cpu.ops.fz(cpu.reg.b & 0x02);
       cpu.reg.m = 2;
@@ -1782,13 +1785,13 @@ export const cpu = {
       cpu.ops.fz(cpu.reg.a & 0x02);
       cpu.reg.m = 2;
       cpu.reg.t = 8;
-    }, 
+    },
     BIT1_hl: () => {
       cpu.ops.fz(mmu.rb((cpu.reg.h << 8) + cpu.reg.l) & 0x02);
       cpu.reg.m = 3;
       cpu.reg.t = 12;
-    }, 
-    
+    },
+
     BIT2_b: () => {
       cpu.ops.fz(cpu.reg.b & 0x03);
       cpu.reg.m = 2;
@@ -1823,13 +1826,13 @@ export const cpu = {
       cpu.ops.fz(cpu.reg.a & 0x03);
       cpu.reg.m = 2;
       cpu.reg.t = 8;
-    }, 
+    },
     BIT2_hl: () => {
       cpu.ops.fz(mmu.rb((cpu.reg.h << 8) + cpu.reg.l) & 0x03);
       cpu.reg.m = 3;
       cpu.reg.t = 12;
-    }, 
-    
+    },
+
     BIT3_b: () => {
       cpu.ops.fz(cpu.reg.b & 0x04);
       cpu.reg.m = 2;
@@ -1864,13 +1867,13 @@ export const cpu = {
       cpu.ops.fz(cpu.reg.a & 0x04);
       cpu.reg.m = 2;
       cpu.reg.t = 8;
-    }, 
+    },
     BIT3_hl: () => {
       cpu.ops.fz(mmu.rb((cpu.reg.h << 8) + cpu.reg.l) & 0x04);
       cpu.reg.m = 3;
       cpu.reg.t = 12;
-    }, 
-    
+    },
+
     BIT4_b: () => {
       cpu.ops.fz(cpu.reg.b & 0x05);
       cpu.reg.m = 2;
@@ -1905,13 +1908,13 @@ export const cpu = {
       cpu.ops.fz(cpu.reg.a & 0x05);
       cpu.reg.m = 2;
       cpu.reg.t = 8;
-    }, 
+    },
     BIT4_hl: () => {
       cpu.ops.fz(mmu.rb((cpu.reg.h << 8) + cpu.reg.l) & 0x05);
       cpu.reg.m = 3;
       cpu.reg.t = 12;
-    }, 
-    
+    },
+
     BIT5_b: () => {
       cpu.ops.fz(cpu.reg.b & 0x06);
       cpu.reg.m = 2;
@@ -1946,13 +1949,13 @@ export const cpu = {
       cpu.ops.fz(cpu.reg.a & 0x06);
       cpu.reg.m = 2;
       cpu.reg.t = 8;
-    }, 
+    },
     BIT5_hl: () => {
       cpu.ops.fz(mmu.rb((cpu.reg.h << 8) + cpu.reg.l) & 0x06);
       cpu.reg.m = 3;
       cpu.reg.t = 12;
-    }, 
-    
+    },
+
     BIT6_b: () => {
       cpu.ops.fz(cpu.reg.b & 0x07);
       cpu.reg.m = 2;
@@ -1987,13 +1990,13 @@ export const cpu = {
       cpu.ops.fz(cpu.reg.a & 0x07);
       cpu.reg.m = 2;
       cpu.reg.t = 8;
-    }, 
+    },
     BIT6_hl: () => {
       cpu.ops.fz(mmu.rb((cpu.reg.h << 8) + cpu.reg.l) & 0x07);
       cpu.reg.m = 3;
       cpu.reg.t = 12;
-    }, 
-    
+    },
+
     BIT7_b: () => {
       cpu.ops.fz(cpu.reg.b & 0x08);
       cpu.reg.m = 2;
@@ -2028,7 +2031,7 @@ export const cpu = {
       cpu.ops.fz(cpu.reg.a & 0x08);
       cpu.reg.m = 2;
       cpu.reg.t = 8;
-    }, 
+    },
     BIT7_hl: () => {
       cpu.ops.fz(mmu.rb((cpu.reg.h << 8) + cpu.reg.l) & 0x08);
       cpu.reg.m = 3;
@@ -2057,13 +2060,13 @@ export const cpu = {
     },
 
     RRA: () => {
-      let ci = cpu.reg.f & 0x10 ? 0x80 : 0; 
-      let co = cpu.reg.a & 1 ? 0x10 : 0; 
-      cpu.reg.a = (cpu.reg.a >> 1) + ci; 
-      cpu.reg.a &= 255; 
-      cpu.reg.f = (cpu.reg.f & 0xEF) + co; 
-      cpu.reg.m = 1; 
-      cpu.reg.t = 4; 
+      let ci = cpu.reg.f & 0x10 ? 0x80 : 0;
+      let co = cpu.reg.a & 1 ? 0x10 : 0;
+      cpu.reg.a = (cpu.reg.a >> 1) + ci;
+      cpu.reg.a &= 255;
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
     },
 
 
@@ -2098,7 +2101,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     RL_d: () => {
       let ci = cpu.reg.f & 0x10 ? 1 : 0;
       let co = cpu.reg.d & 0x80 ? 0x10 : 0;
@@ -2129,7 +2132,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     RL_l: () => {
       let ci = cpu.reg.f & 0x10 ? 1 : 0;
       let co = cpu.reg.l & 0x80 ? 0x10 : 0;
@@ -2151,7 +2154,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     RL_hl: () => {
       let i = mmu.rb((cpu.reg.h << 8) + cpu.reg.l);
       let ci = cpu.reg.f & 0x10 ? 1 : 0;
@@ -2176,7 +2179,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     RLC_c: () => {
       let ci = cpu.reg.c & 0x80 ? 1 : 0;
       let co = cpu.reg.c & 0x80 ? 0x10 : 0;
@@ -2187,7 +2190,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     RLC_d: () => {
       let ci = cpu.reg.d & 0x80 ? 1 : 0;
       let co = cpu.reg.d & 0x80 ? 0x10 : 0;
@@ -2198,7 +2201,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     RLC_e: () => {
       let ci = cpu.reg.e & 0x80 ? 1 : 0;
       let co = cpu.reg.e & 0x80 ? 0x10 : 0;
@@ -2209,7 +2212,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     RLC_h: () => {
       let ci = cpu.reg.h & 0x80 ? 1 : 0;
       let co = cpu.reg.h & 0x80 ? 0x10 : 0;
@@ -2220,7 +2223,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     RLC_l: () => {
       let ci = cpu.reg.l & 0x80 ? 1 : 0;
       let co = cpu.reg.l & 0x80 ? 0x10 : 0;
@@ -2231,7 +2234,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     RLC_a: () => {
       let ci = cpu.reg.a & 0x80 ? 1 : 0;
       let co = cpu.reg.a & 0x80 ? 0x10 : 0;
@@ -2266,7 +2269,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     RR_c: () => {
       let ci = cpu.reg.f & 0x10 ? 0x80 : 0;
       let co = cpu.reg.c & 1 ? 0x10 : 0;
@@ -2277,7 +2280,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     RR_d: () => {
       let ci = cpu.reg.f & 0x10 ? 0x80 : 0;
       let co = cpu.reg.d & 1 ? 0x10 : 0;
@@ -2288,7 +2291,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     RR_e: () => {
       let ci = cpu.reg.f & 0x10 ? 0x80 : 0;
       let co = cpu.reg.e & 1 ? 0x10 : 0;
@@ -2299,7 +2302,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     RR_h: () => {
       let ci = cpu.reg.f & 0x10 ? 0x80 : 0;
       let co = cpu.reg.h & 1 ? 0x10 : 0;
@@ -2310,7 +2313,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     RR_l: () => {
       let ci = cpu.reg.f & 0x10 ? 0x80 : 0;
       let co = cpu.reg.l & 1 ? 0x10 : 0;
@@ -2321,7 +2324,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     RR_a: () => {
       let ci = cpu.reg.f & 0x10 ? 0x80 : 0;
       let co = cpu.reg.a & 1 ? 0x10 : 0;
@@ -2332,20 +2335,21 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
-    RR_hl: () => {
-      let i = mmu.rb((cpu.reg.h << 8) + cpu.reg.l); 
-      let ci = cpu.reg.f & 0x10 ? 0x80 : 0;
-      let co = i & 1 ? 0x10 : 0; 
-      i = (i >> 1) + ci; 
-      i &= 255; 
-      mmu.wb((cpu.reg.h << 8) + cpu.reg.l, i); 
-      cpu.ops.fz(i); 
-      cpu.reg.f=(cpu.reg.f & 0xEF) + co; 
-      cpu.reg.m = 4; 
-      cpu.reg.t = 16; },
 
-    
+    RR_hl: () => {
+      let i = mmu.rb((cpu.reg.h << 8) + cpu.reg.l);
+      let ci = cpu.reg.f & 0x10 ? 0x80 : 0;
+      let co = i & 1 ? 0x10 : 0;
+      i = (i >> 1) + ci;
+      i &= 255;
+      mmu.wb((cpu.reg.h << 8) + cpu.reg.l, i);
+      cpu.ops.fz(i);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co;
+      cpu.reg.m = 4;
+      cpu.reg.t = 16;
+    },
+
+
     RRC_b: () => {
       let ci = cpu.reg.b & 1 ? 0x80 : 0;
       let co = cpu.reg.b & 1 ? 0x10 : 0;
@@ -2356,7 +2360,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     RRC_c: () => {
       let ci = cpu.reg.c & 1 ? 0x80 : 0;
       let co = cpu.reg.c & 1 ? 0x10 : 0;
@@ -2367,7 +2371,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     RRC_d: () => {
       let ci = cpu.reg.d & 1 ? 0x80 : 0;
       let co = cpu.reg.d & 1 ? 0x10 : 0;
@@ -2378,7 +2382,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     RRC_e: () => {
       let ci = cpu.reg.e & 1 ? 0x80 : 0;
       let co = cpu.reg.e & 1 ? 0x10 : 0;
@@ -2389,7 +2393,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     RRC_h: () => {
       let ci = cpu.reg.h & 1 ? 0x80 : 0;
       let co = cpu.reg.h & 1 ? 0x10 : 0;
@@ -2400,7 +2404,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     RRC_l: () => {
       let ci = cpu.reg.l & 1 ? 0x80 : 0;
       let co = cpu.reg.l & 1 ? 0x10 : 0;
@@ -2411,7 +2415,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     RRC_a: () => {
       let ci = cpu.reg.a & 1 ? 0x80 : 0;
       let co = cpu.reg.a & 1 ? 0x10 : 0;
@@ -2422,16 +2426,17 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
-    RRC_hl: () => { let i = mmu.rb((cpu.reg.h << 8) + cpu.reg.l); 
+
+    RRC_hl: () => {
+      let i = mmu.rb((cpu.reg.h << 8) + cpu.reg.l);
       let ci = i & 1 ? 0x80 : 0;
-      let co = i & 1 ? 0x10 : 0; 
-      i = (i >> 1) + ci; 
-      i &= 255; 
-      mmu.wb((cpu.reg.h << 8) + cpu.reg.l, i); 
-      cpu.ops.fz(i); 
-      cpu.reg.f=(cpu.reg.f & 0xEF) + co; cpu.reg.m = 4; 
-      cpu.reg.t=16; 
+      let co = i & 1 ? 0x10 : 0;
+      i = (i >> 1) + ci;
+      i &= 255;
+      mmu.wb((cpu.reg.h << 8) + cpu.reg.l, i);
+      cpu.ops.fz(i);
+      cpu.reg.f = (cpu.reg.f & 0xEF) + co; cpu.reg.m = 4;
+      cpu.reg.t = 16;
     },
 
 
@@ -2443,7 +2448,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     SLA_c: () => {
       let co = cpu.reg.c & 0x80 ? 0x10 : 0;
       cpu.reg.c = (cpu.reg.c << 1) & 0xFF;
@@ -2452,7 +2457,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     SLA_d: () => {
       let co = cpu.reg.d & 0x80 ? 0x10 : 0;
       cpu.reg.d = (cpu.reg.d << 1) & 0xFF;
@@ -2461,7 +2466,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     SLA_e: () => {
       let co = cpu.reg.e & 0x80 ? 0x10 : 0;
       cpu.reg.e = (cpu.reg.e << 1) & 0xFF;
@@ -2479,7 +2484,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     SLL_c: () => {
       let co = cpu.reg.c & 0x80 ? 0x10 : 0;
       cpu.reg.c = ((cpu.reg.c << 1) | 1) & 0xFF;
@@ -2488,7 +2493,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     SLL_d: () => {
       let co = cpu.reg.d & 0x80 ? 0x10 : 0;
       cpu.reg.d = ((cpu.reg.d << 1) | 1) & 0xFF;
@@ -2497,7 +2502,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     SLL_e: () => {
       let co = cpu.reg.e & 0x80 ? 0x10 : 0;
       cpu.reg.e = ((cpu.reg.e << 1) | 1) & 0xFF;
@@ -2506,7 +2511,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     SLL_h: () => {
       let co = cpu.reg.h & 0x80 ? 0x10 : 0;
       cpu.reg.h = ((cpu.reg.h << 1) | 1) & 0xFF;
@@ -2515,7 +2520,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     SLL_l: () => {
       let co = cpu.reg.l & 0x80 ? 0x10 : 0;
       cpu.reg.l = ((cpu.reg.l << 1) | 1) & 0xFF;
@@ -2524,7 +2529,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     SLL_a: () => {
       let co = cpu.reg.a & 0x80 ? 0x10 : 0;
       cpu.reg.a = ((cpu.reg.a << 1) | 1) & 0xFF;
@@ -2533,7 +2538,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     SLA_h: () => {
       let co = cpu.reg.h & 0x80 ? 0x10 : 0;
       cpu.reg.h = (cpu.reg.h << 1) & 0xFF;
@@ -2542,7 +2547,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     SLA_l: () => {
       let co = cpu.reg.l & 0x80 ? 0x10 : 0;
       cpu.reg.l = (cpu.reg.l << 1) & 0xFF;
@@ -2551,7 +2556,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     SLA_a: () => {
       let co = cpu.reg.a & 0x80 ? 0x10 : 0;
       cpu.reg.a = (cpu.reg.a << 1) & 0xFF;
@@ -2560,7 +2565,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     SRA_b: () => {
       let ci = cpu.reg.b & 0x80;
       let co = cpu.reg.b & 1 ? 0x10 : 0;
@@ -2570,7 +2575,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     SRA_c: () => {
       let ci = cpu.reg.c & 0x80;
       let co = cpu.reg.c & 1 ? 0x10 : 0;
@@ -2580,7 +2585,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     SRA_d: () => {
       let ci = cpu.reg.d & 0x80;
       let co = cpu.reg.d & 1 ? 0x10 : 0;
@@ -2590,7 +2595,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     SRA_e: () => {
       let ci = cpu.reg.e & 0x80;
       let co = cpu.reg.e & 1 ? 0x10 : 0;
@@ -2600,7 +2605,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     SRA_h: () => {
       let ci = cpu.reg.h & 0x80;
       let co = cpu.reg.h & 1 ? 0x10 : 0;
@@ -2610,7 +2615,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     SRA_l: () => {
       let ci = cpu.reg.l & 0x80;
       let co = cpu.reg.l & 1 ? 0x10 : 0;
@@ -2620,7 +2625,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     SRA_a: () => {
       let ci = cpu.reg.a & 0x80;
       let co = cpu.reg.a & 1 ? 0x10 : 0;
@@ -2640,7 +2645,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     SRL_c: () => {
       let co = cpu.reg.c & 1 ? 0x10 : 0;
       cpu.reg.c = (cpu.reg.c >> 1) & 0xFF;
@@ -2649,7 +2654,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     SRL_d: () => {
       let co = cpu.reg.d & 1 ? 0x10 : 0;
       cpu.reg.d = (cpu.reg.d >> 1) & 0xFF;
@@ -2658,7 +2663,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     SRL_e: () => {
       let co = cpu.reg.e & 1 ? 0x10 : 0;
       cpu.reg.e = (cpu.reg.e >> 1) & 0xFF;
@@ -2667,7 +2672,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     SRL_h: () => {
       let co = cpu.reg.h & 1 ? 0x10 : 0;
       cpu.reg.h = (cpu.reg.h >> 1) & 0xFF;
@@ -2676,7 +2681,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     SRL_l: () => {
       let co = cpu.reg.l & 1 ? 0x10 : 0;
       cpu.reg.l = (cpu.reg.l >> 1) & 0xFF;
@@ -2685,7 +2690,7 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     SRL_a: () => {
       let co = cpu.reg.a & 1 ? 0x10 : 0;
       cpu.reg.a = (cpu.reg.a >> 1) & 0xFF;
@@ -2701,7 +2706,7 @@ export const cpu = {
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    
+
     NEG: () => {
       cpu.reg.a = 0 - cpu.reg.a;
       cpu.ops.fz(cpu.reg.a, 1);
@@ -2710,14 +2715,14 @@ export const cpu = {
       cpu.reg.m = 2;
       cpu.reg.t = 8;
     },
-    
+
     CCF: () => {
       let ci = (cpu.reg.f & 0x10) ? 0 : 0x10;
       cpu.reg.f = (cpu.reg.f & 0xEF) + ci;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
-    
+
     SCF: () => {
       cpu.reg.f |= 0x10;
       cpu.reg.m = 1;
@@ -2732,7 +2737,7 @@ export const cpu = {
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
-    
+
     PUSH_de: () => {
       cpu.reg.sp--;
       mmu.wb(cpu.reg.sp, cpu.reg.d);
@@ -2741,7 +2746,7 @@ export const cpu = {
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
-    
+
     PUSH_hl: () => {
       cpu.reg.sp--;
       mmu.wb(cpu.reg.sp, cpu.reg.h);
@@ -2750,7 +2755,7 @@ export const cpu = {
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
-    
+
     PUSH_af: () => {
       cpu.reg.sp--;
       mmu.wb(cpu.reg.sp, cpu.reg.a);
@@ -2759,7 +2764,7 @@ export const cpu = {
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
-    
+
     POP_bc: () => {
       cpu.reg.c = mmu.rb(cpu.reg.sp);
       cpu.reg.sp++;
@@ -2768,7 +2773,7 @@ export const cpu = {
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
-    
+
     POP_de: () => {
       cpu.reg.e = mmu.rb(cpu.reg.sp);
       cpu.reg.sp++;
@@ -2777,7 +2782,7 @@ export const cpu = {
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
-    
+
     POP_hl: () => {
       cpu.reg.l = mmu.rb(cpu.reg.sp);
       cpu.reg.sp++;
@@ -2786,7 +2791,7 @@ export const cpu = {
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
-    
+
     POP_af: () => {
       cpu.reg.f = mmu.rb(cpu.reg.sp);
       cpu.reg.sp++;
@@ -2801,7 +2806,7 @@ export const cpu = {
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
-    
+
     JP_hl: () => {
       cpu.reg.pc = (cpu.reg.h << 8) | cpu.reg.l;
       cpu.reg.m = 1;
@@ -2837,7 +2842,7 @@ export const cpu = {
     JPNC_nn: () => {
       cpu.reg.m = 3;
       cpu.reg.t = 12;
-      
+
       if ((cpu.reg.f & 0x10) === 0x00) {
         cpu.reg.pc = mmu.rw(cpu.reg.pc);
         cpu.reg.m++;
@@ -2850,7 +2855,7 @@ export const cpu = {
     JPC_nn: () => {
       cpu.reg.m = 3;
       cpu.reg.t = 12;
-      
+
       if ((cpu.reg.f & 0x10) === 0x10) {
         cpu.reg.pc = mmu.rw(cpu.reg.pc);
         cpu.reg.m++;
@@ -2862,33 +2867,33 @@ export const cpu = {
 
     JR_n: () => {
       let i = mmu.rb(cpu.reg.pc);
-      
+
       if (i > 127) {
-          i = -((~i + 1) & 0xFF);
+        i = -((~i + 1) & 0xFF);
       }
       cpu.reg.pc++;
-      
+
       cpu.reg.m = 2;
       cpu.reg.t = 8;
-      
+
       cpu.reg.pc += i;
-      
+
       cpu.reg.m++;
       cpu.reg.t += 4;
     },
 
     JRNZ_n: () => {
       let i = mmu.rb(cpu.reg.pc);
-    
+
       if (i > 127) {
         i = -((~i + 1) & 0xFF);
       }
-    
+
       cpu.reg.pc++;
-    
+
       cpu.reg.m = 2;
       cpu.reg.t = 8;
-    
+
       if ((cpu.reg.f & 0x80) === 0x00) {
         cpu.reg.pc += i;
         cpu.reg.m++;
@@ -2898,16 +2903,16 @@ export const cpu = {
 
     JRZ_n: () => {
       let i = mmu.rb(cpu.reg.pc);
-    
+
       if (i > 127) {
         i = -((~i + 1) & 0xFF);
       }
-    
+
       cpu.reg.pc++;
-    
+
       cpu.reg.m = 2;
       cpu.reg.t = 8;
-    
+
       if ((cpu.reg.f & 0x80) === 0x80) {
         cpu.reg.pc += i;
         cpu.reg.m++;
@@ -2917,16 +2922,16 @@ export const cpu = {
 
     JRNC_n: () => {
       let i = mmu.rb(cpu.reg.pc);
-    
+
       if (i > 127) {
         i = -((~i + 1) & 0xFF);
       }
-    
+
       cpu.reg.pc++;
-    
+
       cpu.reg.m = 2;
       cpu.reg.t = 8;
-    
+
       if ((cpu.reg.f & 0x10) === 0x00) {
         cpu.reg.pc += i;
         cpu.reg.m++;
@@ -2936,16 +2941,16 @@ export const cpu = {
 
     JRC_n: () => {
       let i = mmu.rb(cpu.reg.pc);
-    
+
       if (i > 127) {
         i = -((~i + 1) & 0xFF);
       }
-      
+
       cpu.reg.pc++;
-    
+
       cpu.reg.m = 2;
       cpu.reg.t = 8;
-    
+
       if ((cpu.reg.f & 0x10) === 0x10) {
         cpu.reg.pc += i;
         cpu.reg.m++;
@@ -2955,18 +2960,18 @@ export const cpu = {
 
     DJNZ_n: () => {
       let i = mmu.rb(cpu.reg.pc);
-    
+
       if (i > 127) {
         i = -((~i + 1) & 0xFF);
       }
-    
+
       cpu.reg.pc++;
-    
+
       cpu.reg.m = 2;
       cpu.reg.t = 8;
-    
+
       cpu.reg.b--;
-    
+
       if (cpu.reg.b !== 0) {
         cpu.reg.pc += i;
         cpu.reg.m++;
@@ -2976,11 +2981,11 @@ export const cpu = {
 
     CALL_nn: () => {
       cpu.reg.sp -= 2;
-    
+
       mmu.ww(cpu.reg.sp, cpu.reg.pc + 2);
-    
+
       cpu.reg.pc = mmu.rw(cpu.reg.pc);
-    
+
       cpu.reg.m = 5;
       cpu.reg.t = 20;
     },
@@ -2988,14 +2993,14 @@ export const cpu = {
     CALLNZ_nn: () => {
       cpu.reg.m = 3;
       cpu.reg.t = 12;
-    
+
       if ((cpu.reg.f & 0x80) === 0x00) {
-    
+
         cpu.reg.sp -= 2;
         mmu.ww(cpu.reg.sp, cpu.reg.pc + 2);
-    
+
         cpu.reg.pc = mmu.rw(cpu.reg.pc);
-    
+
         cpu.reg.m += 2;
         cpu.reg.t += 8;
       } else {
@@ -3006,14 +3011,14 @@ export const cpu = {
     CALLZ_nn: () => {
       cpu.reg.m = 3;
       cpu.reg.t = 12;
-    
+
       if ((cpu.reg.f & 0x80) === 0x80) {
-    
+
         cpu.reg.sp -= 2;
         mmu.ww(cpu.reg.sp, cpu.reg.pc + 2);
-    
+
         cpu.reg.pc = mmu.rw(cpu.reg.pc);
-    
+
         cpu.reg.m += 2;
         cpu.reg.t += 8;
       } else {
@@ -3024,14 +3029,14 @@ export const cpu = {
     CALLNC_nn: () => {
       cpu.reg.m = 3;
       cpu.reg.t = 12;
-    
+
       if ((cpu.reg.f & 0x10) === 0x00) {
-    
+
         cpu.reg.sp -= 2;
         mmu.ww(cpu.reg.sp, cpu.reg.pc + 2);
-    
+
         cpu.reg.pc = mmu.rw(cpu.reg.pc);
-    
+
         cpu.reg.m += 2;
         cpu.reg.t += 8;
       } else {
@@ -3042,14 +3047,14 @@ export const cpu = {
     CALLC_nn: () => {
       cpu.reg.m = 3;
       cpu.reg.t = 12;
-    
+
       if ((cpu.reg.f & 0x10) === 0x10) {
-    
+
         cpu.reg.sp -= 2;
         mmu.ww(cpu.reg.sp, cpu.reg.pc + 2);
-    
+
         cpu.reg.pc = mmu.rw(cpu.reg.pc);
-    
+
         cpu.reg.m += 2;
         cpu.reg.t += 8;
       } else {
@@ -3059,20 +3064,20 @@ export const cpu = {
 
     RET: () => {
       cpu.reg.pc = mmu.rw(cpu.reg.sp);
-    
+
       cpu.reg.sp += 2;
-    
+
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
 
     RETI: () => {
       cpu.reg.ime = 1;
-    
+
       cpu.reg.pc = mmu.rw(cpu.reg.sp);
-    
+
       cpu.reg.sp += 2;
-    
+
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
@@ -3080,11 +3085,11 @@ export const cpu = {
     RETNZ: () => {
       cpu.reg.m = 1;
       cpu.reg.t = 4;
-    
+
       if ((cpu.reg.f & 0x80) === 0x00) {
         cpu.reg.pc = mmu.rw(cpu.reg.sp);
         cpu.reg.sp += 2;
-    
+
         cpu.reg.m += 2;
         cpu.reg.t += 8;
       }
@@ -3093,11 +3098,11 @@ export const cpu = {
     RETZ: () => {
       cpu.reg.m = 1;
       cpu.reg.t = 4;
-    
+
       if ((cpu.reg.f & 0x80) === 0x80) {
         cpu.reg.pc = mmu.rw(cpu.reg.sp);
         cpu.reg.sp += 2;
-    
+
         cpu.reg.m += 2;
         cpu.reg.t += 8;
       }
@@ -3106,11 +3111,11 @@ export const cpu = {
     RETNC: () => {
       cpu.reg.m = 1;
       cpu.reg.t = 4;
-    
+
       if ((cpu.reg.f & 0x10) === 0x00) {
         cpu.reg.pc = mmu.rw(cpu.reg.sp);
         cpu.reg.sp += 2;
-    
+
         cpu.reg.m += 2;
         cpu.reg.t += 8;
       }
@@ -3119,156 +3124,156 @@ export const cpu = {
     RETC: () => {
       cpu.reg.m = 1;
       cpu.reg.t = 4;
-    
+
       if ((cpu.reg.f & 0x10) === 0x10) {
         cpu.reg.pc = mmu.rw(cpu.reg.sp);
         cpu.reg.sp += 2;
-    
+
         cpu.reg.m += 2;
         cpu.reg.t += 8;
       }
     },
 
     RST00: () => {
-    
+
       cpu.reg.sp -= 2;
-    
+
       mmu.ww(cpu.reg.sp, cpu.reg.pc);
-    
+
       cpu.reg.pc = 0x00;
-    
+
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
     RST08: () => {
-    
+
       cpu.reg.sp -= 2;
-    
+
       mmu.ww(cpu.reg.sp, cpu.reg.pc);
-    
+
       cpu.reg.pc = 0x08;
-    
+
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
     RST10: () => {
-    
+
       cpu.reg.sp -= 2;
-    
+
       mmu.ww(cpu.reg.sp, cpu.reg.pc);
-    
+
       cpu.reg.pc = 0x10;
-    
+
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
     RST18: () => {
-    
+
       cpu.reg.sp -= 2;
-    
+
       mmu.ww(cpu.reg.sp, cpu.reg.pc);
-    
+
       cpu.reg.pc = 0x18;
-    
+
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
     RST20: () => {
-    
+
       cpu.reg.sp -= 2;
-    
+
       mmu.ww(cpu.reg.sp, cpu.reg.pc);
-    
+
       cpu.reg.pc = 0x20;
-    
+
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
     RST28: () => {
-    
+
       cpu.reg.sp -= 2;
-    
+
       mmu.ww(cpu.reg.sp, cpu.reg.pc);
-    
+
       cpu.reg.pc = 0x28;
-    
+
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
     RST30: () => {
-    
+
       cpu.reg.sp -= 2;
-    
+
       mmu.ww(cpu.reg.sp, cpu.reg.pc);
-    
+
       cpu.reg.pc = 0x30;
-    
+
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
     RST38: () => {
-    
+
       cpu.reg.sp -= 2;
-    
+
       mmu.ww(cpu.reg.sp, cpu.reg.pc);
-    
+
       cpu.reg.pc = 0x38;
-    
+
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
     RST40: () => {
-    
+
       cpu.reg.sp -= 2;
-    
+
       mmu.ww(cpu.reg.sp, cpu.reg.pc);
-    
+
       cpu.reg.pc = 0x40;
-    
+
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
     RST48: () => {
-    
+
       cpu.reg.sp -= 2;
-    
+
       mmu.ww(cpu.reg.sp, cpu.reg.pc);
-    
+
       cpu.reg.pc = 0x48;
-    
+
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
     RST50: () => {
-    
+
       cpu.reg.sp -= 2;
-    
+
       mmu.ww(cpu.reg.sp, cpu.reg.pc);
-    
+
       cpu.reg.pc = 0x50;
-    
+
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
     RST58: () => {
-    
+
       cpu.reg.sp -= 2;
-    
+
       mmu.ww(cpu.reg.sp, cpu.reg.pc);
-    
+
       cpu.reg.pc = 0x58;
-    
+
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
     RST60: () => {
-    
+
       cpu.reg.sp -= 2;
-    
+
       mmu.ww(cpu.reg.sp, cpu.reg.pc);
-    
+
       cpu.reg.pc = 0x60;
-    
+
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
@@ -3400,12 +3405,12 @@ cpu.map = [
   cpu.ops.CCF,
 
   // 40
-  
+
   cpu.ops.LD_b_b,
   cpu.ops.LD_b_c,
   cpu.ops.LD_b_d,
   cpu.ops.LD_b_e,
-  cpu.ops.LD_b_h, 
+  cpu.ops.LD_b_h,
   cpu.ops.LD_b_l,
   cpu.ops.LD_b_hl,
   cpu.ops.LD_b_a,

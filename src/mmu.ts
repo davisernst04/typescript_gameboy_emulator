@@ -1,5 +1,9 @@
 import * as fs from "fs";
 import { cpu } from "./cpu";
+import { gpu } from "./gpu";
+/**
+ * 
+ */
 export const mmu = {
   bios: [
     0x31, 0xfe, 0xff, 0xaf, 0x21, 0xff, 0x9f, 0x32, 0xcb, 0x7c, 0x20, 0xfb,
@@ -61,7 +65,7 @@ export const mmu = {
   },
 
   rb: (addr: number): number => {
-    const segment = addr & 0xf000;
+    let segment = addr & 0xf000;
 
     if (segment === 0x0000) {
       if (mmu.inbios) {
@@ -70,9 +74,8 @@ export const mmu = {
         } else if (cpu.reg.pc === 0x0100) {
           mmu.inbios = 0;
         }
-      } else {
-        return mmu.rom.charCodeAt(addr);
       }
+      return mmu.rom.charCodeAt(addr);
     } else if (segment === 0x1000 || segment === 0x2000 || segment === 0x3000) {
       return mmu.rom.charCodeAt(addr);
     } else if (
@@ -83,10 +86,67 @@ export const mmu = {
     ) {
       return mmu.rom.charCodeAt(addr);
     } else if (segment === 0x8000 || segment === 0x9000) {
-      return;
+      return gpu.vram[addr & 0x1fff];
+    } else if (segment === 0xa000 || segment === 0xb000) {
+      return mmu.eram[addr & 0x1fff];
+    } else if (segment === 0xc000 || segment === 0xd000 || segment === 0xe000) {
+      return mmu.wram[addr & 0x1fff];
+    } else if (segment === 0xf000) {
+      segment = addr & 0x0f00;
+
+      if (segment <= 0xd00) {
+        return mmu.wram[addr & 0x1fff];
+      } else if (segment === 0xe00) {
+        return (addr & 0xef) < 0xa0 ? gpu.oam[addr & 0xff] : 0;
+      } else if (segment === 0xf00) {
+        if (addr >= 0xff80 && addr <= 0xfffe) {
+          return mmu.zram[addr & 0x7f];
+        } else if (addr === 0xffff) {
+          return mmu.inte;
+        } else if (addr === 0xff0f) {
+          return mmu.intf;
+        }
+      }
     }
+    return 0xff;
   },
-  rw: (addr: number): number => {},
-  wb: (addr: number, val: number): number => {},
-  ww: (addr: number, val: number): number => {},
+
+  rw: (addr: number): number => {
+    return mmu.rb(addr) | (mmu.rb(addr + 1) << 8);
+  },
+
+  wb: (addr: number, val: number): number => {
+    let segment = addr & 0xf000;
+
+    if (segment === 0x8000 || segment === 0x9000) {
+      gpu.vram[addr & 0x1fff] = val;
+    } else if (segment === 0xa000 || segment === 0xb000) {
+      mmu.eram[addr & 0x1fff] = val;
+    } else if (segment === 0xc000 || segment === 0xd000 || segment === 0xe000) {
+      mmu.wram[addr & 0x1fff] = val;
+    } else if (segment === 0xf000) {
+      segment = addr & 0x0f00;
+
+      if (segment <= 0xd00) {
+        mmu.wram[addr & 0x1fff] = val;
+      } else if (segment === 0xe00) {
+        if ((addr & 0xef) < 0xa0) gpu.oam[addr & 0xff] = val;
+      } else if (segment === 0xf00) {
+        if (addr >= 0xff80 && addr <= 0xfffe) {
+          mmu.zram[addr & 0x7f] = val;
+        } else if (addr === 0xffff) {
+          mmu.inte = val;
+        } else if (addr === 0xff0f) {
+          mmu.intf = val;
+        }
+      }
+    }
+    return val;
+  },
+
+  ww: (addr: number, val: number): number => {
+    mmu.wb(addr, val & 0xff);
+    mmu.wb(addr + 1, (val >> 8) & 0xff);
+    return val;
+  },
 };
