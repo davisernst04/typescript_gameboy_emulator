@@ -1,3 +1,5 @@
+import { log } from "./log";
+
 export const gpu = {
   vram: [] as number[],
   oam: [] as number[],
@@ -63,7 +65,6 @@ export const gpu = {
       }
     }
 
-    LOG.out('GPU', 'Initializing screen');
     log.out('GPU', 'Initializing screen');
   }
 };

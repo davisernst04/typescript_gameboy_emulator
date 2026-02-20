@@ -1,4 +1,3 @@
-import * as fs from "fs";
 import { cpu } from "./cpu";
 import { gpu } from "./gpu";
 /**
@@ -55,13 +54,8 @@ export const mmu = {
     mmu.intf = 0;
   },
 
-  load: async (path: string): Promise<void> => {
-    try {
-      mmu.rom = fs.readFileSync(path).toString("binary");
-    } catch (error) {
-      alert(`Error loading ROM file "${path}":`);
-      process.exit(1);
-    }
+  load: async (rom: string): Promise<void> => {
+    mmu.rom = rom;
   },
 
   rb: (addr: number): number => {
