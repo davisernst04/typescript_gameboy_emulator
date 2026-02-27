@@ -114,6 +114,7 @@ export const mmu = {
 
     if (segment === 0x8000 || segment === 0x9000) {
       gpu.vram[addr & 0x1fff] = val;
+      gpu.updatetile(addr, val);
     } else if (segment === 0xa000 || segment === 0xb000) {
       mmu.eram[addr & 0x1fff] = val;
     } else if (segment === 0xc000 || segment === 0xd000 || segment === 0xe000) {

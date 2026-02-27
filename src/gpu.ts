@@ -6,8 +6,10 @@ export const gpu = {
   oam: [] as number[],
   reg: [] as number[],
   tilemap: [] as number[][][],
-  objdata: [] as number[],
-  objdatasorted: [] as number[],
+  objdata: [] as any[],
+  objdatasorted: [] as any[],
+  canvas: {} as CanvasRenderingContext2D,
+  screen: {} as ImageData,
   palette: {
     bg: [] as number[],
     obj0: [] as number[],
@@ -69,7 +71,7 @@ export const gpu = {
     log.out('GPU', 'Initializing screen');
     
     let c = document.getElementById('screen') as HTMLCanvasElement;
-    if (x && c.getContext) {
+    if (c && c.getContext) {
       gpu.canvas = c.getContext('2d') as CanvasRenderingContext2D;
 
       if (!gpu.canvas) {
@@ -80,10 +82,10 @@ export const gpu = {
         } else if(gpu.canvas.getImageData) {
           gpu.screen = gpu.canvas.getImageData(0, 0, 160, 144);
         } else {
-          gpu.screen = { width: 160, height: 144, data: new Array(160 * 144 * 4)} as ImageData;
+          gpu.screen = { width: 160, height: 144, data: new Array(160 * 144 * 4)} as unknown as ImageData;
       }
 
-      for (int i = 0; i < gpu.screen.data.length; i++) {
+      for (let i = 0; i < gpu.screen.data.length; i++) {
         gpu.screen.data[i] = 255;
       }
       gpu.canvas.putImageData(gpu.screen, 0, 0);
@@ -128,7 +130,7 @@ export const gpu = {
           if (20 <= gpu.curline) {
             gpu.linemode = 1;
             gpu.canvas.putImageData(gpu.screen, 0, 0);
-            mmu.if |= 1;
+            mmu.intf |= 1;
           } else {
             gpu.linemode = 2;
           }
@@ -167,14 +169,11 @@ export const gpu = {
               let y = (gpu.curline + gpu.yscrl) & 7;
               let x = gpu.xscrl & 7;
               let t = (gpu.xscrl >> 3) & 31;
-              let pixel;
               let w = 160;
 
               if (gpu.bgtilebase) {
                 let tile = gpu.vram[mapbase + t];
-                if (tile < 128) {
-                  tile += 256;
-                }
+                if (tile < 128) tile += 256;
                 let tilerow = gpu.tilemap[tile][y];
                 do {
                   gpu.scanrow[160 - x] = tilerow[x];
@@ -184,44 +183,28 @@ export const gpu = {
                     x = 0;
                     t = (t + 1) & 31;
                     tile = gpu.vram[mapbase + t];
-                    if (tile < 128) {
-                      tile += 256;
-                    }
+                    if (tile < 128) tile += 256;
                     tilerow = gpu.tilemap[tile][y];
-                    do {
-                      gpu.scanrow[160 - x] = tilerow[x];
-                      gpu.screen.data[linebase + 3] = gpu.palette.bg[tilerow[x]];
-                      x++;
-
-                      if (x === 8) {
-                        x = 0;
-                        t = (t + 1) & 31;
-                        tile = gpu.vram[mapbase + t];
-                        if (tile < 128) {
-                          tile += 256;
-                        }
-                        tilerow = gpu.tilemap[tile][y];
-                      }
-                      linebase += 4;
-                    } while (--w);
-                  } else {
-                    let tilrow = gpu.tilemap[gpu.vram][mapbase + t][y];
-                    do {
-                      gpu.scanrow[160 - x] = tilerow[x];
-                      gpu.screen.data[linebase + 3] = gpu.palette.bg[tilerow[x]];
-                      x++;
-                      if (x === 8) {
-                        x = 0;
-                        t = (t + 1) & 31;
-                        tilerow = gpu.tilemap[gpu.vram][mapbase + t][y];
-                      }
-                      linebase += 4;
-
-
-                    } while (--w);
-                }
-                  
-          } 
+                  }
+                  linebase += 4;
+                } while (--w);
+              } else {
+                let tile = gpu.vram[mapbase + t];
+                let tilerow = gpu.tilemap[tile][y];
+                do {
+                  gpu.scanrow[160 - x] = tilerow[x];
+                  gpu.screen.data[linebase + 3] = gpu.palette.bg[tilerow[x]];
+                  x++;
+                  if (x === 8) {
+                    x = 0;
+                    t = (t + 1) & 31;
+                    tile = gpu.vram[mapbase + t];
+                    tilerow = gpu.tilemap[tile][y];
+                  }
+                  linebase += 4;
+                } while (--w);
+              }
+            }
           if (gpu.objon) {
             let cnt = 0;
             if (gpu.objsize) {
@@ -231,7 +214,6 @@ export const gpu = {
               let tilerow;
               let obj;
               let pal;
-              let pixel;
               let x;
               let linebase = gpu.curscan;
               for (let i = 0; i < 40; i++) {
@@ -242,36 +224,38 @@ export const gpu = {
                   } else {
                     tilerow = gpu.tilemap[obj.tile][gpu.curline - obj.y];
                   }
-                if (obj.palette) {
-                  pal = gpu.palette.obj1;
-                } else {
-                  pal = gpu.palette.obj0;
-                }
-
-                linebase = (gpu.curline * 160 + obj.x) * 4;
-
-                if (obj.xflip) {
-                  for (x = 0; x < 8; x++) {
-                    if (obj.x + x >= 0 && obj.x + x < 160) {
-                      if (titlerow[7 - x] && (obj.prio === 0 || !gpu.scanrow[x])) {
-                        gpu.screen.data[linebase + 3] = pal[tilerow[7 - x]];
-                      }
-                    }
-                    linebase += 4;
+                  
+                  if (obj.palette) {
+                    pal = gpu.palette.obj1;
+                  } else {
+                    pal = gpu.palette.obj0;
                   }
-                } else {
-                  for (x = 0; x < 8; x++) {
-                    if (obj.x + x >= 0 && obj.x + x < 160) {
-                      if (tilerow[x] && (obj.prio === 0 || !gpu.scanrow[x])) {
-                        gpu.screen.data[linebase + 3] = pal[tilerow[x]];
+
+                  linebase = (gpu.curline * 160 + obj.x) * 4;
+
+                  if (obj.xflip) {
+                    for (x = 0; x < 8; x++) {
+                      if (obj.x + x >= 0 && obj.x + x < 160) {
+                        if (tilerow[7 - x] && (obj.prio === 0 || !gpu.scanrow[x])) {
+                          gpu.screen.data[linebase + 3] = pal[tilerow[7 - x]];
+                        }
                       }
+                      linebase += 4;
                     }
-                    linebase += 4;
+                  } else {
+                    for (x = 0; x < 8; x++) {
+                      if (obj.x + x >= 0 && obj.x + x < 160) {
+                        if (tilerow[x] && (obj.prio === 0 || !gpu.scanrow[x])) {
+                          gpu.screen.data[linebase + 3] = pal[tilerow[x]];
+                        }
+                      }
+                      linebase += 4;
+                    }
                   }
-                }
-                cnt++;
-                if (cnt > 10) {
-                  break;
+                  cnt++;
+                  if (cnt > 10) {
+                    break;
+                  }
                 }
               }
             }
@@ -282,15 +266,14 @@ export const gpu = {
     }
   },
 
-  updatetile: (addr: number, val: number) => {
-    let saddr = addr;
-    if (addr & 1) {
+  updatetile: (addr: number, _val: number) => {
+    let saddr = addr & 0x1fff;
+    if (saddr & 1) {
       saddr--;
-      addr--;
     }
 
-    let tile = (addr >> 4) & 511;
-    let y = (addr >> 1) & 7;
+    let tile = (saddr >> 4) & 511;
+    let y = (saddr >> 1) & 7;
     let sx;
 
     for (let x = 0; x < 8; x++) {
@@ -332,8 +315,10 @@ export const gpu = {
       if (a.x > b.x) {
         return -1;
       } if (a.x < b.x) {
-        return -1;
-      }});
+        return 1;
+      }
+      return 0;
+    });
   },
 
   rb: (addr: number): number => {
