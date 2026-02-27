@@ -1,7 +1,7 @@
 import { cpu } from "./cpu";
 import { gpu } from "./gpu";
 /**
- * 
+ *
  */
 export const mmu = {
   bios: [
