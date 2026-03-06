@@ -3,6 +3,8 @@ import { gpu } from './gpu';
 import { mmu } from './mmu';
 import { log } from './log';
 
+export { cpu, gpu, mmu, log };
+
 export const emulator = {
   init: () => {
     log.reset();
