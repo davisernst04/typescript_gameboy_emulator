@@ -1251,6 +1251,11 @@ var cpu = {
       cpu.reg.m = 4;
       cpu.reg.t = 16;
     },
+    LD_sp_hl: () => {
+      cpu.reg.sp = (cpu.reg.h << 8) + cpu.reg.l;
+      cpu.reg.m = 2;
+      cpu.reg.t = 8;
+    },
     LD_bc_nn: () => {
       cpu.reg.c = mmu.rb(cpu.reg.pc);
       cpu.reg.b = mmu.rb(cpu.reg.pc + 1);
@@ -3682,6 +3687,38 @@ var cpu = {
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
+    STOP: () => {
+      cpu.reg.pc++;
+      cpu.reg.pc &= 65535;
+      cpu.stop = 1;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
+    DAA: () => {
+      let a = cpu.reg.a;
+      let adj = 0;
+      if (cpu.reg.f & 32 || !(cpu.reg.f & 64) && (a & 15) > 9) {
+        adj |= 6;
+      }
+      if (cpu.reg.f & 16 || !(cpu.reg.f & 64) && a > 153) {
+        adj |= 96;
+        cpu.reg.f |= 16;
+      } else {
+        cpu.reg.f &= 239;
+      }
+      if (cpu.reg.f & 64) {
+        a = a - adj & 255;
+      } else {
+        a = a + adj & 255;
+      }
+      cpu.reg.f &= 127;
+      if (!a) {
+        cpu.reg.f |= 128;
+      }
+      cpu.reg.a = a;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    },
     // Helper Functions
     fz: (i, as = 0) => {
       cpu.reg.f = 0;
@@ -3710,7 +3747,6 @@ var cpu = {
   cbmap: []
 };
 cpu.map = [
-  // 00
   cpu.ops.NOP,
   cpu.ops.LD_bc_nn,
   cpu.ops.LD_bc_a,
@@ -3727,10 +3763,10 @@ cpu.map = [
   cpu.ops.DEC_c,
   cpu.ops.LD_c_n,
   cpu.ops.RRCA,
-  // 10
-  cpu.ops.DJNZ_n,
+  cpu.ops.STOP,
   cpu.ops.LD_de_nn,
   cpu.ops.LD_de_a,
+  cpu.ops.INC_de,
   cpu.ops.INC_d,
   cpu.ops.DEC_d,
   cpu.ops.LD_d_n,
@@ -3743,7 +3779,6 @@ cpu.map = [
   cpu.ops.DEC_e,
   cpu.ops.LD_e_n,
   cpu.ops.RRA,
-  // 20
   cpu.ops.JRNZ_n,
   cpu.ops.LD_hl_nn,
   cpu.ops.LD_hl_inc_a,
@@ -3751,7 +3786,7 @@ cpu.map = [
   cpu.ops.INC_h,
   cpu.ops.DEC_h,
   cpu.ops.LD_h_n,
-  cpu.ops.XX,
+  cpu.ops.DAA,
   cpu.ops.JRZ_n,
   cpu.ops.ADD_hl_hl,
   cpu.ops.LD_a_hl_inc,
@@ -3760,14 +3795,13 @@ cpu.map = [
   cpu.ops.DEC_l,
   cpu.ops.LD_l_n,
   cpu.ops.CPL,
-  // 30
   cpu.ops.JRNC_n,
   cpu.ops.LD_sp_nn,
   cpu.ops.LD_hl_dec_a,
   cpu.ops.INC_sp,
   cpu.ops.INC_hlm,
   cpu.ops.DEC_hlm,
-  cpu.ops.LD_hl_mnn,
+  cpu.ops.LD_hl_n,
   cpu.ops.SCF,
   cpu.ops.JRC_n,
   cpu.ops.ADD_hl_sp,
@@ -3777,7 +3811,6 @@ cpu.map = [
   cpu.ops.DEC_a,
   cpu.ops.LD_a_n,
   cpu.ops.CCF,
-  // 40
   cpu.ops.LD_b_b,
   cpu.ops.LD_b_c,
   cpu.ops.LD_b_d,
@@ -3794,7 +3827,6 @@ cpu.map = [
   cpu.ops.LD_c_l,
   cpu.ops.LD_c_hl,
   cpu.ops.LD_c_a,
-  // 50
   cpu.ops.LD_d_b,
   cpu.ops.LD_d_c,
   cpu.ops.LD_d_d,
@@ -3811,7 +3843,6 @@ cpu.map = [
   cpu.ops.LD_e_l,
   cpu.ops.LD_e_hl,
   cpu.ops.LD_e_a,
-  // 60
   cpu.ops.LD_h_b,
   cpu.ops.LD_h_c,
   cpu.ops.LD_h_d,
@@ -3828,7 +3859,6 @@ cpu.map = [
   cpu.ops.LD_l_l,
   cpu.ops.LD_l_hl,
   cpu.ops.LD_l_a,
-  // 70
   cpu.ops.LD_hl_b,
   cpu.ops.LD_hl_c,
   cpu.ops.LD_hl_d,
@@ -3845,7 +3875,6 @@ cpu.map = [
   cpu.ops.LD_a_l,
   cpu.ops.LD_a_hl,
   cpu.ops.LD_a_a,
-  // 80
   cpu.ops.ADD_a_b,
   cpu.ops.ADD_a_c,
   cpu.ops.ADD_a_d,
@@ -3862,7 +3891,6 @@ cpu.map = [
   cpu.ops.ADC_a_l,
   cpu.ops.ADC_a_hl,
   cpu.ops.ADC_a_a,
-  // 90
   cpu.ops.SUB_a_b,
   cpu.ops.SUB_a_c,
   cpu.ops.SUB_a_d,
@@ -3879,7 +3907,6 @@ cpu.map = [
   cpu.ops.SBC_a_l,
   cpu.ops.SBC_a_hl,
   cpu.ops.SBC_a_a,
-  // A0
   cpu.ops.AND_a_b,
   cpu.ops.AND_a_c,
   cpu.ops.AND_a_d,
@@ -3896,7 +3923,6 @@ cpu.map = [
   cpu.ops.XOR_a_l,
   cpu.ops.XOR_a_hl,
   cpu.ops.XOR_a_a,
-  //B0
   cpu.ops.OR_a_b,
   cpu.ops.OR_a_c,
   cpu.ops.OR_a_d,
@@ -3913,7 +3939,6 @@ cpu.map = [
   cpu.ops.CP_a_l,
   cpu.ops.CP_a_hl,
   cpu.ops.CP_a_a,
-  // C0
   cpu.ops.RETNZ,
   cpu.ops.POP_bc,
   cpu.ops.JPNZ_nn,
@@ -3930,7 +3955,6 @@ cpu.map = [
   cpu.ops.CALL_nn,
   cpu.ops.ADC_a_n,
   cpu.ops.RST08,
-  // D0
   cpu.ops.RETNC,
   cpu.ops.POP_de,
   cpu.ops.JPNC_nn,
@@ -3947,7 +3971,6 @@ cpu.map = [
   cpu.ops.XX,
   cpu.ops.SBC_a_n,
   cpu.ops.RST18,
-  // E0
   cpu.ops.LD_IO_n_a,
   cpu.ops.POP_hl,
   cpu.ops.LD_IO_c_a,
@@ -3964,7 +3987,6 @@ cpu.map = [
   cpu.ops.XX,
   cpu.ops.OR_a_n,
   cpu.ops.RST28,
-  // F0
   cpu.ops.LD_a_IO_n,
   cpu.ops.POP_af,
   cpu.ops.LD_a_IO_c,
@@ -3974,17 +3996,15 @@ cpu.map = [
   cpu.ops.XOR_a_n,
   cpu.ops.RST30,
   cpu.ops.LD_hl_sp_n,
-  cpu.ops.XX,
+  cpu.ops.LD_sp_hl,
   cpu.ops.LD_a_nn,
   cpu.ops.EI,
-  cpu.ops.XX,
   cpu.ops.XX,
   cpu.ops.XX,
   cpu.ops.CP_a_n,
   cpu.ops.RST38
 ];
 cpu.cbmap = [
-  // CB00
   cpu.ops.RLC_b,
   cpu.ops.RLC_c,
   cpu.ops.RLC_d,
@@ -4001,7 +4021,6 @@ cpu.cbmap = [
   cpu.ops.RRC_l,
   cpu.ops.RRC_hl,
   cpu.ops.RRC_a,
-  // CB10
   cpu.ops.RL_b,
   cpu.ops.RL_c,
   cpu.ops.RL_d,
@@ -4018,7 +4037,6 @@ cpu.cbmap = [
   cpu.ops.RR_l,
   cpu.ops.RR_hl,
   cpu.ops.RR_a,
-  // CB20
   cpu.ops.SLA_b,
   cpu.ops.SLA_c,
   cpu.ops.SLA_d,
@@ -4035,7 +4053,6 @@ cpu.cbmap = [
   cpu.ops.SRA_l,
   cpu.ops.XX,
   cpu.ops.SRA_a,
-  // CB30
   cpu.ops.SWAP_b,
   cpu.ops.SWAP_c,
   cpu.ops.SWAP_d,
@@ -4052,7 +4069,6 @@ cpu.cbmap = [
   cpu.ops.SRL_l,
   cpu.ops.XX,
   cpu.ops.SRL_a,
-  // CB40
   cpu.ops.BIT0_b,
   cpu.ops.BIT0_c,
   cpu.ops.BIT0_d,
@@ -4069,7 +4085,6 @@ cpu.cbmap = [
   cpu.ops.BIT1_l,
   cpu.ops.BIT1_hl,
   cpu.ops.BIT1_a,
-  // CB50
   cpu.ops.BIT2_b,
   cpu.ops.BIT2_c,
   cpu.ops.BIT2_d,
@@ -4086,7 +4101,6 @@ cpu.cbmap = [
   cpu.ops.BIT3_l,
   cpu.ops.BIT3_hl,
   cpu.ops.BIT3_a,
-  // CB60
   cpu.ops.BIT4_b,
   cpu.ops.BIT4_c,
   cpu.ops.BIT4_d,
@@ -4103,7 +4117,6 @@ cpu.cbmap = [
   cpu.ops.BIT5_l,
   cpu.ops.BIT5_hl,
   cpu.ops.BIT5_a,
-  // CB70
   cpu.ops.BIT6_b,
   cpu.ops.BIT6_c,
   cpu.ops.BIT6_d,
@@ -4120,7 +4133,6 @@ cpu.cbmap = [
   cpu.ops.BIT7_l,
   cpu.ops.BIT7_hl,
   cpu.ops.BIT7_a,
-  // CB80
   cpu.ops.XX,
   cpu.ops.XX,
   cpu.ops.XX,
@@ -4137,7 +4149,6 @@ cpu.cbmap = [
   cpu.ops.XX,
   cpu.ops.XX,
   cpu.ops.XX,
-  // CB90
   cpu.ops.XX,
   cpu.ops.XX,
   cpu.ops.XX,
@@ -4154,7 +4165,6 @@ cpu.cbmap = [
   cpu.ops.XX,
   cpu.ops.XX,
   cpu.ops.XX,
-  // CBA0
   cpu.ops.XX,
   cpu.ops.XX,
   cpu.ops.XX,
@@ -4171,7 +4181,6 @@ cpu.cbmap = [
   cpu.ops.XX,
   cpu.ops.XX,
   cpu.ops.XX,
-  // CBB0
   cpu.ops.XX,
   cpu.ops.XX,
   cpu.ops.XX,
@@ -4188,7 +4197,6 @@ cpu.cbmap = [
   cpu.ops.XX,
   cpu.ops.XX,
   cpu.ops.XX,
-  // CBC0
   cpu.ops.XX,
   cpu.ops.XX,
   cpu.ops.XX,
@@ -4205,7 +4213,6 @@ cpu.cbmap = [
   cpu.ops.XX,
   cpu.ops.XX,
   cpu.ops.XX,
-  // CBD0
   cpu.ops.XX,
   cpu.ops.XX,
   cpu.ops.XX,
@@ -4222,7 +4229,6 @@ cpu.cbmap = [
   cpu.ops.XX,
   cpu.ops.XX,
   cpu.ops.XX,
-  // CBE0
   cpu.ops.XX,
   cpu.ops.XX,
   cpu.ops.XX,
@@ -4239,7 +4245,6 @@ cpu.cbmap = [
   cpu.ops.XX,
   cpu.ops.XX,
   cpu.ops.XX,
-  // CBF0
   cpu.ops.XX,
   cpu.ops.XX,
   cpu.ops.XX,

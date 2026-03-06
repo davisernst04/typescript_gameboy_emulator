@@ -59,13 +59,6 @@ export const cpu = {
       cpu.reg.t = 4;
     } else {
       let opcode = mmu.rb(cpu.reg.pc);
-      if (cpu.reg.pc === 0xe6 && mmu.inbios) {
-          console.log(`LOGO CHECK LD A,(DE): PC=e6, DE=${((cpu.reg.d << 8) + cpu.reg.e).toString(16)}, HL=${((cpu.reg.h << 8) + cpu.reg.l).toString(16)}, A was ${cpu.reg.a.toString(16)}`);
-      }
-      if (cpu.reg.pc === 0xe8 && mmu.inbios) {
-          const val = mmu.rb((cpu.reg.h << 8) + cpu.reg.l);
-          console.log(`LOGO CHECK: PC=e8, A=${cpu.reg.a.toString(16)}, HL=${((cpu.reg.h << 8) + cpu.reg.l).toString(16)}, (HL)=${val.toString(16)}, DE=${((cpu.reg.d << 8) + cpu.reg.e).toString(16)}`);
-      }
       cpu.reg.pc = (cpu.reg.pc + 1) & 0xffff;
       if (cpu.map[opcode]) {
         cpu.map[opcode]();
