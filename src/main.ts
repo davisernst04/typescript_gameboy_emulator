@@ -12,9 +12,33 @@ export const emulator = {
     log.out('EMU', 'Emulator initialized.');
   },
 
-  run: () => {
+  loadRom: async (url: string) => {
+    try {
+      log.out('EMU', `Fetching ROM from ${url}...`);
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Failed to fetch ROM: ${response.statusText}`);
+      const buffer = await response.arrayBuffer();
+      const romData = new Uint8Array(buffer);
+      await mmu.load(romData);
+      log.out('EMU', `ROM loaded: ${romData.length} bytes.`);
+      return true;
+    } catch (error) {
+      log.out('EMU', `Error loading ROM: ${error}`);
+      return false;
+    }
+  },
+
+  run: async () => {
     emulator.init();
-    emulator.loop();
+    // Default ROM to load for testing
+    const romUrl = '/roms/test.gb'; 
+    const loaded = await emulator.loadRom(romUrl);
+    if (loaded) {
+      log.out('EMU', 'Starting emulation loop.');
+      emulator.loop();
+    } else {
+      log.out('EMU', 'Failed to load ROM. Emulation not started.');
+    }
   },
 
   loop: () => {
