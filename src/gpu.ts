@@ -68,7 +68,7 @@ export const gpu = {
       gpu.canvas = c.getContext('2d') as CanvasRenderingContext2D;
 
       if (!gpu.canvas) {
-        throw new Error('GPU: Canvas context cannot be created');
+        log.out('GPU', 'Failed to get 2D context');
       } else {
         if (gpu.canvas.createImageData) {
           gpu.screen = gpu.canvas.createImageData(160, 144);
@@ -76,13 +76,15 @@ export const gpu = {
           gpu.screen = gpu.canvas.getImageData(0, 0, 160, 144);
         } else {
           gpu.screen = { width: 160, height: 144, data: new Uint8ClampedArray(160 * 144 * 4)} as unknown as ImageData;
-      }
+        }
 
-      for (let i = 0; i < gpu.screen.data.length; i++) {
-        gpu.screen.data[i] = 255;
+        for (let i = 0; i < gpu.screen.data.length; i++) {
+          gpu.screen.data[i] = 255;
+        }
+        gpu.canvas.putImageData(gpu.screen, 0, 0);
       }
-      gpu.canvas.putImageData(gpu.screen, 0, 0);
-      }
+    } else {
+      log.out('GPU', 'Canvas element "screen" not found or not supported');
     }
 
     gpu.curline = 0;
@@ -101,9 +103,11 @@ export const gpu = {
 
     gpu.scanrow.fill(0);
 
+    gpu.objdata = [];
     for (let i = 0; i < 40; i++) {
       gpu.objdata[i] = {'y': -16, 'x': -8, 'tile': 0, 'palette': 0, 'yflip': 0, 'xflip': 0, 'prio': 0, 'num': i};
     }
+    gpu.objdatasorted = [];
 
     gpu.bgtilebase = 0x0000;
     gpu.bgmapbase = 0x1800;
@@ -122,7 +126,9 @@ export const gpu = {
           gpu.curscan += 640;
           if (gpu.curline === 144) {
             gpu.linemode = 1;
-            gpu.canvas.putImageData(gpu.screen, 0, 0);
+            if (gpu.canvas && gpu.canvas.putImageData) {
+              gpu.canvas.putImageData(gpu.screen, 0, 0);
+            }
             mmu.intf |= 1;
           } else {
             gpu.linemode = 2;
@@ -159,108 +165,61 @@ export const gpu = {
               let y = (gpu.curline + gpu.yscrl) & 7;
               let x = gpu.xscrl & 7;
               let t = (gpu.xscrl >> 3) & 31;
-              let w = 160;
 
-              if (gpu.bgtilebase) {
+              for (let i = 0; i < 160; i++) {
                 let tile = gpu.vram[mapbase + t];
-                if (tile < 128) tile += 256;
+                if (gpu.bgtilebase && tile < 128) tile += 256;
                 let tilerow = gpu.tilemap[tile][y];
-                do {
-                  gpu.scanrow[160 - x] = tilerow[x];
-                  let color = gpu.palette.bg[tilerow[x]];
-                  gpu.screen.data[linebase] = color;
-                  gpu.screen.data[linebase + 1] = color;
-                  gpu.screen.data[linebase + 2] = color;
-                  gpu.screen.data[linebase + 3] = 255;
-                  x++;
-                  if (x === 8) {
-                    x = 0;
-                    t = (t + 1) & 31;
-                    tile = gpu.vram[mapbase + t];
-                    if (tile < 128) tile += 256;
-                    tilerow = gpu.tilemap[tile][y];
-                  }
-                  linebase += 4;
-                } while (--w);
-              } else {
-                let tile = gpu.vram[mapbase + t];
-                let tilerow = gpu.tilemap[tile][y];
-                do {
-                  gpu.scanrow[160 - x] = tilerow[x];
-                  let color = gpu.palette.bg[tilerow[x]];
-                  gpu.screen.data[linebase] = color;
-                  gpu.screen.data[linebase + 1] = color;
-                  gpu.screen.data[linebase + 2] = color;
-                  gpu.screen.data[linebase + 3] = 255;
-                  x++;
-                  if (x === 8) {
-                    x = 0;
-                    t = (t + 1) & 31;
-                    tile = gpu.vram[mapbase + t];
-                    tilerow = gpu.tilemap[tile][y];
-                  }
-                  linebase += 4;
-                } while (--w);
+                let color_idx = tilerow[x];
+                gpu.scanrow[i] = color_idx;
+                let color = gpu.palette.bg[color_idx];
+
+                gpu.screen.data[linebase] = color;
+                gpu.screen.data[linebase + 1] = color;
+                gpu.screen.data[linebase + 2] = color;
+                gpu.screen.data[linebase + 3] = 255;
+
+                linebase += 4;
+                x++;
+                if (x === 8) {
+                  x = 0;
+                  t = (t + 1) & 31;
+                }
               }
             }
-          if (gpu.objon) {
-            let cnt = 0;
-            if (gpu.objsize) {
+            if (gpu.objon) {
+              let spritesOnLine = [];
               for (let i = 0; i < 40; i++) {
-              }
-            } else {
-              let tilerow;
-              let obj;
-              let pal;
-              let x;
-              let linebase = gpu.curscan;
-              for (let i = 0; i < 40; i++) {
-                obj = gpu.objdatasorted[i];
+                let obj = gpu.objdata[i];
                 if (obj.y <= gpu.curline && obj.y + 8 > gpu.curline) {
-                  if (obj.yflip) {
-                    tilerow = gpu.tilemap[obj.tile][7 - (gpu.curline - obj.y)];
-                  } else {
-                    tilerow = gpu.tilemap[obj.tile][gpu.curline - obj.y];
-                  }
-                  
-                  if (obj.palette) {
-                    pal = gpu.palette.obj1;
-                  } else {
-                    pal = gpu.palette.obj0;
-                  }
+                  spritesOnLine.push(obj);
+                  if (spritesOnLine.length >= 10) break;
+                }
+              }
 
-                  linebase = (gpu.curline * 160 + obj.x) * 4;
+              // Draw in reverse order so lower OAM index is on top
+              for (let i = spritesOnLine.length - 1; i >= 0; i--) {
+                let obj = spritesOnLine[i];
+                let tilerow;
+                if (obj.yflip) {
+                  tilerow = gpu.tilemap[obj.tile][7 - (gpu.curline - obj.y)];
+                } else {
+                  tilerow = gpu.tilemap[obj.tile][gpu.curline - obj.y];
+                }
 
-                  if (obj.xflip) {
-                    for (x = 0; x < 8; x++) {
-                      if (obj.x + x >= 0 && obj.x + x < 160) {
-                        if (tilerow[7 - x] && (obj.prio === 0 || !gpu.scanrow[x])) {
-                          let color = pal[tilerow[7 - x]];
-                          gpu.screen.data[linebase] = color;
-                          gpu.screen.data[linebase + 1] = color;
-                          gpu.screen.data[linebase + 2] = color;
-                          gpu.screen.data[linebase + 3] = 255;
-                        }
-                      }
-                      linebase += 4;
+                let pal = obj.palette ? gpu.palette.obj1 : gpu.palette.obj0;
+                for (let x = 0; x < 8; x++) {
+                  let canvas_x = obj.x + x;
+                  if (canvas_x >= 0 && canvas_x < 160) {
+                    let color_idx = obj.xflip ? tilerow[7 - x] : tilerow[x];
+                    if (color_idx !== 0 && (obj.prio === 0 || gpu.scanrow[canvas_x] === 0)) {
+                      let color = pal[color_idx];
+                      let linebase = (gpu.curline * 160 + canvas_x) * 4;
+                      gpu.screen.data[linebase] = color;
+                      gpu.screen.data[linebase + 1] = color;
+                      gpu.screen.data[linebase + 2] = color;
+                      gpu.screen.data[linebase + 3] = 255;
                     }
-                  } else {
-                    for (x = 0; x < 8; x++) {
-                      if (obj.x + x >= 0 && obj.x + x < 160) {
-                        if (tilerow[x] && (obj.prio === 0 || !gpu.scanrow[x])) {
-                          let color = pal[tilerow[x]];
-                          gpu.screen.data[linebase] = color;
-                          gpu.screen.data[linebase + 1] = color;
-                          gpu.screen.data[linebase + 2] = color;
-                          gpu.screen.data[linebase + 3] = 255;
-                        }
-                      }
-                      linebase += 4;
-                    }
-                  }
-                  cnt++;
-                  if (cnt > 10) {
-                    break;
                   }
                 }
               }
@@ -268,7 +227,6 @@ export const gpu = {
           }
         }
         break;
-      }
     }
   },
 
@@ -280,20 +238,19 @@ export const gpu = {
 
     let tile = (saddr >> 4) & 511;
     let y = (saddr >> 1) & 7;
-    let sx;
 
     for (let x = 0; x < 8; x++) {
-      sx = 1 << (7 - x);
+      let sx = 1 << (7 - x);
       gpu.tilemap[tile][y][x] = ((gpu.vram[saddr] & sx) ? 1 : 0) | ((gpu.vram[saddr + 1] & sx) ? 2 : 0);
     }
   },
 
   updateoam: (addr: number, val: number) => {
-    addr -=0xFE00;
-    let obj = addr >> 2;
+    let oam_addr = addr - 0xFE00;
+    let obj = oam_addr >> 2;
 
     if (obj < 40) {
-      switch (addr & 3) {
+      switch (oam_addr & 3) {
         case 0:
           gpu.objdata[obj].y = val - 16;
           break;
@@ -301,11 +258,7 @@ export const gpu = {
           gpu.objdata[obj].x = val - 8;
           break;
         case 2:
-          if (gpu.objsize) {
-            gpu.objdata[obj].tile = val & 0xfe;
-          } else {
-            gpu.objdata[obj].tile = val;
-          }
+          gpu.objdata[obj].tile = val;
           break;
         case 3:
           gpu.objdata[obj].palette = (val & 0x10) ? 1 : 0;
@@ -315,16 +268,6 @@ export const gpu = {
           break;
       }
     }
-
-    gpu.objdatasorted = gpu.objdata;
-    gpu.objdatasorted.sort((a, b) => {
-      if (a.x > b.x) {
-        return -1;
-      } if (a.x < b.x) {
-        return 1;
-      }
-      return 0;
-    });
   },
 
   rb: (addr: number): number => {

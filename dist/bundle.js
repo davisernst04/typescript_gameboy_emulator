@@ -66,7 +66,7 @@ var gpu = {
     if (c && c.getContext) {
       gpu.canvas = c.getContext("2d");
       if (!gpu.canvas) {
-        throw new Error("GPU: Canvas context cannot be created");
+        log.out("GPU", "Failed to get 2D context");
       } else {
         if (gpu.canvas.createImageData) {
           gpu.screen = gpu.canvas.createImageData(160, 144);
@@ -80,6 +80,8 @@ var gpu = {
         }
         gpu.canvas.putImageData(gpu.screen, 0, 0);
       }
+    } else {
+      log.out("GPU", 'Canvas element "screen" not found or not supported');
     }
     gpu.curline = 0;
     gpu.curscan = 0;
@@ -95,9 +97,11 @@ var gpu = {
     gpu.winon = 0;
     gpu.objsize = 0;
     gpu.scanrow.fill(0);
+    gpu.objdata = [];
     for (let i = 0; i < 40; i++) {
       gpu.objdata[i] = { "y": -16, "x": -8, "tile": 0, "palette": 0, "yflip": 0, "xflip": 0, "prio": 0, "num": i };
     }
+    gpu.objdatasorted = [];
     gpu.bgtilebase = 0;
     gpu.bgmapbase = 6144;
     gpu.wintilebase = 6144;
@@ -113,7 +117,9 @@ var gpu = {
           gpu.curscan += 640;
           if (gpu.curline === 144) {
             gpu.linemode = 1;
-            gpu.canvas.putImageData(gpu.screen, 0, 0);
+            if (gpu.canvas && gpu.canvas.putImageData) {
+              gpu.canvas.putImageData(gpu.screen, 0, 0);
+            }
             mmu.intf |= 1;
           } else {
             gpu.linemode = 2;
@@ -150,112 +156,62 @@ var gpu = {
               let y = gpu.curline + gpu.yscrl & 7;
               let x = gpu.xscrl & 7;
               let t = gpu.xscrl >> 3 & 31;
-              let w = 160;
-              if (gpu.bgtilebase) {
+              for (let i = 0; i < 160; i++) {
                 let tile = gpu.vram[mapbase + t];
-                if (tile < 128) tile += 256;
+                if (gpu.bgtilebase && tile < 128) tile += 256;
                 let tilerow = gpu.tilemap[tile][y];
-                do {
-                  gpu.scanrow[160 - x] = tilerow[x];
-                  let color = gpu.palette.bg[tilerow[x]];
-                  gpu.screen.data[linebase] = color;
-                  gpu.screen.data[linebase + 1] = color;
-                  gpu.screen.data[linebase + 2] = color;
-                  gpu.screen.data[linebase + 3] = 255;
-                  x++;
-                  if (x === 8) {
-                    x = 0;
-                    t = t + 1 & 31;
-                    tile = gpu.vram[mapbase + t];
-                    if (tile < 128) tile += 256;
-                    tilerow = gpu.tilemap[tile][y];
-                  }
-                  linebase += 4;
-                } while (--w);
-              } else {
-                let tile = gpu.vram[mapbase + t];
-                let tilerow = gpu.tilemap[tile][y];
-                do {
-                  gpu.scanrow[160 - x] = tilerow[x];
-                  let color = gpu.palette.bg[tilerow[x]];
-                  gpu.screen.data[linebase] = color;
-                  gpu.screen.data[linebase + 1] = color;
-                  gpu.screen.data[linebase + 2] = color;
-                  gpu.screen.data[linebase + 3] = 255;
-                  x++;
-                  if (x === 8) {
-                    x = 0;
-                    t = t + 1 & 31;
-                    tile = gpu.vram[mapbase + t];
-                    tilerow = gpu.tilemap[tile][y];
-                  }
-                  linebase += 4;
-                } while (--w);
+                let color_idx = tilerow[x];
+                gpu.scanrow[i] = color_idx;
+                let color = gpu.palette.bg[color_idx];
+                gpu.screen.data[linebase] = color;
+                gpu.screen.data[linebase + 1] = color;
+                gpu.screen.data[linebase + 2] = color;
+                gpu.screen.data[linebase + 3] = 255;
+                linebase += 4;
+                x++;
+                if (x === 8) {
+                  x = 0;
+                  t = t + 1 & 31;
+                }
               }
             }
             if (gpu.objon) {
-              let cnt = 0;
-              if (gpu.objsize) {
-                for (let i = 0; i < 40; i++) {
+              let spritesOnLine = [];
+              for (let i = 0; i < 40; i++) {
+                let obj = gpu.objdata[i];
+                if (obj.y <= gpu.curline && obj.y + 8 > gpu.curline) {
+                  spritesOnLine.push(obj);
+                  if (spritesOnLine.length >= 10) break;
                 }
-              } else {
+              }
+              for (let i = spritesOnLine.length - 1; i >= 0; i--) {
+                let obj = spritesOnLine[i];
                 let tilerow;
-                let obj;
-                let pal;
-                let x;
-                let linebase = gpu.curscan;
-                for (let i = 0; i < 40; i++) {
-                  obj = gpu.objdatasorted[i];
-                  if (obj.y <= gpu.curline && obj.y + 8 > gpu.curline) {
-                    if (obj.yflip) {
-                      tilerow = gpu.tilemap[obj.tile][7 - (gpu.curline - obj.y)];
-                    } else {
-                      tilerow = gpu.tilemap[obj.tile][gpu.curline - obj.y];
-                    }
-                    if (obj.palette) {
-                      pal = gpu.palette.obj1;
-                    } else {
-                      pal = gpu.palette.obj0;
-                    }
-                    linebase = (gpu.curline * 160 + obj.x) * 4;
-                    if (obj.xflip) {
-                      for (x = 0; x < 8; x++) {
-                        if (obj.x + x >= 0 && obj.x + x < 160) {
-                          if (tilerow[7 - x] && (obj.prio === 0 || !gpu.scanrow[x])) {
-                            let color = pal[tilerow[7 - x]];
-                            gpu.screen.data[linebase] = color;
-                            gpu.screen.data[linebase + 1] = color;
-                            gpu.screen.data[linebase + 2] = color;
-                            gpu.screen.data[linebase + 3] = 255;
-                          }
-                        }
-                        linebase += 4;
-                      }
-                    } else {
-                      for (x = 0; x < 8; x++) {
-                        if (obj.x + x >= 0 && obj.x + x < 160) {
-                          if (tilerow[x] && (obj.prio === 0 || !gpu.scanrow[x])) {
-                            let color = pal[tilerow[x]];
-                            gpu.screen.data[linebase] = color;
-                            gpu.screen.data[linebase + 1] = color;
-                            gpu.screen.data[linebase + 2] = color;
-                            gpu.screen.data[linebase + 3] = 255;
-                          }
-                        }
-                        linebase += 4;
-                      }
-                    }
-                    cnt++;
-                    if (cnt > 10) {
-                      break;
+                if (obj.yflip) {
+                  tilerow = gpu.tilemap[obj.tile][7 - (gpu.curline - obj.y)];
+                } else {
+                  tilerow = gpu.tilemap[obj.tile][gpu.curline - obj.y];
+                }
+                let pal = obj.palette ? gpu.palette.obj1 : gpu.palette.obj0;
+                for (let x = 0; x < 8; x++) {
+                  let canvas_x = obj.x + x;
+                  if (canvas_x >= 0 && canvas_x < 160) {
+                    let color_idx = obj.xflip ? tilerow[7 - x] : tilerow[x];
+                    if (color_idx !== 0 && (obj.prio === 0 || gpu.scanrow[canvas_x] === 0)) {
+                      let color = pal[color_idx];
+                      let linebase = (gpu.curline * 160 + canvas_x) * 4;
+                      gpu.screen.data[linebase] = color;
+                      gpu.screen.data[linebase + 1] = color;
+                      gpu.screen.data[linebase + 2] = color;
+                      gpu.screen.data[linebase + 3] = 255;
                     }
                   }
                 }
               }
             }
           }
-          break;
         }
+        break;
     }
   },
   updatetile: (addr, _val) => {
@@ -265,17 +221,16 @@ var gpu = {
     }
     let tile = saddr >> 4 & 511;
     let y = saddr >> 1 & 7;
-    let sx;
     for (let x = 0; x < 8; x++) {
-      sx = 1 << 7 - x;
+      let sx = 1 << 7 - x;
       gpu.tilemap[tile][y][x] = (gpu.vram[saddr] & sx ? 1 : 0) | (gpu.vram[saddr + 1] & sx ? 2 : 0);
     }
   },
   updateoam: (addr, val) => {
-    addr -= 65024;
-    let obj = addr >> 2;
+    let oam_addr = addr - 65024;
+    let obj = oam_addr >> 2;
     if (obj < 40) {
-      switch (addr & 3) {
+      switch (oam_addr & 3) {
         case 0:
           gpu.objdata[obj].y = val - 16;
           break;
@@ -283,11 +238,7 @@ var gpu = {
           gpu.objdata[obj].x = val - 8;
           break;
         case 2:
-          if (gpu.objsize) {
-            gpu.objdata[obj].tile = val & 254;
-          } else {
-            gpu.objdata[obj].tile = val;
-          }
+          gpu.objdata[obj].tile = val;
           break;
         case 3:
           gpu.objdata[obj].palette = val & 16 ? 1 : 0;
@@ -297,16 +248,6 @@ var gpu = {
           break;
       }
     }
-    gpu.objdatasorted = gpu.objdata;
-    gpu.objdatasorted.sort((a, b) => {
-      if (a.x > b.x) {
-        return -1;
-      }
-      if (a.x < b.x) {
-        return 1;
-      }
-      return 0;
-    });
   },
   rb: (addr) => {
     let gaddr = addr - 65344;
@@ -651,7 +592,7 @@ var mmu = {
     19,
     190,
     32,
-    254,
+    251,
     35,
     125,
     254,
@@ -3734,12 +3675,13 @@ var cpu = {
       if (cpu.cbmap[i]) {
         cpu.cbmap[i]();
       } else {
-        alert(i);
+        console.error(`Unknown CB opcode: ${i.toString(16)}`);
+        cpu.stop = 1;
       }
     },
     XX: () => {
       let opc = cpu.reg.pc - 1;
-      alert("Instruction at " + opc.toString(16) + ", ending execution.");
+      console.error("Instruction at " + opc.toString(16) + ", ending execution.");
       cpu.stop = 1;
     }
   },
@@ -4304,12 +4246,27 @@ var emulator = {
       cpu.step();
       frameCycles += cpu.reg.m;
     }
+    if (emulator._frameCount === void 0) emulator._frameCount = 0;
+    emulator._frameCount++;
+    if (emulator._frameCount % 60 === 0) {
+      log.out("EMU", `Frame ${emulator._frameCount} rendered.`);
+    }
     requestAnimationFrame(emulator.loop);
   }
 };
-window.onload = () => {
+var start = () => {
+  log.out("EMU", "Window/DOM loaded, starting emulator...");
   emulator.run();
 };
+if (document.readyState === "complete" || document.readyState === "interactive") {
+  start();
+} else {
+  window.addEventListener("DOMContentLoaded", start);
+}
 export {
-  emulator
+  cpu,
+  emulator,
+  gpu,
+  log,
+  mmu
 };

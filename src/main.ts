@@ -50,11 +50,26 @@ export const emulator = {
       cpu.step();
       frameCycles += cpu.reg.m;
     }
+    
+    // Optional: Log every 60 frames to see if loop is running
+    if ((emulator as any)._frameCount === undefined) (emulator as any)._frameCount = 0;
+    (emulator as any)._frameCount++;
+    if ((emulator as any)._frameCount % 60 === 0) {
+      log.out('EMU', `Frame ${(emulator as any)._frameCount} rendered.`);
+    }
+
     requestAnimationFrame(emulator.loop);
   }
 };
 
-// Start the emulator when the window loads
-window.onload = () => {
+// Start the emulator
+const start = () => {
+  log.out('EMU', 'Window/DOM loaded, starting emulator...');
   emulator.run();
 };
+
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  start();
+} else {
+  window.addEventListener('DOMContentLoaded', start);
+}

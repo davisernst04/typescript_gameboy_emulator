@@ -3349,13 +3349,14 @@ export const cpu = {
       if (cpu.cbmap[i]) {
         cpu.cbmap[i]();
       } else {
-        alert(i)
+        console.error(`Unknown CB opcode: ${i.toString(16)}`);
+        cpu.stop = 1;
       }
     },
 
     XX: () => {
       let opc = cpu.reg.pc - 1;
-      alert("Instruction at " + opc.toString(16) + ", ending execution.");
+      console.error("Instruction at " + opc.toString(16) + ", ending execution.");
       cpu.stop = 1;
     },
   },
