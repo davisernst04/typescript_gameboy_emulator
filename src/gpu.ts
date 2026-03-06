@@ -2,21 +2,21 @@ import { log } from "./log";
 import { cpu } from "./cpu";
 import { mmu } from "./mmu";
 export const gpu = {
-  vram: [] as number[],
-  oam: [] as number[],
-  reg: [] as number[],
+  vram: new Uint8Array(8192),
+  oam: new Uint8Array(160),
+  reg: new Uint8Array(64),
   tilemap: [] as number[][][],
   objdata: [] as any[],
   objdatasorted: [] as any[],
   canvas: {} as CanvasRenderingContext2D,
   screen: {} as ImageData,
   palette: {
-    bg: [] as number[],
-    obj0: [] as number[],
-    obj1: [] as number[]
+    bg: new Uint8Array(4),
+    obj0: new Uint8Array(4),
+    obj1: new Uint8Array(4)
   },
 
-  scanrow: [] as number[],
+  scanrow: new Uint8Array(160),
 
   curline: 0,
   curscan: 0,
@@ -39,30 +39,23 @@ export const gpu = {
   wintilebase: 0x1800,
 
   reset: () => {
-    let i;
-    let j;
-    let k;
-    for (i = 0; i < 8192; i++) {
-      gpu.vram[i] = 0;
-    }
+    gpu.vram.fill(0);
+    gpu.oam.fill(0);
+    gpu.reg.fill(0);
 
-    for (i = 0; i < 160; i++) {
-      gpu.oam[i] = 0;
-    }
-
-    for (i = 0; i < 4; i++) {
+    for (let i = 0; i < 4; i++) {
       gpu.palette.bg[i] = 255;
       gpu.palette.obj0[i] = 255;
       gpu.palette.obj1[i] = 255;
     }
 
-    for (i = 0; i < 512; i++) {
+    for (let i = 0; i < 512; i++) {
       gpu.tilemap[i] = [];
 
-      for (j = 0; j < 8; j++) {
+      for (let j = 0; j < 8; j++) {
         gpu.tilemap[i][j] = [];
 
-        for (k = 0; k < 8; k++) {
+        for (let k = 0; k < 8; k++) {
           gpu.tilemap[i][j][k] = 0;
         }
       }
@@ -82,7 +75,7 @@ export const gpu = {
         } else if(gpu.canvas.getImageData) {
           gpu.screen = gpu.canvas.getImageData(0, 0, 160, 144);
         } else {
-          gpu.screen = { width: 160, height: 144, data: new Array(160 * 144 * 4)} as unknown as ImageData;
+          gpu.screen = { width: 160, height: 144, data: new Uint8ClampedArray(160 * 144 * 4)} as unknown as ImageData;
       }
 
       for (let i = 0; i < gpu.screen.data.length; i++) {
@@ -106,11 +99,9 @@ export const gpu = {
     gpu.winon = 0;
     gpu.objsize = 0;
 
-    for (i = 0; i < 160; i++) {
-      gpu.scanrow[i] = 0;
-    }
+    gpu.scanrow.fill(0);
 
-    for (i = 0; i < 40; i++) {
+    for (let i = 0; i < 40; i++) {
       gpu.objdata[i] = {'y': -16, 'x': -8, 'tile': 0, 'palette': 0, 'yflip': 0, 'xflip': 0, 'prio': 0, 'num': i};
     }
 
@@ -124,24 +115,23 @@ export const gpu = {
   checkline: () => {
     gpu.modeclocks += cpu.reg.m;
     switch (gpu.linemode) {
-      case 0:
-        
+      case 0: // H-Blank
         if (gpu.modeclocks >= 51) {
-          if (20 <= gpu.curline) {
+          gpu.modeclocks = 0;
+          gpu.curline++;
+          gpu.curscan += 640;
+          if (gpu.curline === 144) {
             gpu.linemode = 1;
             gpu.canvas.putImageData(gpu.screen, 0, 0);
             mmu.intf |= 1;
           } else {
             gpu.linemode = 2;
           }
-          gpu.curline++;
-          gpu.curscan += 640;
-          gpu.modeclocks = 0;
         }
         break;
-      case 1:
+      case 1: // V-Blank
         if (gpu.modeclocks >= 114) {
-          gpu.modeclocks= 0;
+          gpu.modeclocks = 0;
           gpu.curline++;
           if (gpu.curline > 153) {
             gpu.curline = 0;
@@ -177,7 +167,11 @@ export const gpu = {
                 let tilerow = gpu.tilemap[tile][y];
                 do {
                   gpu.scanrow[160 - x] = tilerow[x];
-                  gpu.screen.data[linebase + 3] = gpu.palette.bg[tilerow[x]];
+                  let color = gpu.palette.bg[tilerow[x]];
+                  gpu.screen.data[linebase] = color;
+                  gpu.screen.data[linebase + 1] = color;
+                  gpu.screen.data[linebase + 2] = color;
+                  gpu.screen.data[linebase + 3] = 255;
                   x++;
                   if (x === 8) {
                     x = 0;
@@ -193,7 +187,11 @@ export const gpu = {
                 let tilerow = gpu.tilemap[tile][y];
                 do {
                   gpu.scanrow[160 - x] = tilerow[x];
-                  gpu.screen.data[linebase + 3] = gpu.palette.bg[tilerow[x]];
+                  let color = gpu.palette.bg[tilerow[x]];
+                  gpu.screen.data[linebase] = color;
+                  gpu.screen.data[linebase + 1] = color;
+                  gpu.screen.data[linebase + 2] = color;
+                  gpu.screen.data[linebase + 3] = 255;
                   x++;
                   if (x === 8) {
                     x = 0;
@@ -237,7 +235,11 @@ export const gpu = {
                     for (x = 0; x < 8; x++) {
                       if (obj.x + x >= 0 && obj.x + x < 160) {
                         if (tilerow[7 - x] && (obj.prio === 0 || !gpu.scanrow[x])) {
-                          gpu.screen.data[linebase + 3] = pal[tilerow[7 - x]];
+                          let color = pal[tilerow[7 - x]];
+                          gpu.screen.data[linebase] = color;
+                          gpu.screen.data[linebase + 1] = color;
+                          gpu.screen.data[linebase + 2] = color;
+                          gpu.screen.data[linebase + 3] = 255;
                         }
                       }
                       linebase += 4;
@@ -246,7 +248,11 @@ export const gpu = {
                     for (x = 0; x < 8; x++) {
                       if (obj.x + x >= 0 && obj.x + x < 160) {
                         if (tilerow[x] && (obj.prio === 0 || !gpu.scanrow[x])) {
-                          gpu.screen.data[linebase + 3] = pal[tilerow[x]];
+                          let color = pal[tilerow[x]];
+                          gpu.screen.data[linebase] = color;
+                          gpu.screen.data[linebase + 1] = color;
+                          gpu.screen.data[linebase + 2] = color;
+                          gpu.screen.data[linebase + 3] = 255;
                         }
                       }
                       linebase += 4;
@@ -324,7 +330,7 @@ export const gpu = {
   rb: (addr: number): number => {
     let gaddr = addr - 0xff40;
 
-    switch (addr) {
+    switch (gaddr) {
       case 0:
         return (gpu.lcdon ? 0x80 : 0) | 
                ((gpu.bgtilebase == 0x0000) ? 0x10 : 0) | 
@@ -351,7 +357,7 @@ export const gpu = {
     let gaddr = addr - 0xff40;
     gpu.reg[gaddr] = val;
 
-    switch (addr) {
+    switch (gaddr) {
       case 0:
         gpu.lcdon = (val & 0x80) ? 1 : 0;
         gpu.bgtilebase = (val & 0x10) ? 0x0000 : 0x0800;

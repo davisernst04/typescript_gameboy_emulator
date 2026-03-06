@@ -1,10 +1,7 @@
-import { cpu } from "./cpu";
 import { gpu } from "./gpu";
-/**
- *
- */
+
 export const mmu = {
-  bios: [
+  bios: new Uint8Array([
     0x31, 0xfe, 0xff, 0xaf, 0x21, 0xff, 0x9f, 0x32, 0xcb, 0x7c, 0x20, 0xfb,
     0x21, 0x26, 0xff, 0x0e, 0x11, 0x3e, 0x80, 0x32, 0xe2, 0x0c, 0x3e, 0xf3,
     0xe2, 0x32, 0x3e, 0x77, 0x77, 0x3e, 0xfc, 0xe0, 0x47, 0x11, 0x04, 0x01,
@@ -27,12 +24,12 @@ export const mmu = {
     0xa8, 0x00, 0x1a, 0x13, 0xbe, 0x20, 0xfe, 0x23, 0x7d, 0xfe, 0x34, 0x20,
     0xf5, 0x06, 0x19, 0x78, 0x86, 0x23, 0x05, 0x20, 0xfb, 0x86, 0x20, 0xfe,
     0x3e, 0x01, 0xe0, 0x50,
-  ],
+  ]),
 
-  rom: "",
-  eram: [] as number[],
-  wram: [] as number[],
-  zram: [] as number[],
+  rom: new Uint8Array(0),
+  eram: new Uint8Array(8192),
+  wram: new Uint8Array(8192),
+  zram: new Uint8Array(128),
 
   inbios: 1,
 
@@ -40,67 +37,72 @@ export const mmu = {
   intf: 0,
 
   reset: () => {
-    for (let i = 0; i < 8192; i++) {
-      mmu.wram[i] = 0;
-      mmu.eram[i] = 0;
-    }
-
-    for (let i = 0; i < 127; i++) {
-      mmu.zram[i] = 0;
-    }
-
+    mmu.eram.fill(0);
+    mmu.wram.fill(0);
+    mmu.zram.fill(0);
     mmu.inbios = 1;
     mmu.inte = 0;
     mmu.intf = 0;
   },
 
-  load: async (rom: string): Promise<void> => {
-    mmu.rom = rom;
+  load: async (rom: Uint8Array | string): Promise<void> => {
+    if (typeof rom === 'string') {
+      const bytes = new Uint8Array(rom.length);
+      for (let i = 0; i < rom.length; i++) bytes[i] = rom.charCodeAt(i);
+      mmu.rom = bytes;
+    } else {
+      mmu.rom = rom as any;
+    }
   },
 
   rb: (addr: number): number => {
-    let segment = addr & 0xf000;
+    switch (addr & 0xf000) {
+      // BIOS / ROM0
+      case 0x0000:
+        if (mmu.inbios && addr < 0x0100) return mmu.bios[addr];
+        return mmu.rom[addr] || 0;
+      case 0x1000:
+      case 0x2000:
+      case 0x3000:
+        return mmu.rom[addr] || 0;
 
-    if (segment === 0x0000) {
-      if (mmu.inbios) {
-        if (addr < 0x0100) {
-          return mmu.bios[addr];
-        } else if (cpu.reg.pc === 0x0100) {
-          mmu.inbios = 0;
-        }
-      }
-      return mmu.rom.charCodeAt(addr);
-    } else if (segment === 0x1000 || segment === 0x2000 || segment === 0x3000) {
-      return mmu.rom.charCodeAt(addr);
-    } else if (
-      segment === 0x4000 ||
-      segment === 0x5000 ||
-      segment === 0x6000 ||
-      segment === 0x7000
-    ) {
-      return mmu.rom.charCodeAt(addr);
-    } else if (segment === 0x8000 || segment === 0x9000) {
-      return gpu.vram[addr & 0x1fff];
-    } else if (segment === 0xa000 || segment === 0xb000) {
-      return mmu.eram[addr & 0x1fff];
-    } else if (segment === 0xc000 || segment === 0xd000 || segment === 0xe000) {
-      return mmu.wram[addr & 0x1fff];
-    } else if (segment === 0xf000) {
-      segment = addr & 0x0f00;
+      // ROM1
+      case 0x4000:
+      case 0x5000:
+      case 0x6000:
+      case 0x7000:
+        return mmu.rom[addr] || 0;
 
-      if (segment <= 0xd00) {
+      // VRAM
+      case 0x8000:
+      case 0x9000:
+        return gpu.vram[addr & 0x1fff];
+
+      // ERAM
+      case 0xa000:
+      case 0xb000:
+        return mmu.eram[addr & 0x1fff];
+
+      // WRAM
+      case 0xc000:
+      case 0xd000:
         return mmu.wram[addr & 0x1fff];
-      } else if (segment === 0xe00) {
-        return (addr & 0xef) < 0xa0 ? gpu.oam[addr & 0xff] : 0;
-      } else if (segment === 0xf00) {
-        if (addr >= 0xff80 && addr <= 0xfffe) {
+      case 0xe000: // Echo RAM
+        return mmu.wram[addr & 0x1fff];
+
+      // F000 range
+      case 0xf000:
+        if (addr >= 0xfe00 && addr <= 0xfe9f) {
+          return gpu.oam[addr & 0xff];
+        } else if (addr >= 0xff00 && addr <= 0xff7f) {
+          if (addr >= 0xff40 && addr <= 0xff4f) return gpu.rb(addr);
+          if (addr === 0xff0f) return mmu.intf;
+          return 0xff; // TODO: implement other I/O
+        } else if (addr >= 0xff80 && addr <= 0xfffe) {
           return mmu.zram[addr & 0x7f];
         } else if (addr === 0xffff) {
           return mmu.inte;
-        } else if (addr === 0xff0f) {
-          return mmu.intf;
         }
-      }
     }
     return 0xff;
   },
@@ -110,31 +112,44 @@ export const mmu = {
   },
 
   wb: (addr: number, val: number): number => {
-    let segment = addr & 0xf000;
+    switch (addr & 0xf000) {
+      // VRAM
+      case 0x8000:
+      case 0x9000:
+        gpu.vram[addr & 0x1fff] = val;
+        gpu.updatetile(addr, val);
+        break;
 
-    if (segment === 0x8000 || segment === 0x9000) {
-      gpu.vram[addr & 0x1fff] = val;
-      gpu.updatetile(addr, val);
-    } else if (segment === 0xa000 || segment === 0xb000) {
-      mmu.eram[addr & 0x1fff] = val;
-    } else if (segment === 0xc000 || segment === 0xd000 || segment === 0xe000) {
-      mmu.wram[addr & 0x1fff] = val;
-    } else if (segment === 0xf000) {
-      segment = addr & 0x0f00;
+      // ERAM
+      case 0xa000:
+      case 0xb000:
+        mmu.eram[addr & 0x1fff] = val;
+        break;
 
-      if (segment <= 0xd00) {
+      // WRAM
+      case 0xc000:
+      case 0xd000:
         mmu.wram[addr & 0x1fff] = val;
-      } else if (segment === 0xe00) {
-        if ((addr & 0xef) < 0xa0) gpu.oam[addr & 0xff] = val;
-      } else if (segment === 0xf00) {
-        if (addr >= 0xff80 && addr <= 0xfffe) {
+        break;
+      case 0xe000: // Echo RAM
+        mmu.wram[addr & 0x1fff] = val;
+        break;
+
+      // F000 range
+      case 0xf000:
+        if (addr >= 0xfe00 && addr <= 0xfe9f) {
+          gpu.oam[addr & 0xff] = val;
+          gpu.updateoam(addr, val);
+        } else if (addr >= 0xff00 && addr <= 0xff7f) {
+          if (addr >= 0xff40 && addr <= 0xff4f) gpu.wb(addr, val);
+          else if (addr === 0xff0f) mmu.intf = val;
+          else if (addr === 0xff50 && val === 1) mmu.inbios = 0;
+        } else if (addr >= 0xff80 && addr <= 0xfffe) {
           mmu.zram[addr & 0x7f] = val;
         } else if (addr === 0xffff) {
           mmu.inte = val;
-        } else if (addr === 0xff0f) {
-          mmu.intf = val;
         }
-      }
+        break;
     }
     return val;
   },

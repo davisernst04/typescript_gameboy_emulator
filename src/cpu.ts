@@ -1,4 +1,5 @@
 import { mmu } from "./mmu";
+import { gpu } from "./gpu";
 
 /**
  * CPU object.
@@ -31,7 +32,6 @@ export const cpu = {
   reset: () => {
     cpu.reg.a = 0;
     cpu.reg.b = 0;
-
     cpu.reg.c = 0;
     cpu.reg.d = 0;
     cpu.reg.e = 0;
@@ -42,44 +42,36 @@ export const cpu = {
     cpu.reg.pc = 0;
     cpu.reg.m = 0;
     cpu.reg.t = 0;
+    cpu.reg.ime = 1;
+
+    cpu.halt = 0;
+    cpu.stop = 0;
+
+    cpu.clock.m = 0;
+    cpu.clock.t = 0;
   },
 
-  addEToA: () => {
-    cpu.reg.a += cpu.reg.e;
-    cpu.reg.f = 0;
-    if (!(cpu.reg.a & 255)) {
-      cpu.reg.f |= 0x80;
-    }
-    if (cpu.reg.a > 255) {
-      cpu.reg.f |= 0x10;
+  step: () => {
+    if (cpu.stop) return;
+
+    if (cpu.halt) {
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
+    } else {
+      let opcode = mmu.rb(cpu.reg.pc);
+      cpu.reg.pc = (cpu.reg.pc + 1) & 0xffff;
+      if (cpu.map[opcode]) {
+        cpu.map[opcode]();
+      } else {
+        cpu.ops.XX();
+      }
     }
 
-    cpu.reg.a &= 255;
-    cpu.reg.m = 1;
-    cpu.reg.t = 4;
+    cpu.clock.m += cpu.reg.m;
+    cpu.clock.t += cpu.reg.t;
+
+    gpu.checkline();
   },
-
-  compareBToA: () => {
-    let i = cpu.reg.a;
-    i -= cpu.reg.b;
-    cpu.reg.f |= 0x40;
-
-    if (!(i & 255)) {
-      cpu.reg.f |= 0x80;
-    }
-
-    if (i < 0) {
-      cpu.reg.f |= 0x10;
-    }
-
-    cpu.reg.m = 1;
-    cpu.reg.t = 4;
-  },
-
-  pushBC: () => {
-    cpu.reg.sp--;
-  },
-
 
   ops: {
     // Load opcode
