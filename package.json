@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "vite",
-    "build": "tsc && vite build && npm run bundle",
+    "build": "tsc && npm run bundle && vite build",
     "bundle": "esbuild src/main.ts --bundle --outfile=dist/bundle.js --platform=browser --format=esm"
   },
   "repository": {

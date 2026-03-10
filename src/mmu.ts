@@ -1,7 +1,12 @@
 import { gpu } from "./gpu";
+import { IMBC, MBC0 } from "./mbc";
 
-export const mmu = {
-  bios: new Uint8Array([
+/**
+ * Memory Management Unit (MMU) for the Game Boy.
+ * Handles memory mapping and access to different hardware components.
+ */
+export class MMU {
+  private bios = new Uint8Array([
     0x31, 0xfe, 0xff, 0xaf, 0x21, 0xff, 0x9f, 0x32, 0xcb, 0x7c, 0x20, 0xfb,
     0x21, 0x26, 0xff, 0x0e, 0x11, 0x3e, 0x80, 0x32, 0xe2, 0x0c, 0x3e, 0xf3,
     0xe2, 0x32, 0x3e, 0x77, 0x77, 0x3e, 0xfc, 0xe0, 0x47, 0x11, 0x04, 0x01,
@@ -24,139 +29,212 @@ export const mmu = {
     0xa8, 0x00, 0x1a, 0x13, 0xbe, 0x20, 0xfb, 0x23, 0x7d, 0xfe, 0x34, 0x20,
     0xf5, 0x06, 0x19, 0x78, 0x86, 0x23, 0x05, 0x20, 0xfb, 0x86, 0x20, 0xfe,
     0x3e, 0x01, 0xe0, 0x50,
-  ]),
+  ]);
 
-  rom: new Uint8Array(0),
-  eram: new Uint8Array(8192),
-  wram: new Uint8Array(8192),
-  zram: new Uint8Array(128),
+  public mbc: IMBC = new MBC0(new Uint8Array(0));
+  public wram = new Uint8Array(8192);
+  public zram = new Uint8Array(128);
 
-  inbios: 1,
+  public inbios = 1;
+  public inte = 0;
+  public intf = 0;
 
-  inte: 0,
-  intf: 0,
+  constructor() {
+    this.reset();
+  }
 
-  reset: () => {
-    mmu.eram.fill(0);
-    mmu.wram.fill(0);
-    mmu.zram.fill(0);
-    mmu.inbios = 1;
-    mmu.inte = 0;
-    mmu.intf = 0;
-  },
+  /**
+   * Resets the memory to its initial state.
+   */
+  reset() {
+    this.wram.fill(0);
+    this.zram.fill(0);
+    this.inbios = 1;
+    this.inte = 0;
+    this.intf = 0;
+  }
 
-  load: async (rom: Uint8Array | string): Promise<void> => {
-    if (typeof rom === 'string') {
-      const bytes = new Uint8Array(rom.length);
-      for (let i = 0; i < rom.length; i++) bytes[i] = rom.charCodeAt(i);
-      mmu.rom = bytes;
-    } else {
-      mmu.rom = rom as any;
-    }
-  },
+  /**
+   * Sets the Memory Banking Controller (MBC).
+   * @param mbc - The MBC to use.
+   */
+  setMBC(mbc: IMBC) {
+    this.mbc = mbc;
+  }
 
-  rb: (addr: number): number => {
+  /**
+   * Reads a byte from the given address.
+   * @param addr - The memory address to read from.
+   * @returns The byte at the given address.
+   */
+  rb(addr: number): number {
     switch (addr & 0xf000) {
-      // BIOS / ROM0
+      // 0x0000 - 0x3FFF: ROM Bank 0 (BIOS if inbios and addr < 0x100)
       case 0x0000:
-        if (mmu.inbios && addr < 0x0100) return mmu.bios[addr];
-        return mmu.rom[addr] || 0;
+        if (this.inbios && addr < 0x0100) return this.bios[addr];
+        return this.mbc.readByte(addr);
       case 0x1000:
       case 0x2000:
       case 0x3000:
-        return mmu.rom[addr] || 0;
+        return this.mbc.readByte(addr);
 
-      // ROM1
+      // 0x4000 - 0x7FFF: ROM Bank 01-NN
       case 0x4000:
       case 0x5000:
       case 0x6000:
       case 0x7000:
-        return mmu.rom[addr] || 0;
+        return this.mbc.readByte(addr);
 
-      // VRAM
+      // 0x8000 - 0x9FFF: VRAM
       case 0x8000:
       case 0x9000:
         return gpu.vram[addr & 0x1fff];
 
-      // ERAM
+      // 0xA000 - 0xBFFF: External RAM (ERAM)
       case 0xa000:
       case 0xb000:
-        return mmu.eram[addr & 0x1fff];
+        return this.mbc.readByte(addr);
 
-      // WRAM
+      // 0xC000 - 0xDFFF: Work RAM (WRAM)
       case 0xc000:
       case 0xd000:
-        return mmu.wram[addr & 0x1fff];
-      case 0xe000: // Echo RAM
-        return mmu.wram[addr & 0x1fff];
+        return this.wram[addr & 0x1fff];
 
-      // F000 range
+      // 0xE000 - 0xFDFF: Echo RAM (Mirror of WRAM 0xC000-0xDDFF)
+      case 0xe000:
+        return this.wram[addr & 0x1fff];
+
+      // 0xF000 range: OAM, I/O, HRAM, IE
       case 0xf000:
         if (addr >= 0xfe00 && addr <= 0xfe9f) {
+          // OAM (Object Attribute Memory)
           return gpu.oam[addr & 0xff];
+        } else if (addr >= 0xfea0 && addr <= 0xfeff) {
+          // Prohibited area
+          return 0xff;
         } else if (addr >= 0xff00 && addr <= 0xff7f) {
+          // I/O Registers
           if (addr >= 0xff40 && addr <= 0xff4f) return gpu.rb(addr);
-          if (addr === 0xff0f) return mmu.intf;
+          if (addr === 0xff0f) return this.intf;
           return 0xff; // TODO: implement other I/O
         } else if (addr >= 0xff80 && addr <= 0xfffe) {
-          return mmu.zram[addr & 0x7f];
+          // HRAM (High RAM / Zero Page RAM)
+          return this.zram[addr & 0x7f];
         } else if (addr === 0xffff) {
-          return mmu.inte;
+          // IE (Interrupt Enable Register)
+          return this.inte;
+        } else if (addr >= 0xe000 && addr <= 0xfdff) {
+            // Mirror of WRAM (continuation of Echo RAM)
+            return this.wram[addr & 0x1fff];
         }
     }
     return 0xff;
-  },
+  }
 
-  rw: (addr: number): number => {
-    return mmu.rb(addr) | (mmu.rb(addr + 1) << 8);
-  },
+  /**
+   * Reads a word from the given address.
+   * @param addr - The memory address to read from.
+   * @returns The word at the given address.
+   */
+  rw(addr: number): number {
+    return this.rb(addr) | (this.rb(addr + 1) << 8);
+  }
 
-  wb: (addr: number, val: number): number => {
+  /**
+   * Writes a byte to the given address.
+   * @param addr - The memory address to write to.
+   * @param val - The byte value to write.
+   * @returns The written value.
+   */
+  wb(addr: number, val: number): number {
     switch (addr & 0xf000) {
-      // VRAM
+      // 0x0000 - 0x7FFF: ROM area (MBC registers)
+      case 0x0000:
+      case 0x1000:
+      case 0x2000:
+      case 0x3000:
+      case 0x4000:
+      case 0x5000:
+      case 0x6000:
+      case 0x7000:
+        this.mbc.writeByte(addr, val);
+        break;
+
+      // 0x8000 - 0x9FFF: VRAM
       case 0x8000:
       case 0x9000:
         gpu.vram[addr & 0x1fff] = val;
         gpu.updatetile(addr, val);
         break;
 
-      // ERAM
+      // 0xA000 - 0xBFFF: External RAM (ERAM)
       case 0xa000:
       case 0xb000:
-        mmu.eram[addr & 0x1fff] = val;
+        this.mbc.writeByte(addr, val);
         break;
 
-      // WRAM
+      // 0xC000 - 0xDFFF: Work RAM (WRAM)
       case 0xc000:
       case 0xd000:
-        mmu.wram[addr & 0x1fff] = val;
-        break;
-      case 0xe000: // Echo RAM
-        mmu.wram[addr & 0x1fff] = val;
+        this.wram[addr & 0x1fff] = val;
         break;
 
-      // F000 range
+      // 0xE000 - 0xFDFF: Echo RAM (Mirror of WRAM 0xC000-0xDDFF)
+      case 0xe000:
+        this.wram[addr & 0x1fff] = val;
+        break;
+
+      // 0xF000 range: OAM, I/O, HRAM, IE
       case 0xf000:
         if (addr >= 0xfe00 && addr <= 0xfe9f) {
+          // OAM (Object Attribute Memory)
           gpu.oam[addr & 0xff] = val;
           gpu.updateoam(addr, val);
+        } else if (addr >= 0xfea0 && addr <= 0xfeff) {
+          // Prohibited area - do nothing
+          break;
         } else if (addr >= 0xff00 && addr <= 0xff7f) {
-          if (addr >= 0xff40 && addr <= 0xff4f) gpu.wb(addr, val);
-          else if (addr === 0xff0f) mmu.intf = val;
-          else if (addr === 0xff50 && val === 1) mmu.inbios = 0;
+          // I/O Registers
+          if (addr === 0xff46) {
+            // DMA Transfer
+            for (let i = 0; i < 160; i++) {
+              const v = this.rb((val << 8) + i);
+              gpu.oam[i] = v;
+              gpu.updateoam(0xfe00 + i, v);
+            }
+          } else if (addr >= 0xff40 && addr <= 0xff4f) {
+            gpu.wb(addr, val);
+          } else if (addr === 0xff0f) {
+            this.intf = val;
+          } else if (addr === 0xff50 && val === 1) {
+            this.inbios = 0;
+          }
         } else if (addr >= 0xff80 && addr <= 0xfffe) {
-          mmu.zram[addr & 0x7f] = val;
+          // HRAM (High RAM / Zero Page RAM)
+          this.zram[addr & 0x7f] = val;
         } else if (addr === 0xffff) {
-          mmu.inte = val;
+          // IE (Interrupt Enable Register)
+          this.inte = val;
+        } else if (addr >= 0xe000 && addr <= 0xfdff) {
+            // Mirror of WRAM (continuation of Echo RAM)
+            this.wram[addr & 0x1fff] = val;
         }
         break;
     }
     return val;
-  },
+  }
 
-  ww: (addr: number, val: number): number => {
-    mmu.wb(addr, val & 0xff);
-    mmu.wb(addr + 1, (val >> 8) & 0xff);
+  /**
+   * Writes a word to the given address.
+   * @param addr - The memory address to write to.
+   * @param val - The word value to write.
+   * @returns The written value.
+   */
+  ww(addr: number, val: number): number {
+    this.wb(addr, val & 0xff);
+    this.wb(addr + 1, (val >> 8) & 0xff);
     return val;
-  },
-};
+  }
+}
+
+export const mmu = new MMU();

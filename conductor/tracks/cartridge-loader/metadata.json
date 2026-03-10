@@ -1,0 +1,5 @@
+{
+  "name": "Cartridge Loader",
+  "description": "Implementing ROM loading, parsing Game Boy header information, and managing cartridge-related metadata.",
+  "status": "in progress"
+}

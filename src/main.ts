@@ -2,6 +2,7 @@ import { cpu } from './cpu';
 import { gpu } from './gpu';
 import { mmu } from './mmu';
 import { log } from './log';
+import { loadRom, ICartridge } from './cartridge';
 
 export { cpu, gpu, mmu, log };
 
@@ -14,15 +15,12 @@ export const emulator = {
     log.out('EMU', 'Emulator initialized.');
   },
 
-  loadRom: async (url: string) => {
+  loadRom: async (source: string | Uint8Array) => {
     try {
-      log.out('EMU', `Fetching ROM from ${url}...`);
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`Failed to fetch ROM: ${response.statusText}`);
-      const buffer = await response.arrayBuffer();
-      const romData = new Uint8Array(buffer);
-      await mmu.load(romData);
-      log.out('EMU', `ROM loaded: ${romData.length} bytes.`);
+      log.out('EMU', `Loading ROM from ${typeof source === 'string' ? source : 'Uint8Array'}...`);
+      const cartridge: ICartridge = await loadRom(source);
+      mmu.setMBC(cartridge.mbc);
+      log.out('EMU', `ROM loaded: ${cartridge.rom.length} bytes.`);
       return true;
     } catch (error) {
       log.out('EMU', `Error loading ROM: ${error}`);

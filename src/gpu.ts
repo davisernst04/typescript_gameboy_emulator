@@ -320,13 +320,7 @@ export const gpu = {
         break;
 
       case 6:
-        let v;
-
-        for (let i = 0; i < 160; i++) {
-          v = mmu.rb((val << 8) + i);
-          gpu.oam[i] = v;
-          gpu.updateoam(0xfe00 + i, v);
-        }
+        // DMA transfer handled in mmu.ts
         break;
 
       case 7:
