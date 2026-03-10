@@ -87,6 +87,7 @@ export const cpu = {
     cpu.clock.m += cpu.reg.m;
     cpu.clock.t += cpu.reg.t;
 
+    mmu.updateTimer(cpu.reg.m);
     gpu.checkline();
   },
 
@@ -698,14 +699,13 @@ export const cpu = {
     // Misc
     DAA: () => {
       let a = cpu.reg.a;
-      if (!(cpu.reg.f & cpu.FLAGS.N)) {
-        if ((cpu.reg.f & cpu.FLAGS.H) || (a & 0x0F) > 9) a += 0x06;
-        if ((cpu.reg.f & cpu.FLAGS.C) || a > 0x9F) { a += 0x60; cpu.reg.f |= cpu.FLAGS.C; }
-      } else {
-        if (cpu.reg.f & cpu.FLAGS.H) a = (a - 6) & 0xFF;
-        if (cpu.reg.f & cpu.FLAGS.C) a = (a - 0x60) & 0xFF;
+      let d = 0;
+      if ((cpu.reg.f & cpu.FLAGS.H) || (!(cpu.reg.f & cpu.FLAGS.N) && (a & 0x0F) > 9)) d |= 0x06;
+      if ((cpu.reg.f & cpu.FLAGS.C) || (!(cpu.reg.f & cpu.FLAGS.N) && a > 0x99)) {
+        d |= 0x60;
+        cpu.reg.f |= cpu.FLAGS.C;
       }
-      cpu.reg.a = a & 0xFF;
+      cpu.reg.a = ((cpu.reg.f & cpu.FLAGS.N) ? (a - d) : (a + d)) & 0xFF;
       cpu.reg.f &= ~(cpu.FLAGS.Z | cpu.FLAGS.H);
       if (!cpu.reg.a) cpu.reg.f |= cpu.FLAGS.Z;
       cpu.reg.m = 1; cpu.reg.t = 4;

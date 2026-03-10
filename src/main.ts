@@ -3,8 +3,9 @@ import { gpu } from './gpu';
 import { mmu } from './mmu';
 import { log } from './log';
 import { loadRom, ICartridge } from './cartridge';
+import { joypad } from './joypad';
 
-export { cpu, gpu, mmu, log };
+export { cpu, gpu, mmu, log, joypad };
 
 export const emulator = {
   init: () => {
@@ -12,6 +13,7 @@ export const emulator = {
     mmu.reset();
     cpu.reset();
     gpu.reset();
+    joypad.reset();
     log.out('EMU', 'Emulator initialized.');
   },
 
@@ -63,6 +65,14 @@ export const emulator = {
 // Start the emulator
 const start = () => {
   log.out('EMU', 'Window/DOM loaded, starting emulator...');
+  
+  window.addEventListener('keydown', (e) => {
+    joypad.keyDown(e.code);
+  });
+  window.addEventListener('keyup', (e) => {
+    joypad.keyUp(e.code);
+  });
+
   emulator.run();
 };
 

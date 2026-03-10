@@ -1,5 +1,6 @@
 import { gpu } from "./gpu";
 import { IMBC, MBC0 } from "./mbc";
+import { joypad } from "./joypad";
 
 /**
  * Memory Management Unit (MMU) for the Game Boy.
@@ -39,6 +40,15 @@ export class MMU {
   public inte = 0;
   public intf = 0;
 
+  // Timer registers
+  public div = 0;
+  public tima = 0;
+  public tma = 0;
+  public tac = 0;
+  public div_cnt = 0;
+  public tima_cnt = 0;
+  public joypad = 0xCF; // Initial state
+
   constructor() {
     this.reset();
   }
@@ -52,6 +62,12 @@ export class MMU {
     this.inbios = 1;
     this.inte = 0;
     this.intf = 0;
+    this.div = 0;
+    this.tima = 0;
+    this.tma = 0;
+    this.tac = 0;
+    this.div_cnt = 0;
+    this.tima_cnt = 0;
   }
 
   /**
@@ -116,6 +132,11 @@ export class MMU {
           // I/O Registers
           if (addr >= 0xff40 && addr <= 0xff4f) return gpu.rb(addr);
           if (addr === 0xff0f) return this.intf;
+          if (addr === 0xff00) return joypad.rb(this.joypad);
+          if (addr === 0xff04) return this.div;
+          if (addr === 0xff05) return this.tima;
+          if (addr === 0xff06) return this.tma;
+          if (addr === 0xff07) return this.tac;
           return 0xff; // TODO: implement other I/O
         } else if (addr >= 0xff80 && addr <= 0xfffe) {
           // HRAM (High RAM / Zero Page RAM)
@@ -202,6 +223,18 @@ export class MMU {
               gpu.oam[i] = v;
               gpu.updateoam(0xfe00 + i, v);
             }
+          } else if (addr === 0xff00) {
+            // Only bits 4 and 5 are writable
+            this.joypad = (this.joypad & 0xCF) | (val & 0x30);
+          } else if (addr === 0xff04) {
+            this.div = 0;
+            this.div_cnt = 0;
+          } else if (addr === 0xff05) {
+            this.tima = val;
+          } else if (addr === 0xff06) {
+            this.tma = val;
+          } else if (addr === 0xff07) {
+            this.tac = val & 7;
           } else if (addr >= 0xff40 && addr <= 0xff4f) {
             gpu.wb(addr, val);
           } else if (addr === 0xff0f) {
@@ -222,6 +255,41 @@ export class MMU {
         break;
     }
     return val;
+  }
+
+  /**
+   * Updates the Game Boy timers.
+   * @param m - Number of m-cycles that passed.
+   */
+  updateTimer(m: number) {
+    // DIV increments at 16384Hz (every 64 m-cycles)
+    this.div_cnt += m;
+    while (this.div_cnt >= 64) {
+      this.div = (this.div + 1) & 0xff;
+      this.div_cnt -= 64;
+    }
+
+    // Timer enabled?
+    if (this.tac & 0x04) {
+      this.tima_cnt += m;
+      let threshold = 0;
+      switch (this.tac & 0x03) {
+        case 0: threshold = 256; break; // 4096Hz
+        case 1: threshold = 4; break;   // 262144Hz
+        case 2: threshold = 16; break;  // 65536Hz
+        case 3: threshold = 64; break;  // 16384Hz
+      }
+
+      while (this.tima_cnt >= threshold) {
+        this.tima = (this.tima + 1) & 0xff;
+        if (this.tima === 0) {
+          // Overflow: reload and fire interrupt
+          this.tima = this.tma;
+          this.intf |= 0x04; // Timer interrupt
+        }
+        this.tima_cnt -= threshold;
+      }
+    }
   }
 
   /**
