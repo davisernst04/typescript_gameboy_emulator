@@ -21,20 +21,10 @@ export const joypad = {
    * @returns The value to be returned when reading from 0xFF00.
    */
   rb: (regVal: number): number => {
-    let result = regVal & 0x30;
-    
-    if (!(regVal & 0x10)) {
-      // Read directions
-      result |= joypad.directions;
-    }
-    
-    if (!(regVal & 0x20)) {
-      // Read buttons
-      result |= joypad.buttons;
-    }
-    
-    // Unused bits are usually high
-    return result | 0xC0;
+    let res = 0x0F;
+    if (!(regVal & 0x10)) res &= joypad.directions;
+    if (!(regVal & 0x20)) res &= joypad.buttons;
+    return 0xC0 | (regVal & 0x30) | res;
   },
 
   keyDown: (code: string) => {
@@ -49,6 +39,7 @@ export const joypad = {
       case 'Enter':      joypad.buttons    &= ~0x08; break; // Start
       default: return;
     }
+    console.log(`Joypad key down: ${code}`);
     mmu.intf |= 0x10; // Joypad interrupt
   },
 

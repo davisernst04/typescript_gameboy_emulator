@@ -47,7 +47,7 @@ export class MMU {
   public tac = 0;
   public div_cnt = 0;
   public tima_cnt = 0;
-  public joypad = 0xCF; // Initial state
+  public joypad = 0xFF; // Initial state
 
   constructor() {
     this.reset();
@@ -68,6 +68,7 @@ export class MMU {
     this.tac = 0;
     this.div_cnt = 0;
     this.tima_cnt = 0;
+    this.joypad = 0xFF;
   }
 
   /**
