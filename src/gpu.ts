@@ -136,11 +136,12 @@ export const gpu = {
     if ((stat & 0x10) && (gpu.linemode === 1)) interrupt = true;
     if ((stat & 0x08) && (gpu.linemode === 0)) interrupt = true;
 
-    gpu.reg[1] = stat;
+    gpu.reg[1] = (gpu.reg[1] & 0x80) | (stat & 0x7F);
     if (interrupt) mmu.intf |= 0x02;
   },
 
   checkline: () => {
+    if (!gpu.lcdon) return;
     gpu.modeclocks += cpu.reg.m;
     switch (gpu.linemode) {
       case 0: // H-Blank
@@ -148,7 +149,6 @@ export const gpu = {
           gpu.modeclocks = 0;
           gpu.curline++;
           gpu.curscan += 640;
-          gpu.checkStat();
           if (gpu.curline === 144) {
             gpu.linemode = 1;
             if (gpu.canvas && gpu.canvas.putImageData) {
@@ -158,18 +158,19 @@ export const gpu = {
           } else {
             gpu.linemode = 2;
           }
+          gpu.checkStat();
         }
         break;
       case 1: // V-Blank
         if (gpu.modeclocks >= 114) {
           gpu.modeclocks = 0;
           gpu.curline++;
-          gpu.checkStat();
           if (gpu.curline > 153) {
             gpu.curline = 0;
             gpu.curscan = 0;
             gpu.linemode = 2;
           }
+          gpu.checkStat();
         }
         break;
       case 2: // OAM-read mode
@@ -185,6 +186,7 @@ export const gpu = {
           if (gpu.lcdon) {
             gpu.renderScanline();
           }
+          gpu.checkStat();
         }
         break;
     }
@@ -221,23 +223,46 @@ export const gpu = {
     }
 
     if (gpu.objon) {
+      let height = gpu.objsize ? 16 : 8;
       let spritesOnLine = [];
       for (let i = 0; i < 40; i++) {
         let obj = gpu.objdata[i];
-        if (obj.y <= gpu.curline && obj.y + 8 > gpu.curline) {
+        let oamX = obj.x + 8;
+        if (oamX > 0 && oamX < 168 && obj.y <= gpu.curline && obj.y + height > gpu.curline) {
           spritesOnLine.push(obj);
-          if (spritesOnLine.length >= 10) break;
         }
+      }
+
+      spritesOnLine.sort((a, b) => {
+        if (a.x !== b.x) return a.x - b.x;
+        return a.num - b.num;
+      });
+
+      if (spritesOnLine.length > 10) {
+        spritesOnLine = spritesOnLine.slice(0, 10);
       }
 
       for (let i = spritesOnLine.length - 1; i >= 0; i--) {
         let obj = spritesOnLine[i];
         let tilerow;
-        if (obj.yflip) {
-          tilerow = gpu.tilemap[obj.tile][7 - (gpu.curline - obj.y)];
+        let tileIdx = obj.tile;
+        let lineOffset = gpu.curline - obj.y;
+
+        if (height === 16) {
+          tileIdx &= 0xFE;
+          if (obj.yflip) {
+            if (lineOffset < 8) tileIdx |= 1;
+            lineOffset = 7 - (lineOffset % 8);
+          } else {
+            if (lineOffset >= 8) tileIdx |= 1;
+            lineOffset %= 8;
+          }
         } else {
-          tilerow = gpu.tilemap[obj.tile][gpu.curline - obj.y];
+          if (obj.yflip) {
+            lineOffset = 7 - lineOffset;
+          }
         }
+        tilerow = gpu.tilemap[tileIdx][lineOffset];
 
         let pal = obj.palette ? gpu.palette.obj1 : gpu.palette.obj0;
         for (let x = 0; x < 8; x++) {
@@ -313,7 +338,13 @@ export const gpu = {
     gpu.reg[gaddr] = val;
     switch (gaddr) {
       case 0:
+        const wason = gpu.lcdon;
         gpu.lcdon = (val & 0x80) ? 1 : 0;
+        if (wason && !gpu.lcdon) {
+          gpu.curline = 0;
+          gpu.linemode = 0;
+          gpu.modeclocks = 0;
+        }
         gpu.bgtilebase = (val & 0x10) ? 0x0000 : 0x0800;
         gpu.bgmapbase = (val & 0x08) ? 0x1c00 : 0x1800;
         gpu.objsize = (val & 0x04) ? 1 : 0;
@@ -322,6 +353,7 @@ export const gpu = {
         break;
       case 2: gpu.yscrl = val; break;
       case 3: gpu.xscrl = val; break;
+      case 4: gpu.curline = 0; break;
       case 5: gpu.raster = val; break;
       case 10: gpu.winy = val; break;
       case 11: gpu.winx = val; break;
