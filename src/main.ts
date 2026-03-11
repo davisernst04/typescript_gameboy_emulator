@@ -14,6 +14,7 @@ export const emulator = {
     cpu.reset();
     gpu.reset();
     joypad.reset();
+    joypad.init();
     log.out('EMU', 'Emulator initialized.');
   },
 
@@ -33,7 +34,7 @@ export const emulator = {
   run: async () => {
     emulator.init();
     // Default ROM to load for testing
-    const romUrl = '/roms/test.gb'; 
+    const romUrl = 'ttt.gb'; 
     const loaded = await emulator.loadRom(romUrl);
     if (loaded) {
       log.out('EMU', 'Starting emulation loop.');
@@ -65,14 +66,6 @@ export const emulator = {
 // Start the emulator
 const start = () => {
   log.out('EMU', 'Window/DOM loaded, starting emulator...');
-  
-  window.addEventListener('keydown', (e) => {
-    joypad.keyDown(e.code);
-  });
-  window.addEventListener('keyup', (e) => {
-    joypad.keyUp(e.code);
-  });
-
   emulator.run();
 };
 
