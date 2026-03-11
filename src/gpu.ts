@@ -191,8 +191,10 @@ export const gpu = {
   },
 
   renderScanline: () => {
+    let linebase = gpu.curscan;
+    gpu.scanrow.fill(0);
+
     if (gpu.bgon) {
-      let linebase = gpu.curscan;
       let mapbase = gpu.bgmapbase + ((((gpu.curline + gpu.yscrl) & 255) >> 3) << 5);
       let y = (gpu.curline + gpu.yscrl) & 7;
       let x = gpu.xscrl & 7;
@@ -218,39 +220,70 @@ export const gpu = {
           t = (t + 1) & 31;
         }
       }
+    } else {
+      // BG is off, fill with white
+      for (let i = 0; i < 160; i++) {
+        gpu.screen.data[linebase] = 255;
+        gpu.screen.data[linebase + 1] = 255;
+        gpu.screen.data[linebase + 2] = 255;
+        gpu.screen.data[linebase + 3] = 255;
+        linebase += 4;
+      }
     }
 
     if (gpu.objon) {
+      let height = gpu.objsize ? 16 : 8;
       let spritesOnLine = [];
+      
+      // On DMG, only the first 10 sprites in OAM are considered for a scanline
       for (let i = 0; i < 40; i++) {
         let obj = gpu.objdata[i];
-        if (obj.y <= gpu.curline && obj.y + 8 > gpu.curline) {
+        if (gpu.curline >= obj.y && gpu.curline < obj.y + height) {
           spritesOnLine.push(obj);
           if (spritesOnLine.length >= 10) break;
         }
       }
 
-      for (let i = spritesOnLine.length - 1; i >= 0; i--) {
+      // Priority: lower X wins, then lower OAM index.
+      // We sort in descending priority to draw highest priority last (overdrawing others).
+      spritesOnLine.sort((a, b) => {
+        if (a.x !== b.x) return b.x - a.x;
+        return b.num - a.num;
+      });
+
+      for (let i = 0; i < spritesOnLine.length; i++) {
         let obj = spritesOnLine[i];
-        let tilerow;
-        if (obj.yflip) {
-          tilerow = gpu.tilemap[obj.tile][7 - (gpu.curline - obj.y)];
-        } else {
-          tilerow = gpu.tilemap[obj.tile][gpu.curline - obj.y];
+        let y_offset = gpu.curline - obj.y;
+        if (obj.yflip) y_offset = (height - 1) - y_offset;
+
+        let tile = obj.tile;
+        let row_idx = y_offset;
+        if (gpu.objsize) {
+          tile &= 0xFE;
+          if (y_offset >= 8) {
+            tile |= 0x01;
+            row_idx -= 8;
+          }
         }
 
+        let tilerow = gpu.tilemap[tile][row_idx];
         let pal = obj.palette ? gpu.palette.obj1 : gpu.palette.obj0;
+
         for (let x = 0; x < 8; x++) {
           let canvas_x = obj.x + x;
           if (canvas_x >= 0 && canvas_x < 160) {
             let color_idx = obj.xflip ? tilerow[7 - x] : tilerow[x];
-            if (color_idx !== 0 && (obj.prio === 0 || gpu.scanrow[canvas_x] === 0)) {
-              let color = pal[color_idx];
-              let linebase = (gpu.curline * 160 + canvas_x) * 4;
-              gpu.screen.data[linebase] = color;
-              gpu.screen.data[linebase + 1] = color;
-              gpu.screen.data[linebase + 2] = color;
-              gpu.screen.data[linebase + 3] = 255;
+            // Color 0 is transparent
+            if (color_idx !== 0) {
+              // Priority: if prio bit is set, sprite only shows over BG color 0
+              if (obj.prio === 0 || gpu.scanrow[canvas_x] === 0) {
+                let color = pal[color_idx];
+                let ptr = (gpu.curline * 160 + canvas_x) * 4;
+                gpu.screen.data[ptr] = color;
+                gpu.screen.data[ptr + 1] = color;
+                gpu.screen.data[ptr + 2] = color;
+                gpu.screen.data[ptr + 3] = 255;
+              }
             }
           }
         }
@@ -279,8 +312,8 @@ export const gpu = {
         case 2: gpu.objdata[obj].tile = val; break;
         case 3:
           gpu.objdata[obj].palette = (val & 0x10) ? 1 : 0;
-          gpu.objdata[obj].yflip = (val & 0x20) ? 1 : 0;
-          gpu.objdata[obj].xflip = (val & 0x40) ? 1 : 0;
+          gpu.objdata[obj].yflip = (val & 0x40) ? 1 : 0;
+          gpu.objdata[obj].xflip = (val & 0x20) ? 1 : 0;
           gpu.objdata[obj].prio = (val & 0x80) ? 1 : 0;
           break;
       }
