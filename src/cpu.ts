@@ -36,6 +36,8 @@ export const cpu = {
   set hl(val: number) { cpu.reg.h = (val >> 8) & 0xFF; cpu.reg.l = val & 0xFF; },
   get af(): number { return (cpu.reg.a << 8) | cpu.reg.f; },
   set af(val: number) { cpu.reg.a = (val >> 8) & 0xFF; cpu.reg.f = val & 0xF0; },
+  get sp(): number { return cpu.reg.sp; },
+  set sp(val: number) { cpu.reg.sp = val & 0xFFFF; },
 
   halt: 0,
   haltBug: 0,
@@ -201,13 +203,19 @@ export const cpu = {
     LD_nn_sp: () => { mmu.ww(mmu.rw(cpu.reg.pc), cpu.reg.sp); cpu.reg.pc = (cpu.reg.pc + 2) & 0xFFFF; cpu.reg.m = 5; cpu.reg.t = 20; },
     LD_sp_hl: () => { cpu.reg.sp = cpu.hl; cpu.reg.m = 2; cpu.reg.t = 8; },
     LD_hl_sp_n: () => {
-      let n = mmu.rb(cpu.reg.pc);
-      if (n > 127) n -= 256;
+      const imm = mmu.rb(cpu.reg.pc);
+      const n = imm > 127 ? imm - 256 : imm;
       cpu.reg.pc = (cpu.reg.pc + 1) & 0xFFFF;
+
+      const sp = cpu.reg.sp;
+      const result = (sp + n) & 0xFFFF;
+
       cpu.reg.f = 0;
-      if (((cpu.reg.sp & 0xF) + (n & 0xF)) > 0xF) cpu.reg.f |= cpu.FLAGS.H;
-      if (((cpu.reg.sp & 0xFF) + (n & 0xFF)) > 0xFF) cpu.reg.f |= cpu.FLAGS.C;
-      cpu.hl = (cpu.reg.sp + n) & 0xFFFF;
+      // H/C are computed from the low-byte add using the immediate's raw 8-bit value.
+      if (((sp & 0xF) + (imm & 0xF)) > 0xF) cpu.reg.f |= cpu.FLAGS.H;
+      if (((sp & 0xFF) + imm) > 0xFF) cpu.reg.f |= cpu.FLAGS.C;
+
+      cpu.hl = result;
       cpu.reg.m = 3; cpu.reg.t = 12;
     },
     PUSH_rr: (rr: string) => {
@@ -479,13 +487,19 @@ export const cpu = {
       cpu.reg.m = 2; cpu.reg.t = 8;
     },
     ADD_sp_n: () => {
-      let n = mmu.rb(cpu.reg.pc);
-      if (n > 127) n -= 256;
+      const imm = mmu.rb(cpu.reg.pc);
+      const n = imm > 127 ? imm - 256 : imm;
       cpu.reg.pc = (cpu.reg.pc + 1) & 0xFFFF;
+
+      const sp = cpu.reg.sp;
+      const result = (sp + n) & 0xFFFF;
+
       cpu.reg.f = 0;
-      if (((cpu.reg.sp & 0xF) + (n & 0xF)) > 0xF) cpu.reg.f |= cpu.FLAGS.H;
-      if (((cpu.reg.sp & 0xFF) + (n & 0xFF)) > 0xFF) cpu.reg.f |= cpu.FLAGS.C;
-      cpu.reg.sp = (cpu.reg.sp + n) & 0xFFFF;
+      // H/C are computed from the low-byte add using the immediate's raw 8-bit value.
+      if (((sp & 0xF) + (imm & 0xF)) > 0xF) cpu.reg.f |= cpu.FLAGS.H;
+      if (((sp & 0xFF) + imm) > 0xFF) cpu.reg.f |= cpu.FLAGS.C;
+
+      cpu.reg.sp = result;
       cpu.reg.m = 4; cpu.reg.t = 16;
     },
     INC_rr: (rr: string) => { (cpu as any)[rr] = ((cpu as any)[rr] + 1) & 0xFFFF; cpu.reg.m = 2; cpu.reg.t = 8; },

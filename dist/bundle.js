@@ -1287,6 +1287,12 @@ var cpu = {
     cpu.reg.a = val >> 8 & 255;
     cpu.reg.f = val & 240;
   },
+  get sp() {
+    return cpu.reg.sp;
+  },
+  set sp(val) {
+    cpu.reg.sp = val & 65535;
+  },
   halt: 0,
   haltBug: 0,
   stop: 0,
@@ -1539,13 +1545,15 @@ var cpu = {
       cpu.reg.t = 8;
     },
     LD_hl_sp_n: () => {
-      let n = mmu.rb(cpu.reg.pc);
-      if (n > 127) n -= 256;
+      const imm = mmu.rb(cpu.reg.pc);
+      const n = imm > 127 ? imm - 256 : imm;
       cpu.reg.pc = cpu.reg.pc + 1 & 65535;
+      const sp = cpu.reg.sp;
+      const result = sp + n & 65535;
       cpu.reg.f = 0;
-      if ((cpu.reg.sp & 15) + (n & 15) > 15) cpu.reg.f |= cpu.FLAGS.H;
-      if ((cpu.reg.sp & 255) + (n & 255) > 255) cpu.reg.f |= cpu.FLAGS.C;
-      cpu.hl = cpu.reg.sp + n & 65535;
+      if ((sp & 15) + (imm & 15) > 15) cpu.reg.f |= cpu.FLAGS.H;
+      if ((sp & 255) + imm > 255) cpu.reg.f |= cpu.FLAGS.C;
+      cpu.hl = result;
       cpu.reg.m = 3;
       cpu.reg.t = 12;
     },
@@ -1855,13 +1863,15 @@ var cpu = {
       cpu.reg.t = 8;
     },
     ADD_sp_n: () => {
-      let n = mmu.rb(cpu.reg.pc);
-      if (n > 127) n -= 256;
+      const imm = mmu.rb(cpu.reg.pc);
+      const n = imm > 127 ? imm - 256 : imm;
       cpu.reg.pc = cpu.reg.pc + 1 & 65535;
+      const sp = cpu.reg.sp;
+      const result = sp + n & 65535;
       cpu.reg.f = 0;
-      if ((cpu.reg.sp & 15) + (n & 15) > 15) cpu.reg.f |= cpu.FLAGS.H;
-      if ((cpu.reg.sp & 255) + (n & 255) > 255) cpu.reg.f |= cpu.FLAGS.C;
-      cpu.reg.sp = cpu.reg.sp + n & 65535;
+      if ((sp & 15) + (imm & 15) > 15) cpu.reg.f |= cpu.FLAGS.H;
+      if ((sp & 255) + imm > 255) cpu.reg.f |= cpu.FLAGS.C;
+      cpu.reg.sp = result;
       cpu.reg.m = 4;
       cpu.reg.t = 16;
     },
