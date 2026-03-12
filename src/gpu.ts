@@ -222,6 +222,30 @@ export const gpu = {
       }
     }
 
+    if (gpu.winon && gpu.curline >= gpu.winy) {
+      let linebase = gpu.curscan;
+      let winY = gpu.curline - gpu.winy;
+      let mapbase = gpu.wintilebase + ((winY >> 3) << 5);
+      let y = winY & 7;
+      let winXStart = gpu.winx - 7;
+
+      for (let i = Math.max(0, winXStart); i < 160; i++) {
+        let t = (i - winXStart) >> 3;
+        let x = (i - winXStart) & 7;
+        let tile = gpu.vram[mapbase + t];
+        if (gpu.bgtilebase === 0x0800 && tile < 128) tile += 256;
+        let tilerow = gpu.tilemap[tile][y];
+        let color_idx = tilerow[x];
+        gpu.scanrow[i] = color_idx;
+        let color = gpu.palette.bg[color_idx];
+        let lb = linebase + (i * 4);
+        gpu.screen.data[lb] = color;
+        gpu.screen.data[lb + 1] = color;
+        gpu.screen.data[lb + 2] = color;
+        gpu.screen.data[lb + 3] = 255;
+      }
+    }
+
     if (gpu.objon) {
       let height = gpu.objsize ? 16 : 8;
       let spritesOnLine = [];
@@ -354,6 +378,8 @@ export const gpu = {
         }
         gpu.bgtilebase = (val & 0x10) ? 0x0000 : 0x0800;
         gpu.bgmapbase = (val & 0x08) ? 0x1c00 : 0x1800;
+        gpu.wintilebase = (val & 0x40) ? 0x1c00 : 0x1800;
+        gpu.winon = (val & 0x20) ? 1 : 0;
         gpu.objsize = (val & 0x04) ? 1 : 0;
         gpu.objon = (val & 0x02) ? 1 : 0;
         gpu.bgon = (val & 0x01) ? 1 : 0;
