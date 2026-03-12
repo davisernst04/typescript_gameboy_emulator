@@ -10,10 +10,12 @@ export const joypad = {
   // Bits: 3: Start/Down, 2: Select/Up, 1: B/Left, 0: A/Right
   buttons: 0x0F,
   directions: 0x0F,
+  select: 0x30, // Bits 4 and 5 of 0xFF00
 
   reset: () => {
     joypad.buttons = 0x0F;
     joypad.directions = 0x0F;
+    joypad.select = 0x30;
   },
 
   /**
@@ -34,20 +36,19 @@ export const joypad = {
    * @param regVal - The current value of the 0xFF00 register (bits 4 and 5 indicate which buttons to read).
    * @returns The value to be returned when reading from 0xFF00.
    */
-  rb: (regVal: number): number => {
+  rb: (regVal?: number): number => {
+    const rv = (regVal === undefined) ? joypad.select : regVal;
     let res = 0x0F;
     // Bit 4 LOW: Select Directions
-    if (!(regVal & 0x10)) {
+    if (!(rv & 0x10)) {
       res &= joypad.directions;
     }
     // Bit 5 LOW: Select Buttons
-    if (!(regVal & 0x20)) {
+    if (!(rv & 0x20)) {
       res &= joypad.buttons;
     }
     
-    const finalVal = 0xC0 | (regVal & 0x30) | res;
-    // Use console.log for deep investigation as requested
-    // console.log(`Joypad read: regVal=${regVal.toString(16)}, directions=${joypad.directions.toString(16)}, buttons=${joypad.buttons.toString(16)}, result=${finalVal.toString(16)}`);
+    const finalVal = 0xC0 | (rv & 0x30) | res;
     return finalVal;
   },
 

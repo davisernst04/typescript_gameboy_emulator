@@ -583,9 +583,12 @@ var joypad = {
   // Bits: 3: Start/Down, 2: Select/Up, 1: B/Left, 0: A/Right
   buttons: 15,
   directions: 15,
+  select: 48,
+  // Bits 4 and 5 of 0xFF00
   reset: () => {
     joypad.buttons = 15;
     joypad.directions = 15;
+    joypad.select = 48;
   },
   /**
    * Initializes the joypad by setting up event listeners.
@@ -605,14 +608,15 @@ var joypad = {
    * @returns The value to be returned when reading from 0xFF00.
    */
   rb: (regVal) => {
+    const rv = regVal === void 0 ? joypad.select : regVal;
     let res = 15;
-    if (!(regVal & 16)) {
+    if (!(rv & 16)) {
       res &= joypad.directions;
     }
-    if (!(regVal & 32)) {
+    if (!(rv & 32)) {
       res &= joypad.buttons;
     }
-    const finalVal = 192 | regVal & 48 | res;
+    const finalVal = 192 | rv & 48 | res;
     return finalVal;
   },
   keyDown: (code) => {
