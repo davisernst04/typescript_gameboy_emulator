@@ -2689,7 +2689,12 @@ var emulator = {
       return false;
     }
   },
+  _rafId: 0,
   run: async (source) => {
+    if (emulator._rafId) {
+      cancelAnimationFrame(emulator._rafId);
+      emulator._rafId = 0;
+    }
     emulator.init();
     const loaded = await emulator.loadRom(source);
     if (loaded) {
@@ -2710,7 +2715,7 @@ var emulator = {
     if (emulator._frameCount % 60 === 0) {
       log.out("EMU", `Frame ${emulator._frameCount} rendered.`);
     }
-    requestAnimationFrame(emulator.loop);
+    emulator._rafId = requestAnimationFrame(emulator.loop);
   }
 };
 var start = () => {

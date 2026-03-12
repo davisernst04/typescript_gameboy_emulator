@@ -31,7 +31,14 @@ export const emulator = {
     }
   },
 
+  _rafId: 0 as number,
+
   run: async (source: string | Uint8Array) => {
+    // Cancel any running loop first
+    if (emulator._rafId) {
+      cancelAnimationFrame(emulator._rafId);
+      emulator._rafId = 0;
+    }
     emulator.init();
     const loaded = await emulator.loadRom(source);
     if (loaded) {
@@ -43,21 +50,19 @@ export const emulator = {
   },
 
   loop: () => {
-    // Run for ~17556 m-cycles per frame
     let frameCycles = 0;
     while (frameCycles < 17556) {
       cpu.step();
       frameCycles += cpu.reg.m;
     }
-    
-    // Optional: Log every 60 frames to see if loop is running
+
     if ((emulator as any)._frameCount === undefined) (emulator as any)._frameCount = 0;
     (emulator as any)._frameCount++;
     if ((emulator as any)._frameCount % 60 === 0) {
       log.out('EMU', `Frame ${(emulator as any)._frameCount} rendered.`);
     }
 
-    requestAnimationFrame(emulator.loop);
+    emulator._rafId = requestAnimationFrame(emulator.loop);
   }
 };
 
