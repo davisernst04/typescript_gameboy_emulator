@@ -1,5 +1,0 @@
-{
-  "name": "CPU Emulation",
-  "description": "Implementing the Sharp LR35902 CPU architecture, its full instruction set, and cycle counting for accurate Game Boy emulation.",
-  "status": "active"
-}

@@ -1,5 +1,0 @@
-{
-  "name": "Memory MMU",
-  "description": "Implementing memory management, memory banking controllers (MBC), and RAM for accurate Game Boy emulation.",
-  "status": "in progress"
-}
