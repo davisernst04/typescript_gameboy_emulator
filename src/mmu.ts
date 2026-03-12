@@ -48,6 +48,11 @@ export class MMU {
   public div_cnt = 0;
   public tima_cnt = 0;
 
+  // Serial registers / debug capture
+  public serialData = 0;
+  public serialControl = 0;
+  public serialOutput = "";
+
   constructor() {
     this.reset();
   }
@@ -67,6 +72,9 @@ export class MMU {
     this.tac = 0;
     this.div_cnt = 0;
     this.tima_cnt = 0;
+    this.serialData = 0;
+    this.serialControl = 0;
+    this.serialOutput = "";
   }
 
   /**
@@ -132,6 +140,8 @@ export class MMU {
           if (addr >= 0xff40 && addr <= 0xff4f) return gpu.rb(addr);
           if (addr === 0xff0f) return this.intf;
           if (addr === 0xff00) return joypad.rb(joypad.select);
+          if (addr === 0xff01) return this.serialData;
+          if (addr === 0xff02) return this.serialControl;
           if (addr === 0xff04) return this.div;
           if (addr === 0xff05) return this.tima;
           if (addr === 0xff06) return this.tma;
@@ -225,6 +235,15 @@ export class MMU {
           } else if (addr === 0xff00) {
             // Only bits 4 and 5 are writable
             joypad.select = val & 0x30;
+          } else if (addr === 0xff01) {
+            this.serialData = val & 0xff;
+          } else if (addr === 0xff02) {
+            this.serialControl = val & 0xff;
+            if (this.serialControl === 0x81) {
+              const ch = String.fromCharCode(this.serialData);
+              this.serialOutput += ch;
+              console.log(ch);
+            }
           } else if (addr === 0xff04) {
             this.div = 0;
             this.div_cnt = 0;

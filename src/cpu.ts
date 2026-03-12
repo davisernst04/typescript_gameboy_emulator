@@ -38,6 +38,7 @@ export const cpu = {
   set af(val: number) { cpu.reg.a = (val >> 8) & 0xFF; cpu.reg.f = val & 0xF0; },
 
   halt: 0,
+  haltBug: 0,
   stop: 0,
 
   reset: () => {
@@ -56,6 +57,7 @@ export const cpu = {
     cpu.reg.ime = 0;
     cpu.reg.ime_cnt = 0;
     cpu.halt = 0;
+    cpu.haltBug = 0;
     cpu.stop = 0;
     cpu.clock.m = 0;
     cpu.clock.t = 0;
@@ -81,8 +83,13 @@ export const cpu = {
     } else if (cpu.halt) {
       cpu.reg.m = 1;
     } else {
-      let opcode = mmu.rb(cpu.reg.pc);
-      cpu.reg.pc = (cpu.reg.pc + 1) & 0xffff;
+      const pc = cpu.reg.pc;
+      const opcode = mmu.rb(pc);
+      if (!cpu.haltBug) {
+        cpu.reg.pc = (cpu.reg.pc + 1) & 0xffff;
+      } else {
+        cpu.haltBug = 0;
+      }
       if (cpu.map[opcode]) {
         cpu.map[opcode]();
       } else {
@@ -104,9 +111,11 @@ export const cpu = {
   },
 
   interrupts: () => {
-    if (cpu.reg.ime) {
-      let fired = (mmu.inte & mmu.intf) & 0x1F;
-      if (fired) {
+    const fired = (mmu.inte & mmu.intf) & 0x1F;
+
+    if (fired) {
+      if (cpu.halt) cpu.halt = 0;
+      if (cpu.reg.ime) {
         for (let i = 0; i < 5; i++) {
           if (fired & (1 << i)) {
             cpu.serviceInterrupt(i);
@@ -114,11 +123,8 @@ export const cpu = {
           }
         }
       }
-    } else {
-      if (mmu.inte & mmu.intf) {
-        cpu.halt = 0;
-      }
     }
+
     return false;
   },
 
@@ -727,8 +733,15 @@ export const cpu = {
     SCF: () => { cpu.reg.f &= ~cpu.FLAGS.N; cpu.reg.f &= ~cpu.FLAGS.H; cpu.reg.f |= cpu.FLAGS.C; cpu.reg.m = 1; cpu.reg.t = 4; },
     CCF: () => { cpu.reg.f &= ~cpu.FLAGS.N; cpu.reg.f &= ~cpu.FLAGS.H; cpu.reg.f ^= cpu.FLAGS.C; cpu.reg.m = 1; cpu.reg.t = 4; },
     DI: () => { cpu.reg.ime = 0; cpu.reg.ime_cnt = 0; cpu.reg.m = 1; cpu.reg.t = 4; },
-    EI: () => { cpu.reg.ime_cnt = 1; cpu.reg.m = 1; cpu.reg.t = 4; },
-    HALT: () => { cpu.halt = 1; cpu.reg.m = 1; cpu.reg.t = 4; },
+    EI: () => { cpu.reg.ime_cnt = 2; cpu.reg.m = 1; cpu.reg.t = 4; },
+    HALT: () => {
+      if (!cpu.reg.ime && ((mmu.inte & mmu.intf) & 0x1F)) {
+        cpu.haltBug = 1;
+      } else {
+        cpu.halt = 1;
+      }
+      cpu.reg.m = 1; cpu.reg.t = 4;
+    },
     STOP: () => { console.log('STOP at PC=' + (cpu.reg.pc - 1).toString(16)); cpu.stop = 1; cpu.reg.m = 1; cpu.reg.t = 4; },
 
     MAPcb: () => {
