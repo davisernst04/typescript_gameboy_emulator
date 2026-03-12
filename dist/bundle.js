@@ -594,6 +594,9 @@ var joypad = {
   },
   /**
    * Reads from the 0xFF00 register.
+   * Bits 4 and 5 select which button group to read:
+   * - Bit 4 LOW (0x10): Read direction buttons
+   * - Bit 5 LOW (0x20): Read action buttons
    * @param regVal - The current value of the 0xFF00 register (bits 4 and 5 indicate which buttons to read).
    * @returns The value to be returned when reading from 0xFF00.
    */
@@ -1039,7 +1042,7 @@ var MMU = class {
         } else if (addr >= 65280 && addr <= 65407) {
           if (addr >= 65344 && addr <= 65359) return gpu.rb(addr);
           if (addr === 65295) return this.intf;
-          if (addr === 65280) return joypad.rb();
+          if (addr === 65280) return joypad.rb(joypad.select);
           if (addr === 65284) return this.div;
           if (addr === 65285) return this.tima;
           if (addr === 65286) return this.tma;

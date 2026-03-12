@@ -131,7 +131,7 @@ export class MMU {
           // I/O Registers
           if (addr >= 0xff40 && addr <= 0xff4f) return gpu.rb(addr);
           if (addr === 0xff0f) return this.intf;
-          if (addr === 0xff00) return joypad.rb();
+          if (addr === 0xff00) return joypad.rb(joypad.select);
           if (addr === 0xff04) return this.div;
           if (addr === 0xff05) return this.tima;
           if (addr === 0xff06) return this.tma;

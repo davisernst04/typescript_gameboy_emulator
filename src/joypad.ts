@@ -33,21 +33,27 @@ export const joypad = {
 
   /**
    * Reads from the 0xFF00 register.
+   * Bits 4 and 5 select which button group to read:
+   * - Bit 4 LOW (0x10): Read direction buttons
+   * - Bit 5 LOW (0x20): Read action buttons
    * @param regVal - The current value of the 0xFF00 register (bits 4 and 5 indicate which buttons to read).
    * @returns The value to be returned when reading from 0xFF00.
    */
   rb: (regVal?: number): number => {
     const rv = (regVal === undefined) ? joypad.select : regVal;
-    let res = 0x0F;
-    // Bit 4 LOW: Select Directions
+    let res = 0x0F; // Default: all buttons released (HIGH)
+    
+    // Bit 4 LOW (P14): Select Directions
     if (!(rv & 0x10)) {
       res &= joypad.directions;
     }
-    // Bit 5 LOW: Select Buttons
+    
+    // Bit 5 LOW (P15): Select Buttons
     if (!(rv & 0x20)) {
       res &= joypad.buttons;
     }
     
+    // Return: bits 7-6 always 1, bits 5-4 echo the select lines, bits 3-0 are the button/direction state
     const finalVal = 0xC0 | (rv & 0x30) | res;
     return finalVal;
   },
