@@ -63,7 +63,9 @@ export class MMU {
   reset() {
     this.wram.fill(0);
     this.zram.fill(0);
-    this.inbios = 1;
+    // CPU reset starts from the post-boot register state at 0x0100,
+    // so the boot ROM must already be unmapped.
+    this.inbios = 0;
     this.inte = 0;
     this.intf = 0;
     this.div = 0;
