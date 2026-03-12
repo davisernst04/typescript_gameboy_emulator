@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npm run bundle && vite",
     "build": "tsc && npm run bundle && vite build",
-    "bundle": "esbuild src/main.ts --bundle --outfile=dist/bundle.js --platform=browser --format=esm"
+    "bundle": "node build_browser_bundle.js"
   },
   "repository": {
     "type": "git",

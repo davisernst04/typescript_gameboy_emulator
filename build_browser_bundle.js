@@ -1,4 +1,12 @@
-<!DOCTYPE html>
+const esbuild = require('esbuild');
+const fs = require('fs');
+const path = require('path');
+
+const projectRoot = __dirname;
+const distDir = path.join(projectRoot, 'dist');
+const distHtml = path.join(distDir, 'index.html');
+
+const html = `<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -23,3 +31,17 @@
 </body>
 
 </html>
+`;
+
+(async () => {
+  await esbuild.build({
+    entryPoints: ['src/main.ts'],
+    bundle: true,
+    outfile: 'dist/bundle.js',
+    platform: 'browser',
+    format: 'esm',
+  });
+
+  fs.mkdirSync(distDir, { recursive: true });
+  fs.writeFileSync(distHtml, html);
+})();
