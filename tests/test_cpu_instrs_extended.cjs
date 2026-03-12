@@ -22,7 +22,7 @@ global.cancelAnimationFrame = (id) => clearTimeout(id);
 
 // Mock fetch to load local ROMs
 global.fetch = (url) => {
-    const romPath = path.join(__dirname, url);
+    const romPath = path.join(__dirname, '..', url);
     return Promise.resolve({
         ok: true,
         arrayBuffer: () => {
@@ -32,14 +32,24 @@ global.fetch = (url) => {
     });
 };
 
-console.log = () => {}; // Silence main logs
+// Silence debug logging
+const originalLog = console.log;
+console.log = function(...args) {
+    const str = args.join(' ');
+    // Only print if it's part of the test output
+    if (str.includes('===') || str.includes('CPU') || str.includes('ROM')) {
+        originalLog.apply(console, args);
+    }
+};
 
-const { emulator, cpu, mmu, gpu, log } = require('./node_test_bundle_new.js');
+const { emulator, cpu, mmu, gpu, log } = require('../dist/node_test_bundle.cjs');
 
 // Capture output from serial port (0xFF01/0xFF02)
 let serialOutput = '';
+const originalRb = mmu.rb.bind(mmu);
 const originalWb = mmu.wb.bind(mmu);
 
+mmu.rb = (addr) => originalRb(addr);
 mmu.wb = (addr, val) => {
     if (addr === 0xFF01) {
         serialOutput += String.fromCharCode(val);
@@ -48,49 +58,57 @@ mmu.wb = (addr, val) => {
 };
 
 async function testCpuInstrs() {
+    console.log('=== CPU Instructions Test ROM ===\n');
     emulator.init();
     
     const romUrl = 'roms/cpu_instrs.gb';
     const loaded = await emulator.loadRom(romUrl);
     if (!loaded) {
-        process.stderr.write('Failed to load ROM\n');
+        console.error('Failed to load ROM');
         return;
     }
 
-    let frameCount = 0;
-    const maxFrames = 1000;
-    let prevPc = 0;
-    let prevPcCount = 0;
-    const maxStuckFrames = 30;
+    console.log('ROM loaded. Running test (~300 frames)...\n');
+    
+    let totalSteps = 0;
+    let totalFrames = 0;
+    const maxFrames = 300;
+    let prevPc = -1;
+    let pcStuckCount = 0;
     
     for (let frame = 0; frame < maxFrames; frame++) {
         let frameCycles = 0;
-        let stepsInFrame = 0;
-        while (frameCycles < 17556 && stepsInFrame < 50000) {
+        while (frameCycles < 17556) {
             cpu.step();
             frameCycles += cpu.reg.m;
-            stepsInFrame++;
+            totalSteps++;
         }
+        totalFrames++;
         
-        frameCount++;
-        
+        // Check for PC stuck
         if (cpu.reg.pc === prevPc) {
-            prevPcCount++;
-            if (prevPcCount > maxStuckFrames) {
-                break;
-            }
+            pcStuckCount++;
         } else {
-            prevPcCount = 0;
+            pcStuckCount = 0;
         }
         prevPc = cpu.reg.pc;
         
-        if (serialOutput.includes('Failed') && serialOutput.includes('tests')) {
+        if (pcStuckCount > 100 || serialOutput.includes('Failed')) {
             break;
+        }
+        
+        if (frame % 50 === 0 && frame > 0) {
+            process.stderr.write(`Frame ${frame}, steps: ${totalSteps}\n`);
         }
     }
     
-    // Write raw serial output
+    process.stdout.write('\n');
     process.stdout.write(serialOutput);
+    
+    console.log('\n=== Test Complete ===');
+    console.log(`Total frames: ${totalFrames}`);
+    console.log(`Total steps: ${totalSteps}`);
+    console.log(`Final PC: 0x${cpu.reg.pc.toString(16).padStart(4, '0')}`);
 }
 
 testCpuInstrs().catch(console.error);

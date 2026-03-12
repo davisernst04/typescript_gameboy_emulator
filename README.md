@@ -14,12 +14,11 @@ This project focuses on emulating the original DMG-01 hardware closely enough to
 ## Project structure
 
 ```text
-src/                 Emulator core (CPU, MMU, GPU, MBC, cartridge, joypad)
-dist/                Built browser output
+src/                 Emulator core (TypeScript only)
+tests/               Node-side validation and debugging scripts
+scripts/             Build and utility scripts (.cjs)
+dist/                Generated browser and Node bundles (ignored)
 roms/                Local test ROMs used during development
-build_browser_bundle.js
-build_node_bundle.js Build scripts for browser and Node bundles
-test_*.js / test_*.ts Node-side validation and debugging scripts
 ```
 
 ## Requirements
@@ -60,13 +59,13 @@ The repository includes Node test harnesses for validating emulator behaviour wi
 Build the Node bundle:
 
 ```bash
-node build_node_bundle.js
+npm run bundle:node
 ```
 
 Run the main CPU instruction test:
 
 ```bash
-node test_cpu_instrs.js
+node tests/test_cpu_instrs.cjs
 ```
 
 This executes the bundled emulator against `roms/cpu_instrs.gb` and prints the serial output emitted by the test ROM.
@@ -101,9 +100,10 @@ Keyboard controls currently map as follows:
 From `package.json`:
 
 ```bash
-npm run dev     # bundle browser code and start Vite
-npm run build   # type-check/build and create production output
-npm run bundle  # build browser bundle only
+npm run dev         # bundle browser code and start Vite
+npm run build       # type-check/build and create production output
+npm run bundle      # build browser bundle only
+npm run bundle:node # build Node test bundle
 ```
 
 ## Implementation notes

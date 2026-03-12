@@ -2,12 +2,13 @@
   "name": "gameboy_emulator",
   "version": "1.0.0",
   "description": "A Game Boy emulator written in TypeScript using Next.js that accurately emulates the original Nintendo Game Boy hardware.",
-  "main": "index.js",
+  "main": "dist/bundle.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npm run bundle && vite",
+    "bundle:node": "node scripts/build_node_bundle.cjs",
     "build": "tsc && npm run bundle && vite build",
-    "bundle": "node build_browser_bundle.js"
+    "bundle": "node scripts/build_browser_bundle.cjs"
   },
   "repository": {
     "type": "git",

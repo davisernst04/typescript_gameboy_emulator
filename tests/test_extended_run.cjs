@@ -20,7 +20,7 @@ global.requestAnimationFrame = (cb) => setTimeout(cb, 16);
 global.cancelAnimationFrame = (id) => clearTimeout(id);
 
 global.fetch = (url) => {
-    const romPath = path.join(__dirname, url);
+    const romPath = path.join(__dirname, '..', url);
     return Promise.resolve({
         ok: true,
         arrayBuffer: () => {
@@ -32,41 +32,16 @@ global.fetch = (url) => {
 
 console.log = () => {};
 
-const { emulator, cpu, mmu, gpu, log } = require('./node_test_bundle_new.js');
+const { emulator, cpu, mmu, gpu } = require('../dist/node_test_bundle.cjs');
 
 let serialOutput = [];
-let stepCount = 0;
-let lastOutputLen = 0;
-let prevPc = 0;
-
 const originalWb = mmu.wb.bind(mmu);
-const originalStep = cpu.step.bind(cpu);
 
 mmu.wb = (addr, val) => {
     if (addr === 0xFF01) {
         serialOutput.push(val);
-        lastOutputLen = serialOutput.length;
     }
     return originalWb(addr, val);
-};
-
-cpu.step = function() {
-    stepCount++;
-    originalStep();
-    
-    // Log when PC doesn't advance
-    if (cpu.reg.pc === prevPc && stepCount % 1000 === 0) {
-        process.stderr.write(`PC stuck at 0x${cpu.reg.pc.toString(16).padStart(4, '0')} after ${stepCount} steps\n`);
-    }
-    prevPc = cpu.reg.pc;
-    
-    // Log when new output appears
-    if (serialOutput.length > lastOutputLen) {
-        let str = String.fromCharCode(...serialOutput);
-        if (stepCount % 100000 === 0 || serialOutput.length > 100) {
-            process.stderr.write(`[Step ${stepCount}] Output so far: ${serialOutput.length} bytes\n`);
-        }
-    }
 };
 
 async function testCpuInstrs() {
@@ -79,9 +54,10 @@ async function testCpuInstrs() {
         return;
     }
 
+    // Run for many more frames to get full output
     let frameCount = 0;
-    const maxFrames = 2000;
-    let prevPc2 = 0;
+    const maxFrames = 5000;
+    let prevPc = 0;
     let prevPcCount = 0;
     
     for (let frame = 0; frame < maxFrames; frame++) {
@@ -95,21 +71,15 @@ async function testCpuInstrs() {
         
         frameCount++;
         
-        if (cpu.reg.pc === prevPc2) {
+        if (cpu.reg.pc === prevPc) {
             prevPcCount++;
-            if (prevPcCount > 30) {
-                process.stderr.write(`CPU stuck after frame ${frameCount}\n`);
+            if (prevPcCount > 60) {
                 break;
             }
         } else {
             prevPcCount = 0;
         }
-        prevPc2 = cpu.reg.pc;
-        
-        if (frameCount % 50 === 0) {
-            let str = String.fromCharCode(...serialOutput);
-            process.stderr.write(`Frame ${frameCount}: PC=0x${cpu.reg.pc.toString(16).padStart(4,'0')}, Output=${serialOutput.length} bytes\n`);
-        }
+        prevPc = cpu.reg.pc;
         
         let str = String.fromCharCode(...serialOutput);
         if (str.includes('Failed') && str.includes('tests')) {
@@ -118,11 +88,6 @@ async function testCpuInstrs() {
     }
     
     let str = String.fromCharCode(...serialOutput);
-    process.stderr.write(`\n=== FINAL RESULTS ===\n`);
-    process.stderr.write(`Total steps: ${stepCount}\n`);
-    process.stderr.write(`Total frames: ${frameCount}\n`);
-    process.stderr.write(`Serial output length: ${serialOutput.length}\n`);
-    process.stderr.write(`Final PC: 0x${cpu.reg.pc.toString(16).padStart(4, '0')}\n`);
     process.stdout.write(str);
 }
 

@@ -20,7 +20,7 @@ global.alert = (msg) => {
 // Mock fetch to load local ROMs
 global.fetch = (url) => {
     console.log('Fetching:', url);
-    const romPath = path.join(__dirname, url);
+    const romPath = path.join(__dirname, '..', url);
     return Promise.resolve({
         ok: true,
         arrayBuffer: () => {
@@ -30,7 +30,7 @@ global.fetch = (url) => {
     });
 };
 
-const { emulator, cpu, mmu, log } = require('./node_test_bundle.js');
+const { emulator, cpu, mmu, log } = require('../dist/node_test_bundle.cjs');
 
 async function test() {
     emulator.init();
@@ -56,7 +56,7 @@ async function test() {
             reachedRom = true;
         }
         if (i % 2000000 === 0) {
-            const { gpu } = require('./node_test_bundle.js');
+            const { gpu } = require('../dist/node_test_bundle.cjs');
             const op = mmu.rb(cpu.reg.pc);
             console.log(`Step ${i}, PC: ${cpu.reg.pc.toString(16)}, op: ${op.toString(16)}, inbios: ${mmu.inbios}, LY: ${gpu.curline}`);
         }

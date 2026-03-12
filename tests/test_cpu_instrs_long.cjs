@@ -22,7 +22,7 @@ global.cancelAnimationFrame = (id) => clearTimeout(id);
 
 // Mock fetch to load local ROMs
 global.fetch = (url) => {
-    const romPath = path.join(__dirname, url);
+    const romPath = path.join(__dirname, '..', url);
     return Promise.resolve({
         ok: true,
         arrayBuffer: () => {
@@ -35,32 +35,26 @@ global.fetch = (url) => {
 // Silence debug logging
 const originalLog = console.log;
 console.log = function(...args) {
-    const str = args.join(' ');
-    // Only print if it's part of the test output (contains 'cpu_instrs', 'ok', 'Failed')
-    if (str.includes('cpu_instrs') || str.includes(':ok') || str.includes(':') && /^\d+:/.test(str) || str.includes('Failed') || str.includes('===')) {
-        originalLog.apply(console, args);
-    }
+    // Suppress all logs for now
 };
 
-const { emulator, cpu, mmu, gpu, log } = require('./node_test_bundle_new.js');
+const { emulator, cpu, mmu, gpu, log } = require('../dist/node_test_bundle.cjs');
 
 // Capture output from serial port (0xFF01/0xFF02)
 let serialOutput = '';
-let testNumber = 0;
 const originalRb = mmu.rb.bind(mmu);
 const originalWb = mmu.wb.bind(mmu);
 
 mmu.rb = (addr) => originalRb(addr);
 mmu.wb = (addr, val) => {
     if (addr === 0xFF01) {
-        // Serial data register
         serialOutput += String.fromCharCode(val);
     }
     return originalWb(addr, val);
 };
 
 async function testCpuInstrs() {
-    console.log('=== CPU Instructions Test ROM ===\n');
+    process.stdout.write('CPU Test ROM Running...\n');
     emulator.init();
     
     const romUrl = 'roms/cpu_instrs.gb';
@@ -69,49 +63,50 @@ async function testCpuInstrs() {
         console.error('Failed to load ROM');
         return;
     }
-
-    console.log('ROM loaded. Running test...\n');
     
-    let frameCount = 0;
-    const maxFrames = 1000; // Run for longer
-    let prevPc = 0;
-    let prevPcCount = 0;
-    const maxStuckFrames = 30;
+    let totalFrames = 0;
+    const maxFrames = 600; // Run for 10 seconds
+    let prevPc = -1;
+    let pcStuckFrames = 0;
+    let lastOutputLen = 0;
     
     for (let frame = 0; frame < maxFrames; frame++) {
         let frameCycles = 0;
-        let stepsInFrame = 0;
-        while (frameCycles < 17556 && stepsInFrame < 50000) {
+        while (frameCycles < 17556) {
             cpu.step();
             frameCycles += cpu.reg.m;
-            stepsInFrame++;
+        }
+        totalFrames++;
+        
+        // Print new output
+        if (serialOutput.length > lastOutputLen) {
+            process.stdout.write(serialOutput.slice(lastOutputLen));
+            lastOutputLen = serialOutput.length;
         }
         
-        frameCount++;
-        
-        // Check for stuck state
+        // Check for PC stuck
         if (cpu.reg.pc === prevPc) {
-            prevPcCount++;
-            if (prevPcCount > maxStuckFrames) {
-                break;
-            }
+            pcStuckFrames++;
         } else {
-            prevPcCount = 0;
+            pcStuckFrames = 0;
         }
         prevPc = cpu.reg.pc;
         
-        // If we see "Failed X tests", we can break early
-        if (serialOutput.includes('Failed') && serialOutput.includes('tests')) {
+        // Break if done or stuck
+        if (serialOutput.includes('Failed') || pcStuckFrames > 200) {
             break;
+        }
+        
+        if (frame % 100 === 0 && frame > 0) {
+            process.stderr.write(`[Frame ${frame}] Output length: ${serialOutput.length}, PC: 0x${cpu.reg.pc.toString(16)}\n`);
         }
     }
     
-    process.stdout.write(serialOutput);
-    
-    console.log('\n\n=== Test Complete ===');
-    console.log(`Frames run: ${frameCount}`);
-    console.log(`Final PC: 0x${cpu.reg.pc.toString(16).padStart(4, '0')}`);
-    console.log(`Registers: A=0x${cpu.reg.a.toString(16).padStart(2,'0')} F=0x${cpu.reg.f.toString(16).padStart(2,'0')} BC=0x${cpu.bc.toString(16).padStart(4,'0')} DE=0x${cpu.de.toString(16).padStart(4,'0')} HL=0x${cpu.hl.toString(16).padStart(4,'0')}`);
+    process.stdout.write('\n');
+    process.stderr.write(`\n=== Test Finished ===\n`);
+    process.stderr.write(`Total frames: ${totalFrames}\n`);
+    process.stderr.write(`Serial output length: ${serialOutput.length}\n`);
+    process.stderr.write(`Final PC: 0x${cpu.reg.pc.toString(16).padStart(4, '0')}\n`);
 }
 
 testCpuInstrs().catch(console.error);

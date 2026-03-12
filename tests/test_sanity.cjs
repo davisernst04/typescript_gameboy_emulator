@@ -20,7 +20,7 @@ global.requestAnimationFrame = (cb) => setTimeout(cb, 16);
 global.cancelAnimationFrame = (id) => clearTimeout(id);
 
 global.fetch = (url) => {
-    const romPath = path.join(__dirname, url);
+    const romPath = path.join(__dirname, '..', url);
     return Promise.resolve({
         ok: true,
         arrayBuffer: () => {
@@ -32,7 +32,7 @@ global.fetch = (url) => {
 
 console.log = function(...args) { };
 
-const { emulator, cpu, mmu, gpu, log } = require('./node_test_bundle_new.js');
+const { emulator, cpu, mmu, gpu, log } = require('../dist/node_test_bundle.cjs');
 
 // Test basic instruction execution
 emulator.init();

@@ -19,6 +19,7 @@
 
 # production
 /build
+/dist
 
 # misc
 .DS_Store
@@ -46,3 +47,8 @@ tmp_*.js
 
 ROADMAP.md
 GEMINI.md
+
+# generated bundles
+node_test_bundle*.js
+node_test_bundle*.cjs
+

@@ -1,6 +1,6 @@
 
-import { cpu } from './src/cpu';
-import { mmu } from './src/mmu';
+import { cpu } from '../src/cpu';
+import { mmu } from '../src/mmu';
 
 async function testInterrupts() {
   console.log('Testing Interrupt Handling...');

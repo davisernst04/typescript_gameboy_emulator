@@ -6,13 +6,13 @@ global.document = { readyState: 'complete', getElementById: () => ({ getContext:
 global.requestAnimationFrame = (cb) => setTimeout(cb, 16);
 global.cancelAnimationFrame = (id) => clearTimeout(id);
 global.fetch = (url) => {
-    const romPath = path.join(__dirname, url);
+    const romPath = path.join(__dirname, '..', url);
     return Promise.resolve({ ok: true, arrayBuffer: () => { const buffer = fs.readFileSync(romPath); return Promise.resolve(buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength)); } });
 };
 
 console.log = function(...args) { };
 
-const { emulator, cpu, mmu, gpu, log } = require('./node_test_bundle_new.js');
+const { emulator, cpu, mmu, gpu, log } = require('../dist/node_test_bundle.cjs');
 
 let serialOutput = '';
 let lastLen = 0;

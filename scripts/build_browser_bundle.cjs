@@ -2,7 +2,7 @@ const esbuild = require('esbuild');
 const fs = require('fs');
 const path = require('path');
 
-const projectRoot = __dirname;
+const projectRoot = path.resolve(__dirname, '..');
 const distDir = path.join(projectRoot, 'dist');
 const distHtml = path.join(distDir, 'index.html');
 
@@ -35,9 +35,9 @@ const html = `<!DOCTYPE html>
 
 (async () => {
   await esbuild.build({
-    entryPoints: ['src/main.ts'],
+    entryPoints: [path.join(projectRoot, 'src', 'main.ts')],
     bundle: true,
-    outfile: 'dist/bundle.js',
+    outfile: path.join(distDir, 'bundle.js'),
     platform: 'browser',
     format: 'esm',
   });
