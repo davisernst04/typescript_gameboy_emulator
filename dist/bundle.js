@@ -2689,10 +2689,9 @@ var emulator = {
       return false;
     }
   },
-  run: async () => {
+  run: async (source) => {
     emulator.init();
-    const romUrl = "ttt.gb";
-    const loaded = await emulator.loadRom(romUrl);
+    const loaded = await emulator.loadRom(source);
     if (loaded) {
       log.out("EMU", "Starting emulation loop.");
       emulator.loop();
@@ -2715,14 +2714,21 @@ var emulator = {
   }
 };
 var start = () => {
-  log.out("EMU", "Window/DOM loaded, starting emulator...");
-  emulator.run();
+  log.out("EMU", "Ready. Select a ROM to begin.");
 };
 if (document.readyState === "complete" || document.readyState === "interactive") {
   start();
 } else {
   window.addEventListener("DOMContentLoaded", start);
 }
+window.loadRomFile = (file) => {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const bytes = new Uint8Array(e.target.result);
+    emulator.run(bytes);
+  };
+  reader.readAsArrayBuffer(file);
+};
 export {
   cpu,
   emulator,

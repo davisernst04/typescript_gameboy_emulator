@@ -31,11 +31,9 @@ export const emulator = {
     }
   },
 
-  run: async () => {
+  run: async (source: string | Uint8Array) => {
     emulator.init();
-    // Default ROM to load for testing
-    const romUrl = 'ttt.gb'; 
-    const loaded = await emulator.loadRom(romUrl);
+    const loaded = await emulator.loadRom(source);
     if (loaded) {
       log.out('EMU', 'Starting emulation loop.');
       emulator.loop();
@@ -63,10 +61,9 @@ export const emulator = {
   }
 };
 
-// Start the emulator
+// Start the emulator — waits for ROM file selection
 const start = () => {
-  log.out('EMU', 'Window/DOM loaded, starting emulator...');
-  emulator.run();
+  log.out('EMU', 'Ready. Select a ROM to begin.');
 };
 
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
@@ -74,3 +71,13 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 } else {
   window.addEventListener('DOMContentLoaded', start);
 }
+
+// Expose run for the file picker in index.html
+(window as any).loadRomFile = (file: File) => {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const bytes = new Uint8Array(e.target!.result as ArrayBuffer);
+    emulator.run(bytes);
+  };
+  reader.readAsArrayBuffer(file);
+};
