@@ -117,6 +117,11 @@ Core emulator modules:
 - `src/joypad.ts` — keyboard input mapped to Game Boy buttons
 - `src/main.ts` — emulator bootstrap and browser integration
 
+## Known limitations
+
+- Compatibility is still in progress. Some games may not boot correctly, may exhibit graphical or gameplay glitches, or may behave differently from original hardware.
+- Audio output is not implemented yet, so sound is currently unavailable.
+
 ## Credits
 
 Useful references and validation sources for this project include:
