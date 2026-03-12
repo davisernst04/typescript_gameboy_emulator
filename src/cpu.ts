@@ -111,16 +111,35 @@ export const cpu = {
   },
 
   interrupts: () => {
-    const fired = (mmu.inte & mmu.intf) & 0x1F;
+    const requested = mmu.intf & 0x1F;
+    const fired = (mmu.inte & requested) & 0x1F;
 
-    if (fired) {
-      if (cpu.halt) cpu.halt = 0;
-      if (cpu.reg.ime) {
-        for (let i = 0; i < 5; i++) {
-          if (fired & (1 << i)) {
-            cpu.serviceInterrupt(i);
-            return true;
-          }
+    // HALT exits as soon as any interrupt is requested, even if IME=0
+    // and even if the interrupt is not enabled in IE. Only enabled
+    // interrupts are actually serviced.
+    if (cpu.halt && requested) {
+      cpu.halt = 0;
+
+      // With IME=0, HALT still wakes when an interrupt becomes pending.
+      // If the pending interrupt is also enabled, the classic HALT bug
+      // applies: the next opcode is fetched without incrementing PC.
+      if (!cpu.reg.ime) {
+        if (fired) cpu.haltBug = 1;
+        cpu.reg.m = 1;
+        return true;
+      }
+
+      if (!fired) {
+        cpu.reg.m = 1;
+        return true;
+      }
+    }
+
+    if (fired && cpu.reg.ime) {
+      for (let i = 0; i < 5; i++) {
+        if (fired & (1 << i)) {
+          cpu.serviceInterrupt(i);
+          return true;
         }
       }
     }
@@ -742,7 +761,17 @@ export const cpu = {
       }
       cpu.reg.m = 1; cpu.reg.t = 4;
     },
-    STOP: () => { console.log('STOP at PC=' + (cpu.reg.pc - 1).toString(16)); cpu.stop = 1; cpu.reg.m = 1; cpu.reg.t = 4; },
+    STOP: () => {
+      if (mmu.cgbPrepareSpeedSwitch) {
+        mmu.cgbDoubleSpeed ^= 1;
+        mmu.cgbPrepareSpeedSwitch = 0;
+        cpu.stop = 0;
+      } else {
+        console.log('STOP at PC=' + (cpu.reg.pc - 1).toString(16));
+        cpu.stop = 1;
+      }
+      cpu.reg.m = 1; cpu.reg.t = 4;
+    },
 
     MAPcb: () => {
       let opcode = mmu.rb(cpu.reg.pc);

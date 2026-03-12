@@ -53,6 +53,10 @@ export class MMU {
   public serialControl = 0;
   public serialOutput = "";
 
+  // CGB speed switch (KEY1 / FF4D)
+  public cgbDoubleSpeed = 0;
+  public cgbPrepareSpeedSwitch = 0;
+
   constructor() {
     this.reset();
   }
@@ -77,6 +81,8 @@ export class MMU {
     this.serialData = 0;
     this.serialControl = 0;
     this.serialOutput = "";
+    this.cgbDoubleSpeed = 0;
+    this.cgbPrepareSpeedSwitch = 0;
   }
 
   /**
@@ -145,6 +151,7 @@ export class MMU {
           if (addr === 0xff01) return this.serialData;
           if (addr === 0xff02) return this.serialControl;
           if (addr === 0xff04) return this.div;
+          if (addr === 0xff4d) return 0x7e | (this.cgbDoubleSpeed ? 0x80 : 0) | (this.cgbPrepareSpeedSwitch ? 0x01 : 0);
           if (addr === 0xff05) return this.tima;
           if (addr === 0xff06) return this.tma;
           if (addr === 0xff07) return this.tac;
@@ -255,6 +262,8 @@ export class MMU {
             this.tma = val;
           } else if (addr === 0xff07) {
             this.tac = val & 7;
+          } else if (addr === 0xff4d) {
+            this.cgbPrepareSpeedSwitch = val & 0x01;
           } else if (addr >= 0xff40 && addr <= 0xff4f) {
             gpu.wb(addr, val);
           } else if (addr === 0xff0f) {

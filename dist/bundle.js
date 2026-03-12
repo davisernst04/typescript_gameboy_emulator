@@ -971,6 +971,13 @@ var MMU = class {
   tac = 0;
   div_cnt = 0;
   tima_cnt = 0;
+  // Serial registers / debug capture
+  serialData = 0;
+  serialControl = 0;
+  serialOutput = "";
+  // CGB speed switch (KEY1 / FF4D)
+  cgbDoubleSpeed = 0;
+  cgbPrepareSpeedSwitch = 0;
   constructor() {
     this.reset();
   }
@@ -980,7 +987,7 @@ var MMU = class {
   reset() {
     this.wram.fill(0);
     this.zram.fill(0);
-    this.inbios = 1;
+    this.inbios = 0;
     this.inte = 0;
     this.intf = 0;
     this.div = 0;
@@ -989,6 +996,11 @@ var MMU = class {
     this.tac = 0;
     this.div_cnt = 0;
     this.tima_cnt = 0;
+    this.serialData = 0;
+    this.serialControl = 0;
+    this.serialOutput = "";
+    this.cgbDoubleSpeed = 0;
+    this.cgbPrepareSpeedSwitch = 0;
   }
   /**
    * Sets the Memory Banking Controller (MBC).
@@ -1043,7 +1055,10 @@ var MMU = class {
           if (addr >= 65344 && addr <= 65359) return gpu.rb(addr);
           if (addr === 65295) return this.intf;
           if (addr === 65280) return joypad.rb(joypad.select);
+          if (addr === 65281) return this.serialData;
+          if (addr === 65282) return this.serialControl;
           if (addr === 65284) return this.div;
+          if (addr === 65357) return 126 | (this.cgbDoubleSpeed ? 128 : 0) | (this.cgbPrepareSpeedSwitch ? 1 : 0);
           if (addr === 65285) return this.tima;
           if (addr === 65286) return this.tma;
           if (addr === 65287) return this.tac;
@@ -1121,6 +1136,15 @@ var MMU = class {
             }
           } else if (addr === 65280) {
             joypad.select = val & 48;
+          } else if (addr === 65281) {
+            this.serialData = val & 255;
+          } else if (addr === 65282) {
+            this.serialControl = val & 255;
+            if (this.serialControl === 129) {
+              const ch = String.fromCharCode(this.serialData);
+              this.serialOutput += ch;
+              console.log(ch);
+            }
           } else if (addr === 65284) {
             this.div = 0;
             this.div_cnt = 0;
@@ -1130,6 +1154,8 @@ var MMU = class {
             this.tma = val;
           } else if (addr === 65287) {
             this.tac = val & 7;
+          } else if (addr === 65357) {
+            this.cgbPrepareSpeedSwitch = val & 1;
           } else if (addr >= 65344 && addr <= 65359) {
             gpu.wb(addr, val);
           } else if (addr === 65295) {
@@ -1262,6 +1288,7 @@ var cpu = {
     cpu.reg.f = val & 240;
   },
   halt: 0,
+  haltBug: 0,
   stop: 0,
   reset: () => {
     cpu.reg.a = 1;
@@ -1279,6 +1306,7 @@ var cpu = {
     cpu.reg.ime = 0;
     cpu.reg.ime_cnt = 0;
     cpu.halt = 0;
+    cpu.haltBug = 0;
     cpu.stop = 0;
     cpu.clock.m = 0;
     cpu.clock.t = 0;
@@ -1299,8 +1327,13 @@ var cpu = {
     } else if (cpu.halt) {
       cpu.reg.m = 1;
     } else {
-      let opcode = mmu.rb(cpu.reg.pc);
-      cpu.reg.pc = cpu.reg.pc + 1 & 65535;
+      const pc = cpu.reg.pc;
+      const opcode = mmu.rb(pc);
+      if (!cpu.haltBug) {
+        cpu.reg.pc = cpu.reg.pc + 1 & 65535;
+      } else {
+        cpu.haltBug = 0;
+      }
       if (cpu.map[opcode]) {
         cpu.map[opcode]();
       } else {
@@ -1318,19 +1351,26 @@ var cpu = {
     mmu.updateTimer(cpu.reg.m);
   },
   interrupts: () => {
-    if (cpu.reg.ime) {
-      let fired = mmu.inte & mmu.intf & 31;
-      if (fired) {
-        for (let i = 0; i < 5; i++) {
-          if (fired & 1 << i) {
-            cpu.serviceInterrupt(i);
-            return true;
-          }
-        }
+    const requested = mmu.intf & 31;
+    const fired = mmu.inte & requested & 31;
+    if (cpu.halt && requested) {
+      cpu.halt = 0;
+      if (!cpu.reg.ime) {
+        if (fired) cpu.haltBug = 1;
+        cpu.reg.m = 1;
+        return true;
       }
-    } else {
-      if (mmu.inte & mmu.intf) {
-        cpu.halt = 0;
+      if (!fired) {
+        cpu.reg.m = 1;
+        return true;
+      }
+    }
+    if (fired && cpu.reg.ime) {
+      for (let i = 0; i < 5; i++) {
+        if (fired & 1 << i) {
+          cpu.serviceInterrupt(i);
+          return true;
+        }
       }
     }
     return false;
@@ -2200,18 +2240,28 @@ var cpu = {
       cpu.reg.t = 4;
     },
     EI: () => {
-      cpu.reg.ime_cnt = 1;
+      cpu.reg.ime_cnt = 2;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
     HALT: () => {
-      cpu.halt = 1;
+      if (!cpu.reg.ime && mmu.inte & mmu.intf & 31) {
+        cpu.haltBug = 1;
+      } else {
+        cpu.halt = 1;
+      }
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
     STOP: () => {
-      console.log("STOP at PC=" + (cpu.reg.pc - 1).toString(16));
-      cpu.stop = 1;
+      if (mmu.cgbPrepareSpeedSwitch) {
+        mmu.cgbDoubleSpeed ^= 1;
+        mmu.cgbPrepareSpeedSwitch = 0;
+        cpu.stop = 0;
+      } else {
+        console.log("STOP at PC=" + (cpu.reg.pc - 1).toString(16));
+        cpu.stop = 1;
+      }
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
