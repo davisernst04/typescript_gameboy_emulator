@@ -233,6 +233,10 @@ export const gpu = {
         }
       }
 
+      if (spritesOnLine.length > 0) {
+          console.log(`[GPU] Line ${gpu.curline} sprites:`, spritesOnLine.length);
+      }
+
       spritesOnLine.sort((a, b) => {
         if (a.x !== b.x) return a.x - b.x;
         return a.num - b.num;
@@ -241,6 +245,8 @@ export const gpu = {
       if (spritesOnLine.length > 10) {
         spritesOnLine = spritesOnLine.slice(0, 10);
       }
+
+      if (gpu.curline === 72 && spritesOnLine.length > 0) { console.log('[GPU] Line 72 sprites:', spritesOnLine.map(function(o: any){ return {x:o.x,y:o.y,tile:o.tile,pal:o.palette}; })); }
 
       for (let i = spritesOnLine.length - 1; i >= 0; i--) {
         let obj = spritesOnLine[i];
@@ -338,6 +344,7 @@ export const gpu = {
     gpu.reg[gaddr] = val;
     switch (gaddr) {
       case 0:
+        console.log('[GPU] LCDC write:', val.toString(16), 'lcdon:', !!(val&0x80), 'objon:', !!(val&0x02), 'bgon:', !!(val&0x01));
         const wason = gpu.lcdon;
         gpu.lcdon = (val & 0x80) ? 1 : 0;
         if (wason && !gpu.lcdon) {
@@ -350,6 +357,7 @@ export const gpu = {
         gpu.objsize = (val & 0x04) ? 1 : 0;
         gpu.objon = (val & 0x02) ? 1 : 0;
         gpu.bgon = (val & 0x01) ? 1 : 0;
+        if (gpu.objon) { const nonzero = gpu.objdata.filter((o:any)=>o.y>-16||o.x>-8); console.log('[GPU] objon=1, nonzero OAM:', nonzero.length, nonzero.slice(0,5)); }
         break;
       case 2: gpu.yscrl = val; break;
       case 3: gpu.xscrl = val; break;

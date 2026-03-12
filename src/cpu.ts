@@ -62,7 +62,19 @@ export const cpu = {
   },
 
   step: () => {
-    if (cpu.stop) return;
+    // STOP mode: CPU waits for joypad interrupt (bit 4 of intf/inte)
+    if (cpu.stop) {
+      if ((mmu.intf & mmu.inte) & 0x10) {
+        cpu.stop = 0;
+      } else {
+        cpu.reg.m = 1;
+        cpu.reg.t = 4;
+        cpu.clock.m += cpu.reg.m;
+        cpu.clock.t += cpu.reg.t;
+        // Timers and GPU are stopped in STOP mode
+        return;
+      }
+    }
 
     if (cpu.interrupts()) {
       // Interrupt was serviced, it took its own cycles.
@@ -93,7 +105,7 @@ export const cpu = {
 
   interrupts: () => {
     if (cpu.reg.ime) {
-      let fired = mmu.inte & mmu.intf;
+      let fired = (mmu.inte & mmu.intf) & 0x1F;
       if (fired) {
         for (let i = 0; i < 5; i++) {
           if (fired & (1 << i)) {
@@ -112,6 +124,7 @@ export const cpu = {
 
   serviceInterrupt: (i: number) => {
     cpu.reg.ime = 0;
+    cpu.reg.ime_cnt = 0;
     cpu.halt = 0;
     mmu.intf &= ~(1 << i);
 
@@ -714,9 +727,9 @@ export const cpu = {
     SCF: () => { cpu.reg.f &= ~cpu.FLAGS.N; cpu.reg.f &= ~cpu.FLAGS.H; cpu.reg.f |= cpu.FLAGS.C; cpu.reg.m = 1; cpu.reg.t = 4; },
     CCF: () => { cpu.reg.f &= ~cpu.FLAGS.N; cpu.reg.f &= ~cpu.FLAGS.H; cpu.reg.f ^= cpu.FLAGS.C; cpu.reg.m = 1; cpu.reg.t = 4; },
     DI: () => { cpu.reg.ime = 0; cpu.reg.ime_cnt = 0; cpu.reg.m = 1; cpu.reg.t = 4; },
-    EI: () => { cpu.reg.ime_cnt = 2; cpu.reg.m = 1; cpu.reg.t = 4; },
+    EI: () => { cpu.reg.ime_cnt = 1; cpu.reg.m = 1; cpu.reg.t = 4; },
     HALT: () => { cpu.halt = 1; cpu.reg.m = 1; cpu.reg.t = 4; },
-    STOP: () => { cpu.stop = 1; cpu.reg.m = 1; cpu.reg.t = 4; },
+    STOP: () => { console.log('STOP at PC=' + (cpu.reg.pc - 1).toString(16)); cpu.stop = 1; cpu.reg.m = 1; cpu.reg.t = 4; },
 
     MAPcb: () => {
       let opcode = mmu.rb(cpu.reg.pc);

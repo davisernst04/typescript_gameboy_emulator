@@ -124,10 +124,11 @@ var gpu = {
     if (stat & 32 && gpu.linemode === 2) interrupt = true;
     if (stat & 16 && gpu.linemode === 1) interrupt = true;
     if (stat & 8 && gpu.linemode === 0) interrupt = true;
-    gpu.reg[1] = stat;
+    gpu.reg[1] = gpu.reg[1] & 128 | stat & 127;
     if (interrupt) mmu.intf |= 2;
   },
   checkline: () => {
+    if (!gpu.lcdon) return;
     gpu.modeclocks += cpu.reg.m;
     switch (gpu.linemode) {
       case 0:
@@ -135,7 +136,6 @@ var gpu = {
           gpu.modeclocks = 0;
           gpu.curline++;
           gpu.curscan += 640;
-          gpu.checkStat();
           if (gpu.curline === 144) {
             gpu.linemode = 1;
             if (gpu.canvas && gpu.canvas.putImageData) {
@@ -145,18 +145,19 @@ var gpu = {
           } else {
             gpu.linemode = 2;
           }
+          gpu.checkStat();
         }
         break;
       case 1:
         if (gpu.modeclocks >= 114) {
           gpu.modeclocks = 0;
           gpu.curline++;
-          gpu.checkStat();
           if (gpu.curline > 153) {
             gpu.curline = 0;
             gpu.curscan = 0;
             gpu.linemode = 2;
           }
+          gpu.checkStat();
         }
         break;
       case 2:
@@ -172,6 +173,7 @@ var gpu = {
           if (gpu.lcdon) {
             gpu.renderScanline();
           }
+          gpu.checkStat();
         }
         break;
     }
@@ -203,22 +205,50 @@ var gpu = {
       }
     }
     if (gpu.objon) {
+      let height = gpu.objsize ? 16 : 8;
       let spritesOnLine = [];
       for (let i = 0; i < 40; i++) {
         let obj = gpu.objdata[i];
-        if (obj.y <= gpu.curline && obj.y + 8 > gpu.curline) {
+        let oamX = obj.x + 8;
+        if (oamX > 0 && oamX < 168 && obj.y <= gpu.curline && obj.y + height > gpu.curline) {
           spritesOnLine.push(obj);
-          if (spritesOnLine.length >= 10) break;
         }
+      }
+      if (spritesOnLine.length > 0) {
+        console.log(`[GPU] Line ${gpu.curline} sprites:`, spritesOnLine.length);
+      }
+      spritesOnLine.sort((a, b) => {
+        if (a.x !== b.x) return a.x - b.x;
+        return a.num - b.num;
+      });
+      if (spritesOnLine.length > 10) {
+        spritesOnLine = spritesOnLine.slice(0, 10);
+      }
+      if (gpu.curline === 72 && spritesOnLine.length > 0) {
+        console.log("[GPU] Line 72 sprites:", spritesOnLine.map(function(o) {
+          return { x: o.x, y: o.y, tile: o.tile, pal: o.palette };
+        }));
       }
       for (let i = spritesOnLine.length - 1; i >= 0; i--) {
         let obj = spritesOnLine[i];
         let tilerow;
-        if (obj.yflip) {
-          tilerow = gpu.tilemap[obj.tile][7 - (gpu.curline - obj.y)];
+        let tileIdx = obj.tile;
+        let lineOffset = gpu.curline - obj.y;
+        if (height === 16) {
+          tileIdx &= 254;
+          if (obj.yflip) {
+            if (lineOffset < 8) tileIdx |= 1;
+            lineOffset = 7 - lineOffset % 8;
+          } else {
+            if (lineOffset >= 8) tileIdx |= 1;
+            lineOffset %= 8;
+          }
         } else {
-          tilerow = gpu.tilemap[obj.tile][gpu.curline - obj.y];
+          if (obj.yflip) {
+            lineOffset = 7 - lineOffset;
+          }
         }
+        tilerow = gpu.tilemap[tileIdx][lineOffset];
         let pal = obj.palette ? gpu.palette.obj1 : gpu.palette.obj0;
         for (let x = 0; x < 8; x++) {
           let canvas_x = obj.x + x;
@@ -298,18 +328,32 @@ var gpu = {
     gpu.reg[gaddr] = val;
     switch (gaddr) {
       case 0:
+        console.log("[GPU] LCDC write:", val.toString(16), "lcdon:", !!(val & 128), "objon:", !!(val & 2), "bgon:", !!(val & 1));
+        const wason = gpu.lcdon;
         gpu.lcdon = val & 128 ? 1 : 0;
+        if (wason && !gpu.lcdon) {
+          gpu.curline = 0;
+          gpu.linemode = 0;
+          gpu.modeclocks = 0;
+        }
         gpu.bgtilebase = val & 16 ? 0 : 2048;
         gpu.bgmapbase = val & 8 ? 7168 : 6144;
         gpu.objsize = val & 4 ? 1 : 0;
         gpu.objon = val & 2 ? 1 : 0;
         gpu.bgon = val & 1 ? 1 : 0;
+        if (gpu.objon) {
+          const nonzero = gpu.objdata.filter((o) => o.y > -16 || o.x > -8);
+          console.log("[GPU] objon=1, nonzero OAM:", nonzero.length, nonzero.slice(0, 5));
+        }
         break;
       case 2:
         gpu.yscrl = val;
         break;
       case 3:
         gpu.xscrl = val;
+        break;
+      case 4:
+        gpu.curline = 0;
         break;
       case 5:
         gpu.raster = val;
@@ -515,9 +559,12 @@ var joypad = {
   // Bits: 3: Start/Down, 2: Select/Up, 1: B/Left, 0: A/Right
   buttons: 15,
   directions: 15,
+  select: 48,
+  // Bits 4 and 5 are selection bits (1 = not selected)
   reset: () => {
     joypad.buttons = 15;
     joypad.directions = 15;
+    joypad.select = 48;
   },
   /**
    * Initializes the joypad by setting up event listeners.
@@ -525,27 +572,31 @@ var joypad = {
   init: () => {
     window.addEventListener("keydown", (e) => {
       joypad.keyDown(e.code);
+      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "KeyZ", "KeyX", "ShiftLeft", "ShiftRight", "Enter"].includes(e.code)) {
+        e.preventDefault();
+      }
     });
     window.addEventListener("keyup", (e) => {
       joypad.keyUp(e.code);
+      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "KeyZ", "KeyX", "ShiftLeft", "ShiftRight", "Enter"].includes(e.code)) {
+        e.preventDefault();
+      }
     });
     log.out("JOY", "Joypad event listeners attached.");
   },
   /**
    * Reads from the 0xFF00 register.
-   * @param regVal - The current value of the 0xFF00 register (bits 4 and 5 indicate which buttons to read).
    * @returns The value to be returned when reading from 0xFF00.
    */
-  rb: (regVal) => {
+  rb: () => {
     let res = 15;
-    if (!(regVal & 16)) {
-      res &= joypad.directions;
-    }
-    if (!(regVal & 32)) {
+    if (!(joypad.select & 32)) {
       res &= joypad.buttons;
     }
-    const finalVal = 192 | regVal & 48 | res;
-    return finalVal;
+    if (!(joypad.select & 16)) {
+      res &= joypad.directions;
+    }
+    return 192 | joypad.select | res;
   },
   keyDown: (code) => {
     let pressed = true;
@@ -553,19 +604,19 @@ var joypad = {
       case "ArrowRight":
         joypad.directions &= ~1;
         break;
-      // Right
+      // Right / A
       case "ArrowLeft":
         joypad.directions &= ~2;
         break;
-      // Left
+      // Left / B
       case "ArrowUp":
         joypad.directions &= ~4;
         break;
-      // Up
+      // Up / Select
       case "ArrowDown":
         joypad.directions &= ~8;
         break;
-      // Down
+      // Down / Start
       case "KeyZ":
         joypad.buttons &= ~1;
         break;
@@ -588,8 +639,9 @@ var joypad = {
         break;
     }
     if (pressed) {
-      console.log(`Joypad key down: ${code}`);
-      mmu.intf |= 16;
+      if (mmu) {
+        mmu.intf |= 16;
+      }
     }
   },
   keyUp: (code) => {
@@ -906,8 +958,6 @@ var MMU = class {
   tac = 0;
   div_cnt = 0;
   tima_cnt = 0;
-  joypad = 255;
-  // Initial state
   constructor() {
     this.reset();
   }
@@ -926,7 +976,6 @@ var MMU = class {
     this.tac = 0;
     this.div_cnt = 0;
     this.tima_cnt = 0;
-    this.joypad = 255;
   }
   /**
    * Sets the Memory Banking Controller (MBC).
@@ -980,7 +1029,7 @@ var MMU = class {
         } else if (addr >= 65280 && addr <= 65407) {
           if (addr >= 65344 && addr <= 65359) return gpu.rb(addr);
           if (addr === 65295) return this.intf;
-          if (addr === 65280) return joypad.rb(this.joypad);
+          if (addr === 65280) return joypad.rb();
           if (addr === 65284) return this.div;
           if (addr === 65285) return this.tima;
           if (addr === 65286) return this.tma;
@@ -1058,7 +1107,7 @@ var MMU = class {
               gpu.updateoam(65024 + i, v);
             }
           } else if (addr === 65280) {
-            this.joypad = this.joypad & 207 | val & 48;
+            joypad.select = val & 48;
           } else if (addr === 65284) {
             this.div = 0;
             this.div_cnt = 0;
@@ -1222,7 +1271,17 @@ var cpu = {
     cpu.clock.t = 0;
   },
   step: () => {
-    if (cpu.stop) return;
+    if (cpu.stop) {
+      if (mmu.intf & mmu.inte & 16) {
+        cpu.stop = 0;
+      } else {
+        cpu.reg.m = 1;
+        cpu.reg.t = 4;
+        cpu.clock.m += cpu.reg.m;
+        cpu.clock.t += cpu.reg.t;
+        return;
+      }
+    }
     if (cpu.interrupts()) {
     } else if (cpu.halt) {
       cpu.reg.m = 1;
@@ -1247,7 +1306,7 @@ var cpu = {
   },
   interrupts: () => {
     if (cpu.reg.ime) {
-      let fired = mmu.inte & mmu.intf;
+      let fired = mmu.inte & mmu.intf & 31;
       if (fired) {
         for (let i = 0; i < 5; i++) {
           if (fired & 1 << i) {
@@ -1265,6 +1324,7 @@ var cpu = {
   },
   serviceInterrupt: (i) => {
     cpu.reg.ime = 0;
+    cpu.reg.ime_cnt = 0;
     cpu.halt = 0;
     mmu.intf &= ~(1 << i);
     cpu.reg.sp = cpu.reg.sp - 2 & 65535;
@@ -2127,7 +2187,7 @@ var cpu = {
       cpu.reg.t = 4;
     },
     EI: () => {
-      cpu.reg.ime_cnt = 2;
+      cpu.reg.ime_cnt = 1;
       cpu.reg.m = 1;
       cpu.reg.t = 4;
     },
@@ -2137,6 +2197,7 @@ var cpu = {
       cpu.reg.t = 4;
     },
     STOP: () => {
+      console.log("STOP at PC=" + (cpu.reg.pc - 1).toString(16));
       cpu.stop = 1;
       cpu.reg.m = 1;
       cpu.reg.t = 4;

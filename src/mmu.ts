@@ -47,7 +47,6 @@ export class MMU {
   public tac = 0;
   public div_cnt = 0;
   public tima_cnt = 0;
-  public joypad = 0xFF; // Initial state
 
   constructor() {
     this.reset();
@@ -68,7 +67,6 @@ export class MMU {
     this.tac = 0;
     this.div_cnt = 0;
     this.tima_cnt = 0;
-    this.joypad = 0xFF;
   }
 
   /**
@@ -133,7 +131,7 @@ export class MMU {
           // I/O Registers
           if (addr >= 0xff40 && addr <= 0xff4f) return gpu.rb(addr);
           if (addr === 0xff0f) return this.intf;
-          if (addr === 0xff00) return joypad.rb(this.joypad);
+          if (addr === 0xff00) return joypad.rb();
           if (addr === 0xff04) return this.div;
           if (addr === 0xff05) return this.tima;
           if (addr === 0xff06) return this.tma;
@@ -226,7 +224,7 @@ export class MMU {
             }
           } else if (addr === 0xff00) {
             // Only bits 4 and 5 are writable
-            this.joypad = (this.joypad & 0xCF) | (val & 0x30);
+            joypad.select = val & 0x30;
           } else if (addr === 0xff04) {
             this.div = 0;
             this.div_cnt = 0;
