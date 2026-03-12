@@ -39,6 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+*.tmp
+
+# local debug / scratch files
+tmp_*.js
 
 ROADMAP.md
 GEMINI.md

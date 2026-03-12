@@ -1,192 +1,134 @@
-# Game Boy Emulator
+# TypeScript Game Boy Emulator
 
-A Game Boy emulator written in TypeScript using Next.js that accurately emulates the original Nintendo Game Boy hardware.
+A compact Nintendo Game Boy emulator written in TypeScript.
 
-## Features
+This project focuses on emulating the original DMG-01 hardware closely enough to run real Game Boy ROMs in the browser and to validate CPU behaviour with Node-based test harnesses. It is a practical emulator project rather than a framework or tutorial app: the core logic lives in `src/`, the browser bundle is served through Vite, and ROM-driven validation scripts are included for low-level testing.
 
-- **CPU Emulation**: Full Sharp LR35902 CPU emulation (8-bit processor based on Z80)
-- **Graphics**: PPU (Picture Processing Unit) with support for backgrounds, sprites, and window
-- **Memory Management**: Complete memory map implementation including ROM, RAM, and memory banking
-- **Input Handling**: Support for all Game Boy buttons (D-pad, A, B, Start, Select)
-- **Audio**: Sound processing unit with 4 audio channels (2 square waves, 1 wave, 1 noise)
-- **Save States**: Save and load game progress at any time
-- **ROM Support**: Compatible with .gb ROM files
-- **Debugger**: Built-in debugger with breakpoints and memory inspection
+## Current status
 
-## Getting Started
+- Browser emulator loads and runs ROMs through a file picker
+- CPU, MMU, GPU, cartridge loading, and joypad plumbing are implemented in TypeScript
+- Passes `cpu_instrs.gb`
+- Includes Node-side test runners for ROM-based CPU verification
 
-### Prerequisites
+## Project structure
 
-- Node.js 18.x or higher
-- npm or yarn
-- Game Boy ROM files (.gb format)
+```text
+src/                 Emulator core (CPU, MMU, GPU, MBC, cartridge, joypad)
+dist/                Built browser output
+roms/                Local test ROMs used during development
+build_browser_bundle.js
+build_node_bundle.js Build scripts for browser and Node bundles
+test_*.js / test_*.ts Node-side validation and debugging scripts
+```
 
-### Installation
+## Requirements
+
+- Node.js 18+
+- npm
+
+Install dependencies:
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/gameboy-emulator.git
-cd gameboy-emulator
-
-# Install dependencies
 npm install
-# or
-yarn install
-
-# Run the development server
-npm run dev
-# or
-yarn dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser to see the emulator.
+## Running in the browser
 
-### Building for Production
+Start the local dev server:
 
 ```bash
-# Build the application
+npm run dev
+```
+
+This bundles the emulator and starts Vite. Open the local URL shown in the terminal, then:
+
+1. Choose a `.gb` ROM using the file input
+2. The ROM is read into memory in the browser
+3. Emulation starts automatically
+
+For a production-style build:
+
+```bash
 npm run build
-# or
-yarn build
-
-# Start the production server
-npm start
-# or
-yarn start
 ```
 
-### Usage
+## Running Node-based ROM tests
 
-1. Open the application in your browser
-2. Click "Load ROM" or drag and drop a .gb ROM file
-3. The emulator will start automatically
-4. Use the on-screen controls or keyboard to play
+The repository includes Node test harnesses for validating emulator behaviour without the browser.
+
+Build the Node bundle:
 
 ```bash
-# Run with debugger tools (development mode)
-npm run dev
+node build_node_bundle.js
 ```
+
+Run the main CPU instruction test:
+
+```bash
+node test_cpu_instrs.js
+```
+
+This executes the bundled emulator against `roms/cpu_instrs.gb` and prints the serial output emitted by the test ROM.
+
+## Loading ROMs
+
+### Browser
+
+Use the ROM file picker in the page and select any local `.gb` file.
+
+### Node test flow
+
+The test scripts load ROMs directly from the repository, for example:
+
+- `roms/cpu_instrs.gb`
+- `roms/test.gb`
+
+If you want to validate a different ROM in Node, update the ROM path inside the relevant test script.
 
 ## Controls
 
-| Game Boy Button | Keyboard Key |
-|----------------|--------------|
-| D-Pad Up       | W / Arrow Up |
-| D-Pad Down     | S / Arrow Down |
-| D-Pad Left     | A / Arrow Left |
-| D-Pad Right    | D / Arrow Right |
-| A Button       | J / Z |
-| B Button       | K / X |
-| Start          | Enter |
-| Select         | Shift |
+Keyboard controls currently map as follows:
 
-## Architecture
+- Arrow keys — D-pad
+- `Z` — A
+- `X` — B
+- `Enter` — Start
+- `Left Shift` / `Right Shift` — Select
 
-### Components
+## Scripts
 
-- **CPU**: Implements the Sharp LR35902 instruction set with all opcodes and CB-prefixed opcodes
-- **MMU**: Memory Management Unit handling memory mapping and banking controllers (MBC1, MBC3, MBC5)
-- **PPU**: Picture Processing Unit rendering backgrounds, sprites, and the window layer
-- **APU**: Audio Processing Unit for sound generation
-- **Timer**: Implements the Game Boy's timer and divider registers
-- **Joypad**: Input handling and interrupt generation
-
-### Memory Map
-
-```
-0x0000-0x3FFF: ROM Bank 0
-0x4000-0x7FFF: ROM Bank 1-N (switchable)
-0x8000-0x9FFF: Video RAM
-0xA000-0xBFFF: External RAM
-0xC000-0xDFFF: Work RAM
-0xE000-0xFDFF: Echo RAM
-0xFE00-0xFE9F: Sprite Attribute Table
-0xFF00-0xFF7F: I/O Registers
-0xFF80-0xFFFE: High RAM
-0xFFFF: Interrupt Enable Register
-```
-
-## Compatibility
-
-Currently tested and compatible with:
-- Tetris
-- Dr. Mario
-- Super Mario Land
-- The Legend of Zelda: Link's Awakening
-- Pokemon Red/Blue
-
-## Known Issues
-
-- [List any known bugs or limitations]
-- Game Boy Color (GBC) games are not yet supported
-- Some audio edge cases may not be perfectly accurate
-
-## Running Tests
+From `package.json`:
 
 ```bash
-# Run the test suite
-npm test
-# or
-yarn test
-
-# Run tests in watch mode
-npm run test:watch
-# or
-yarn test:watch
+npm run dev     # bundle browser code and start Vite
+npm run build   # type-check/build and create production output
+npm run bundle  # build browser bundle only
 ```
 
-## Development
+## Implementation notes
 
-### Project Structure
+Core emulator modules:
 
-```
-├── src/
-│   ├── app/              # Next.js app directory
-│   │   ├── page.tsx      # Main emulator page
-│   │   └── layout.tsx    # Root layout
-│   ├── components/       # React components
-│   │   ├── Emulator.tsx  # Main emulator component
-│   │   ├── Screen.tsx    # Display canvas
-│   │   └── Controls.tsx  # Input controls
-│   ├── lib/
-│   │   ├── cpu/          # CPU implementation
-│   │   ├── ppu/          # Graphics rendering
-│   │   ├── apu/          # Audio processing
-│   │   ├── mmu/          # Memory management
-│   │   └── cartridge/    # ROM loading and MBC
-│   └── types/            # TypeScript type definitions
-├── public/               # Static assets
-├── tests/                # Test ROMs and specs
-└── README.md
-```
+- `src/cpu.ts` — Sharp LR35902 CPU emulation
+- `src/mmu.ts` — memory map and hardware register plumbing
+- `src/gpu.ts` — display pipeline and frame generation
+- `src/cartridge.ts` / `src/mbc.ts` — ROM loading and bank controller support
+- `src/joypad.ts` — keyboard input mapped to Game Boy buttons
+- `src/main.ts` — emulator bootstrap and browser integration
 
-### Contributing
+## Credits
 
-Contributions are welcome! Please follow these steps:
+Useful references and validation sources for this project include:
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## Resources
-
-- [Pan Docs](https://gbdev.io/pandocs/) - Comprehensive Game Boy technical documentation
-- [Game Boy CPU Manual](http://marc.rawer.de/Gameboy/Docs/GBCPUman.pdf)
-- [Blargg's Test ROMs](https://github.com/retrio/gb-test-roms) - CPU and hardware test suite
-- [The Ultimate Game Boy Talk](https://www.youtube.com/watch?v=HyzD8pNlpwI) - Detailed hardware overview
+- [Pan Docs](https://gbdev.io/pandocs/)
+- [Blargg's Game Boy test ROMs](https://github.com/retrio/gb-test-roms)
+- The wider gbdev community documentation
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Licensed under the ISC License. See `package.json` for the declared project license.
 
-## Acknowledgments
+## Legal note
 
-- Nintendo for the original Game Boy hardware
-- The Game Boy development community for extensive documentation
-- Test ROM creators for validation tools
-
-## Legal Notice
-
-This emulator is for educational purposes only. You must own the physical Game Boy cartridge to legally use ROM files. This project is not affiliated with or endorsed by Nintendo.
+This emulator is provided for educational and personal development purposes. Use only ROMs you are legally entitled to possess and run.
