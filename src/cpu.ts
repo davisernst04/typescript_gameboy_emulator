@@ -99,8 +99,8 @@ export const cpu = {
     cpu.clock.m += cpu.reg.m;
     cpu.clock.t += cpu.reg.t;
 
-    mmu.updateTimer(cpu.reg.m);
     gpu.checkline();
+    mmu.updateTimer(cpu.reg.m);
   },
 
   interrupts: () => {

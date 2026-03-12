@@ -20,7 +20,6 @@ export const gpu = {
   scanrow: new Uint8Array(160),
 
   curline: 0,
-  curscan: 0,
   linemode: 0,
   modeclocks: 0,
 
@@ -88,7 +87,6 @@ export const gpu = {
     }
 
     gpu.curline = 0;
-    gpu.curscan = 0;
     gpu.linemode = 2;
     gpu.modeclocks = 0;
     gpu.yscrl = 0;
@@ -142,13 +140,26 @@ export const gpu = {
 
   checkline: () => {
     if (!gpu.lcdon) return;
-    gpu.modeclocks += cpu.reg.m;
+    gpu.modeclocks += cpu.reg.t;
     switch (gpu.linemode) {
+      case 2: // OAM-read mode
+        if (gpu.modeclocks >= 80) {
+          gpu.modeclocks -= 80;
+          gpu.linemode = 3;
+        }
+        break;
+      case 3: // Render scanline
+        if (gpu.modeclocks >= 172) {
+          gpu.modeclocks -= 172;
+          gpu.linemode = 0;
+          gpu.renderScanline();
+          gpu.checkStat();
+        }
+        break;
       case 0: // H-Blank
-        if (gpu.modeclocks >= 51) {
-          gpu.modeclocks = 0;
+        if (gpu.modeclocks >= 204) {
+          gpu.modeclocks -= 204;
           gpu.curline++;
-          gpu.curscan += 640;
           if (gpu.curline === 144) {
             gpu.linemode = 1;
             if (gpu.canvas && gpu.canvas.putImageData) {
@@ -162,29 +173,12 @@ export const gpu = {
         }
         break;
       case 1: // V-Blank
-        if (gpu.modeclocks >= 114) {
-          gpu.modeclocks = 0;
+        if (gpu.modeclocks >= 456) {
+          gpu.modeclocks -= 456;
           gpu.curline++;
           if (gpu.curline > 153) {
             gpu.curline = 0;
-            gpu.curscan = 0;
             gpu.linemode = 2;
-          }
-          gpu.checkStat();
-        }
-        break;
-      case 2: // OAM-read mode
-        if (gpu.modeclocks >= 20) {
-          gpu.modeclocks = 0;
-          gpu.linemode = 3;
-        }
-        break;
-      case 3: // Render scanline
-        if (gpu.modeclocks >= 43) {
-          gpu.modeclocks = 0;
-          gpu.linemode = 0;
-          if (gpu.lcdon) {
-            gpu.renderScanline();
           }
           gpu.checkStat();
         }
@@ -193,8 +187,8 @@ export const gpu = {
   },
 
   renderScanline: () => {
+    let linebase = gpu.curline * 160 * 4;
     if (gpu.bgon) {
-      let linebase = gpu.curscan;
       let mapbase = gpu.bgmapbase + ((((gpu.curline + gpu.yscrl) & 255) >> 3) << 5);
       let y = (gpu.curline + gpu.yscrl) & 7;
       let x = gpu.xscrl & 7;
@@ -203,8 +197,7 @@ export const gpu = {
       for (let i = 0; i < 160; i++) {
         let tile = gpu.vram[mapbase + t];
         if (gpu.bgtilebase === 0x0800 && tile < 128) tile += 256;
-        let tilerow = gpu.tilemap[tile][y];
-        let color_idx = tilerow[x];
+        let color_idx = gpu.tilemap[tile][y][x];
         gpu.scanrow[i] = color_idx;
         let color = gpu.palette.bg[color_idx];
 
@@ -223,22 +216,21 @@ export const gpu = {
     }
 
     if (gpu.winon && gpu.curline >= gpu.winy) {
-      let linebase = gpu.curscan;
       let winY = gpu.curline - gpu.winy;
       let mapbase = gpu.wintilebase + ((winY >> 3) << 5);
       let y = winY & 7;
       let winXStart = gpu.winx - 7;
 
-      for (let i = Math.max(0, winXStart); i < 160; i++) {
+      for (let i = 0; i < 160; i++) {
+        if (i < winXStart) continue;
         let t = (i - winXStart) >> 3;
         let x = (i - winXStart) & 7;
         let tile = gpu.vram[mapbase + t];
         if (gpu.bgtilebase === 0x0800 && tile < 128) tile += 256;
-        let tilerow = gpu.tilemap[tile][y];
-        let color_idx = tilerow[x];
+        let color_idx = gpu.tilemap[tile][y][x];
         gpu.scanrow[i] = color_idx;
         let color = gpu.palette.bg[color_idx];
-        let lb = linebase + (i * 4);
+        let lb = (gpu.curline * 160 + i) * 4;
         gpu.screen.data[lb] = color;
         gpu.screen.data[lb + 1] = color;
         gpu.screen.data[lb + 2] = color;
@@ -274,7 +266,6 @@ export const gpu = {
 
       for (let i = spritesOnLine.length - 1; i >= 0; i--) {
         let obj = spritesOnLine[i];
-        let tilerow;
         let tileIdx = obj.tile;
         let lineOffset = gpu.curline - obj.y;
 
@@ -292,13 +283,12 @@ export const gpu = {
             lineOffset = 7 - lineOffset;
           }
         }
-        tilerow = gpu.tilemap[tileIdx][lineOffset];
 
         let pal = obj.palette ? gpu.palette.obj1 : gpu.palette.obj0;
         for (let x = 0; x < 8; x++) {
           let canvas_x = obj.x + x;
           if (canvas_x >= 0 && canvas_x < 160) {
-            let color_idx = obj.xflip ? tilerow[7 - x] : tilerow[x];
+            let color_idx = obj.xflip ? gpu.tilemap[tileIdx][lineOffset][7 - x] : gpu.tilemap[tileIdx][lineOffset][x];
             if (color_idx !== 0 && (obj.prio === 0 || gpu.scanrow[canvas_x] === 0)) {
               let color = pal[color_idx];
               let linebase = (gpu.curline * 160 + canvas_x) * 4;
