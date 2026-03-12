@@ -52,3 +52,13 @@ GEMINI.md
 node_test_bundle*.js
 node_test_bundle*.cjs
 
+# local tool state
+/.gemini/
+
+# root-level scratch / artifact files
+/*.txt
+/*.js
+/*.cjs
+/*.gb
+!/roms/**/*.gb
+
