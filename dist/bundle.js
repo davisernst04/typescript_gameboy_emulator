@@ -559,12 +559,9 @@ var joypad = {
   // Bits: 3: Start/Down, 2: Select/Up, 1: B/Left, 0: A/Right
   buttons: 15,
   directions: 15,
-  select: 48,
-  // Bits 4 and 5 are selection bits (1 = not selected)
   reset: () => {
     joypad.buttons = 15;
     joypad.directions = 15;
-    joypad.select = 48;
   },
   /**
    * Initializes the joypad by setting up event listeners.
@@ -572,31 +569,27 @@ var joypad = {
   init: () => {
     window.addEventListener("keydown", (e) => {
       joypad.keyDown(e.code);
-      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "KeyZ", "KeyX", "ShiftLeft", "ShiftRight", "Enter"].includes(e.code)) {
-        e.preventDefault();
-      }
     });
     window.addEventListener("keyup", (e) => {
       joypad.keyUp(e.code);
-      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "KeyZ", "KeyX", "ShiftLeft", "ShiftRight", "Enter"].includes(e.code)) {
-        e.preventDefault();
-      }
     });
     log.out("JOY", "Joypad event listeners attached.");
   },
   /**
    * Reads from the 0xFF00 register.
+   * @param regVal - The current value of the 0xFF00 register (bits 4 and 5 indicate which buttons to read).
    * @returns The value to be returned when reading from 0xFF00.
    */
-  rb: () => {
+  rb: (regVal) => {
     let res = 15;
-    if (!(joypad.select & 32)) {
-      res &= joypad.buttons;
-    }
-    if (!(joypad.select & 16)) {
+    if (!(regVal & 16)) {
       res &= joypad.directions;
     }
-    return 192 | joypad.select | res;
+    if (!(regVal & 32)) {
+      res &= joypad.buttons;
+    }
+    const finalVal = 192 | regVal & 48 | res;
+    return finalVal;
   },
   keyDown: (code) => {
     let pressed = true;
@@ -604,19 +597,19 @@ var joypad = {
       case "ArrowRight":
         joypad.directions &= ~1;
         break;
-      // Right / A
+      // Right
       case "ArrowLeft":
         joypad.directions &= ~2;
         break;
-      // Left / B
+      // Left
       case "ArrowUp":
         joypad.directions &= ~4;
         break;
-      // Up / Select
+      // Up
       case "ArrowDown":
         joypad.directions &= ~8;
         break;
-      // Down / Start
+      // Down
       case "KeyZ":
         joypad.buttons &= ~1;
         break;
@@ -639,9 +632,8 @@ var joypad = {
         break;
     }
     if (pressed) {
-      if (mmu) {
-        mmu.intf |= 16;
-      }
+      console.log(`Joypad key down: ${code}`);
+      mmu.intf |= 16;
     }
   },
   keyUp: (code) => {
