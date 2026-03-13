@@ -1,8 +1,8 @@
 # TypeScript Game Boy Emulator
 
-A compact Nintendo Game Boy emulator written in TypeScript.
+A Nintendo Game Boy emulator written in TypeScript.
 
-This project focuses on emulating the original DMG-01 hardware closely enough to run real Game Boy ROMs in the browser and to validate CPU behaviour with Node-based test harnesses. It is a practical emulator project rather than a framework or tutorial app: the core logic lives in `src/`, the browser bundle is served through Vite, and ROM-driven validation scripts are included for low-level testing.
+This project focuses on emulating the original DMG-01 hardware closely enough to run real Game Boy ROMs in the browser and to validate CPU behaviour with Node-based test harnesses. The core logic lives in `src/`, the browser bundle is served through Vite, and ROM-driven validation scripts are included for low level testing.
 
 ## Current status
 
@@ -45,12 +45,6 @@ This bundles the emulator and starts Vite. Open the local URL shown in the termi
 1. Choose a `.gb` ROM using the file input
 2. The ROM is read into memory in the browser
 3. Emulation starts automatically
-
-For a production-style build:
-
-```bash
-npm run build
-```
 
 ## Running Node-based ROM tests
 
@@ -117,17 +111,23 @@ Core emulator modules:
 - `src/joypad.ts` — keyboard input mapped to Game Boy buttons
 - `src/main.ts` — emulator bootstrap and browser integration
 
+## Known limitations
+
+- Compatibility is still in progress. Some games may not boot correctly, may exhibit graphical or gameplay glitches, or may behave differently from original hardware.
+- Audio output is not implemented yet, so sound is currently unavailable.
+
 ## Credits
 
 Useful references and validation sources for this project include:
 
 - [Pan Docs](https://gbdev.io/pandocs/)
 - [Blargg's Game Boy test ROMs](https://github.com/retrio/gb-test-roms)
-- The wider gbdev community documentation
+- [gameboy.js](https://github.com/juchi/gameboy.js)
+- [Gameboy Emulation in Javascript Guide](https://imrannazar.com/series/gameboy-emulation-in-javascript)
 
 ## License
 
-Licensed under the ISC License. See `package.json` for the declared project license.
+Licensed under the ISC License.
 
 ## Legal note
 
