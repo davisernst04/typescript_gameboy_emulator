@@ -22,6 +22,7 @@ export const gpu = {
   curline: 0,
   linemode: 0,
   modeclocks: 0,
+  stat_line: false,
 
   yscrl: 0,
   xscrl: 0,
@@ -89,6 +90,7 @@ export const gpu = {
     gpu.curline = 0;
     gpu.linemode = 2;
     gpu.modeclocks = 0;
+    gpu.stat_line = false;
     gpu.yscrl = 0;
     gpu.xscrl = 0;
     gpu.raster = 0;
@@ -119,23 +121,27 @@ export const gpu = {
   checkStat: () => {
     if (!gpu.lcdon) return;
     let stat = gpu.reg[1];
-    let interrupt = false;
+    let condition = false;
 
     // LYC=LY interrupt
-    if ((stat & 0x40) && (gpu.curline === gpu.raster)) {
+    if (gpu.curline === gpu.raster) {
       stat |= 0x04;
-      interrupt = true;
+      if (stat & 0x40) condition = true;
     } else {
       stat &= ~0x04;
     }
 
     // Mode interrupts
-    if ((stat & 0x20) && (gpu.linemode === 2)) interrupt = true;
-    if ((stat & 0x10) && (gpu.linemode === 1)) interrupt = true;
-    if ((stat & 0x08) && (gpu.linemode === 0)) interrupt = true;
+    if ((stat & 0x20) && (gpu.linemode === 2)) condition = true;
+    if ((stat & 0x10) && (gpu.linemode === 1)) condition = true;
+    if ((stat & 0x08) && (gpu.linemode === 0)) condition = true;
 
-    gpu.reg[1] = (gpu.reg[1] & 0x80) | (stat & 0x7F);
-    if (interrupt) mmu.intf |= 0x02;
+    gpu.reg[1] = (gpu.reg[1] & 0xF8) | (stat & 0x04) | gpu.linemode;
+    
+    if (condition && !gpu.stat_line) {
+      mmu.intf |= 0x02;
+    }
+    gpu.stat_line = condition;
   },
 
   checkline: () => {
@@ -187,8 +193,20 @@ export const gpu = {
   },
 
   renderScanline: () => {
+    gpu.scanrow.fill(0);
     let linebase = gpu.curline * 160 * 4;
-    if (gpu.bgon) {
+
+    // Fill background with white (palette index 0) if BG is off
+    if (!gpu.bgon) {
+      let color = gpu.palette.bg[0];
+      for (let i = 0; i < 160; i++) {
+        gpu.screen.data[linebase] = color;
+        gpu.screen.data[linebase + 1] = color;
+        gpu.screen.data[linebase + 2] = color;
+        gpu.screen.data[linebase + 3] = 255;
+        linebase += 4;
+      }
+    } else {
       let mapbase = gpu.bgmapbase + ((((gpu.curline + gpu.yscrl) & 255) >> 3) << 5);
       let y = (gpu.curline + gpu.yscrl) & 7;
       let x = gpu.xscrl & 7;
@@ -215,7 +233,7 @@ export const gpu = {
       }
     }
 
-    if (gpu.winon && gpu.curline >= gpu.winy) {
+    if (gpu.bgon && gpu.winon && gpu.curline >= gpu.winy) {
       let winY = gpu.curline - gpu.winy;
       let mapbase = gpu.wintilebase + ((winY >> 3) << 5);
       let y = winY & 7;
@@ -243,26 +261,16 @@ export const gpu = {
       let spritesOnLine = [];
       for (let i = 0; i < 40; i++) {
         let obj = gpu.objdata[i];
-        let oamX = obj.x + 8;
-        if (oamX > 0 && oamX < 168 && obj.y <= gpu.curline && obj.y + height > gpu.curline) {
+        if (obj.y <= gpu.curline && obj.y + height > gpu.curline) {
           spritesOnLine.push(obj);
         }
-      }
-
-      if (spritesOnLine.length > 0) {
-          console.log(`[GPU] Line ${gpu.curline} sprites:`, spritesOnLine.length);
+        if (spritesOnLine.length === 10) break;
       }
 
       spritesOnLine.sort((a, b) => {
         if (a.x !== b.x) return a.x - b.x;
         return a.num - b.num;
       });
-
-      if (spritesOnLine.length > 10) {
-        spritesOnLine = spritesOnLine.slice(0, 10);
-      }
-
-      if (gpu.curline === 72 && spritesOnLine.length > 0) { console.log('[GPU] Line 72 sprites:', spritesOnLine.map(function(o: any){ return {x:o.x,y:o.y,tile:o.tile,pal:o.palette}; })); }
 
       for (let i = spritesOnLine.length - 1; i >= 0; i--) {
         let obj = spritesOnLine[i];
@@ -324,8 +332,8 @@ export const gpu = {
         case 2: gpu.objdata[obj].tile = val; break;
         case 3:
           gpu.objdata[obj].palette = (val & 0x10) ? 1 : 0;
-          gpu.objdata[obj].yflip = (val & 0x20) ? 1 : 0;
-          gpu.objdata[obj].xflip = (val & 0x40) ? 1 : 0;
+          gpu.objdata[obj].xflip = (val & 0x20) ? 1 : 0;
+          gpu.objdata[obj].yflip = (val & 0x40) ? 1 : 0;
           gpu.objdata[obj].prio = (val & 0x80) ? 1 : 0;
           break;
       }
@@ -342,7 +350,7 @@ export const gpu = {
                (gpu.objsize ? 0x04 : 0) |
                (gpu.objon ? 0x02 : 0) | 
                (gpu.bgon ? 0x01 : 0);
-      case 1: return (gpu.reg[1] & 0x78) | (gpu.curline === gpu.raster ? 0x04 : 0) | gpu.linemode;
+      case 1: return 0x80 | (gpu.reg[1] & 0x78) | (gpu.curline === gpu.raster ? 0x04 : 0) | gpu.linemode;
       case 2: return gpu.yscrl;
       case 3: return gpu.xscrl;
       case 4: return gpu.curline;
@@ -358,13 +366,19 @@ export const gpu = {
     gpu.reg[gaddr] = val;
     switch (gaddr) {
       case 0:
-        console.log('[GPU] LCDC write:', val.toString(16), 'lcdon:', !!(val&0x80), 'objon:', !!(val&0x02), 'bgon:', !!(val&0x01));
         const wason = gpu.lcdon;
         gpu.lcdon = (val & 0x80) ? 1 : 0;
         if (wason && !gpu.lcdon) {
           gpu.curline = 0;
           gpu.linemode = 0;
           gpu.modeclocks = 0;
+          gpu.stat_line = false;
+        } else if (!wason && gpu.lcdon) {
+          gpu.curline = 0;
+          gpu.linemode = 2;
+          gpu.modeclocks = 0;
+          gpu.stat_line = false;
+          gpu.checkStat();
         }
         gpu.bgtilebase = (val & 0x10) ? 0x0000 : 0x0800;
         gpu.bgmapbase = (val & 0x08) ? 0x1c00 : 0x1800;
@@ -373,12 +387,14 @@ export const gpu = {
         gpu.objsize = (val & 0x04) ? 1 : 0;
         gpu.objon = (val & 0x02) ? 1 : 0;
         gpu.bgon = (val & 0x01) ? 1 : 0;
-        if (gpu.objon) { const nonzero = gpu.objdata.filter((o:any)=>o.y>-16||o.x>-8); console.log('[GPU] objon=1, nonzero OAM:', nonzero.length, nonzero.slice(0,5)); }
+        break;
+      case 1:
+        gpu.checkStat();
         break;
       case 2: gpu.yscrl = val; break;
       case 3: gpu.xscrl = val; break;
-      case 4: gpu.curline = 0; break;
-      case 5: gpu.raster = val; break;
+      case 4: break; // LY is read-only
+      case 5: gpu.raster = val; gpu.checkStat(); break;
       case 10: gpu.winy = val; break;
       case 11: gpu.winx = val; break;
       case 7:

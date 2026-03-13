@@ -11,7 +11,7 @@
   <p>Select a ROM to play</p>
   <input type="file" id="romInput" accept=".gb">
   <canvas id="screen" width="160" height="144" style="border:1px solid #000;"></canvas>
-  <script type="module" src="./dist/bundle.js"></script>
+  <script type="module" src="./src/main.ts"></script>
   <script>
     document.getElementById('romInput').addEventListener('change', function(e) {
       const file = e.target.files[0];
