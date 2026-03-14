@@ -30,18 +30,14 @@
   "keywords": [
     "emulator",
     "gameboy",
-    "typescript",
-    "dmg-01"
+    "typescript"
   ],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^20",
     "esbuild": "^0.27.3",
-    "eslint": "^9",
-    "puppeteer": "^24.39.1",
-    "typescript": "^5",
-    "vite": "^7.3.1"
+    "eslint": "^9"
   },
   "overrides": {
     "yauzl": "3.2.1"
