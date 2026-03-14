@@ -194,7 +194,8 @@ export const loadRom = async (source: string | Uint8Array): Promise<ICartridge> 
     } else {
       // Assume Node.js environment
       try {
-        const fs = await import('fs');
+        // Use eval('require') to hide this from bundlers like Turbopack/Webpack
+        const fs = eval('require')('fs');
         const buffer = fs.readFileSync(source);
         rom = new Uint8Array(buffer);
       } catch (error) {

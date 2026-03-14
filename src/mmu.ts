@@ -151,7 +151,7 @@ export class MMU {
           if (addr === 0xff04) return this.div;
           if (addr === 0xff05) return this.tima;
           if (addr === 0xff06) return this.tma;
-          if (addr === 0xff07) return this.tac;
+          if (addr === 0xff07) return this.tac | 0xf8;
           if (addr === 0xff0f) return this.intf | 0xe0;
           if (addr === 0xff4d) return 0x7e | (this.cgbDoubleSpeed ? 0x80 : 0) | (this.cgbPrepareSpeedSwitch ? 0x01 : 0);
           if (addr >= 0xff40 && addr <= 0xff4f) return gpu.rb(addr);
@@ -161,7 +161,7 @@ export class MMU {
           return this.zram[addr & 0x7f];
         } else if (addr === 0xffff) {
           // IE (Interrupt Enable Register)
-          return this.inte;
+          return this.inte | 0xe0;
         } else if (addr >= 0xe000 && addr <= 0xfdff) {
             // Mirror of WRAM (continuation of Echo RAM)
             return this.wram[addr & 0x1fff];
@@ -263,7 +263,7 @@ export class MMU {
           } else if (addr === 0xff07) {
             this.tac = val & 7;
           } else if (addr === 0xff0f) {
-            this.intf = val;
+            this.intf = val & 0x1F;
           } else if (addr === 0xff4d) {
             this.cgbPrepareSpeedSwitch = val & 0x01;
           } else if (addr >= 0xff40 && addr <= 0xff4f) {

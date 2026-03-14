@@ -67,22 +67,7 @@ export const emulator = {
 };
 
 // Start the emulator — waits for ROM file selection
-const start = () => {
+export const start = () => {
   log.out('EMU', 'Ready. Select a ROM to begin.');
 };
 
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
-  start();
-} else {
-  window.addEventListener('DOMContentLoaded', start);
-}
-
-// Expose run for the file picker in index.html
-(window as any).loadRomFile = (file: File) => {
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const bytes = new Uint8Array(e.target!.result as ArrayBuffer);
-    emulator.run(bytes);
-  };
-  reader.readAsArrayBuffer(file);
-};

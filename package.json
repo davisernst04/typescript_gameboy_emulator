@@ -1,44 +1,28 @@
 {
-  "name": "gameboy_emulator",
+  "name": "gameboy_emulator_core",
   "version": "1.0.0",
-  "description": "A Game Boy emulator written in TypeScript using Next.js that accurately emulates the original Nintendo Game Boy hardware.",
+  "description": "A high-fidelity Game Boy (DMG-01) emulator core written in TypeScript.",
   "main": "dist/bundle.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
+    "test": "node tests/test_cpu_instrs.cjs",
+    "lint": "eslint src/",
     "bundle:node": "node scripts/build_node_bundle.cjs",
-    "bundle": "node scripts/build_browser_bundle.cjs"
+    "bundle": "node scripts/build_browser_bundle.cjs",
+    "web:dev": "cd web && npm run dev"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/davisernst04/typescript_gameboy_emulator.git"
   },
-  "keywords": [],
+  "keywords": ["emulator", "gameboy", "typescript", "dmg-01"],
   "author": "",
   "license": "ISC",
-  "type": "module",
-  "bugs": {
-    "url": "https://github.com/davisernst04/typescript_gameboy_emulator/issues"
-  },
-  "homepage": "https://github.com/davisernst04/typescript_gameboy_emulator#readme",
-  "dependencies": {
-    "next": "16.1.6",
-    "react": "19.2.3",
-    "react-dom": "19.2.3"
-  },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
     "esbuild": "^0.27.3",
     "eslint": "^9",
-    "eslint-config-next": "16.1.6",
     "puppeteer": "^24.38.0",
-    "tailwindcss": "^4",
     "typescript": "^5",
     "vite": "^7.3.1"
   }

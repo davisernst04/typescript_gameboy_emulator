@@ -64,27 +64,29 @@ export const gpu = {
 
     log.out('GPU', 'Initializing screen');
     
-    let c = document.getElementById('screen') as HTMLCanvasElement;
-    if (c && c.getContext) {
-      gpu.canvas = c.getContext('2d') as CanvasRenderingContext2D;
-      if (!gpu.canvas) {
-        log.out('GPU', 'Failed to get 2D context');
-      } else {
-        if (gpu.canvas.createImageData) {
-          gpu.screen = gpu.canvas.createImageData(160, 144);
-        } else if(gpu.canvas.getImageData) {
-          gpu.screen = gpu.canvas.getImageData(0, 0, 160, 144);
+    if (typeof document !== 'undefined') {
+      let c = document.getElementById('screen') as HTMLCanvasElement;
+      if (c && c.getContext) {
+        gpu.canvas = c.getContext('2d') as CanvasRenderingContext2D;
+        if (!gpu.canvas) {
+          log.out('GPU', 'Failed to get 2D context');
         } else {
-          gpu.screen = { width: 160, height: 144, data: new Uint8ClampedArray(160 * 144 * 4)} as unknown as ImageData;
-        }
+          if (gpu.canvas.createImageData) {
+            gpu.screen = gpu.canvas.createImageData(160, 144);
+          } else if(gpu.canvas.getImageData) {
+            gpu.screen = gpu.canvas.getImageData(0, 0, 160, 144);
+          } else {
+            gpu.screen = { width: 160, height: 144, data: new Uint8ClampedArray(160 * 144 * 4)} as unknown as ImageData;
+          }
 
-        for (let i = 0; i < gpu.screen.data.length; i++) {
-          gpu.screen.data[i] = 255;
+          for (let i = 0; i < gpu.screen.data.length; i++) {
+            gpu.screen.data[i] = 255;
+          }
+          gpu.canvas.putImageData(gpu.screen, 0, 0);
         }
-        gpu.canvas.putImageData(gpu.screen, 0, 0);
+      } else {
+        log.out('GPU', 'Canvas element "screen" not found or not supported');
       }
-    } else {
-      log.out('GPU', 'Canvas element "screen" not found or not supported');
     }
 
     gpu.curline = 0;
@@ -237,12 +239,11 @@ export const gpu = {
       let winY = gpu.curline - gpu.winy;
       let mapbase = gpu.wintilebase + ((winY >> 3) << 5);
       let y = winY & 7;
-      let winXStart = gpu.winx - 7;
+      let winXStart = Math.max(0, gpu.winx - 7);
 
-      for (let i = 0; i < 160; i++) {
-        if (i < winXStart) continue;
-        let t = (i - winXStart) >> 3;
-        let x = (i - winXStart) & 7;
+      for (let i = winXStart; i < 160; i++) {
+        let t = (i - (gpu.winx - 7)) >> 3;
+        let x = (i - (gpu.winx - 7)) & 7;
         let tile = gpu.vram[mapbase + t];
         if (gpu.bgtilebase === 0x0800 && tile < 128) tile += 256;
         let color_idx = gpu.tilemap[tile][y][x];
@@ -267,10 +268,7 @@ export const gpu = {
         if (spritesOnLine.length === 10) break;
       }
 
-      spritesOnLine.sort((a, b) => {
-        if (a.x !== b.x) return a.x - b.x;
-        return a.num - b.num;
-      });
+      spritesOnLine.sort((a, b) => a.num - b.num);
 
       for (let i = spritesOnLine.length - 1; i >= 0; i--) {
         let obj = spritesOnLine[i];
@@ -280,11 +278,20 @@ export const gpu = {
         if (height === 16) {
           tileIdx &= 0xFE;
           if (obj.yflip) {
-            if (lineOffset < 8) tileIdx |= 1;
-            lineOffset = 7 - (lineOffset % 8);
+            // If flipped, top half of sprite shows bottom tile
+            if (lineOffset < 8) {
+              tileIdx |= 1;
+              lineOffset = 7 - lineOffset;
+            } else {
+              // and bottom half shows top tile
+              lineOffset = 15 - lineOffset;
+              // tileIdx is already even (top tile)
+            }
           } else {
-            if (lineOffset >= 8) tileIdx |= 1;
-            lineOffset %= 8;
+            if (lineOffset >= 8) {
+              tileIdx |= 1;
+              lineOffset -= 8;
+            }
           }
         } else {
           if (obj.yflip) {
@@ -297,13 +304,17 @@ export const gpu = {
           let canvas_x = obj.x + x;
           if (canvas_x >= 0 && canvas_x < 160) {
             let color_idx = obj.xflip ? gpu.tilemap[tileIdx][lineOffset][7 - x] : gpu.tilemap[tileIdx][lineOffset][x];
-            if (color_idx !== 0 && (obj.prio === 0 || gpu.scanrow[canvas_x] === 0)) {
-              let color = pal[color_idx];
-              let linebase = (gpu.curline * 160 + canvas_x) * 4;
-              gpu.screen.data[linebase] = color;
-              gpu.screen.data[linebase + 1] = color;
-              gpu.screen.data[linebase + 2] = color;
-              gpu.screen.data[linebase + 3] = 255;
+            // Sprite priority: color 0 is transparent. 
+            // If obj.prio is 1, sprite is hidden by BG colors 1, 2, and 3.
+            if (color_idx !== 0) {
+              if (obj.prio === 0 || gpu.scanrow[canvas_x] === 0) {
+                let color = pal[color_idx];
+                let linebase = (gpu.curline * 160 + canvas_x) * 4;
+                gpu.screen.data[linebase] = color;
+                gpu.screen.data[linebase + 1] = color;
+                gpu.screen.data[linebase + 2] = color;
+                gpu.screen.data[linebase + 3] = 255;
+              }
             }
           }
         }
@@ -345,6 +356,8 @@ export const gpu = {
     switch (gaddr) {
       case 0:
         return (gpu.lcdon ? 0x80 : 0) | 
+               ((gpu.wintilebase === 0x1c00) ? 0x40 : 0) |
+               (gpu.winon ? 0x20 : 0) |
                ((gpu.bgtilebase === 0x0000) ? 0x10 : 0) | 
                ((gpu.bgmapbase === 0x1c00) ? 0x08 : 0) |
                (gpu.objsize ? 0x04 : 0) |
@@ -363,7 +376,6 @@ export const gpu = {
    
   wb: (addr: number, val: number) => {
     let gaddr = addr - 0xff40;
-    gpu.reg[gaddr] = val;
     switch (gaddr) {
       case 0:
         const wason = gpu.lcdon;
@@ -380,15 +392,17 @@ export const gpu = {
           gpu.stat_line = false;
           gpu.checkStat();
         }
-        gpu.bgtilebase = (val & 0x10) ? 0x0000 : 0x0800;
-        gpu.bgmapbase = (val & 0x08) ? 0x1c00 : 0x1800;
         gpu.wintilebase = (val & 0x40) ? 0x1c00 : 0x1800;
         gpu.winon = (val & 0x20) ? 1 : 0;
+        gpu.bgtilebase = (val & 0x10) ? 0x0000 : 0x0800;
+        gpu.bgmapbase = (val & 0x08) ? 0x1c00 : 0x1800;
         gpu.objsize = (val & 0x04) ? 1 : 0;
         gpu.objon = (val & 0x02) ? 1 : 0;
         gpu.bgon = (val & 0x01) ? 1 : 0;
+        gpu.reg[0] = val;
         break;
       case 1:
+        gpu.reg[1] = (gpu.reg[1] & 0x07) | (val & 0x78);
         gpu.checkStat();
         break;
       case 2: gpu.yscrl = val; break;

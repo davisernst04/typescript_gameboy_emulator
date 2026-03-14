@@ -299,8 +299,8 @@ export const cpu = {
       let val = (cpu.reg as any)[r];
       let res = cpu.reg.a - val;
       cpu.reg.f = cpu.FLAGS.N;
-      if (!(res & 0xFF)) cpu.reg.f |= cpu.FLAGS.Z;
-      if ((cpu.reg.a & 0xF) < (val & 0xF)) cpu.reg.f |= cpu.FLAGS.H;
+      if ((res & 0xFF) === 0) cpu.reg.f |= cpu.FLAGS.Z;
+      if (((cpu.reg.a & 0x0F) - (val & 0x0F)) < 0) cpu.reg.f |= cpu.FLAGS.H;
       if (res < 0) cpu.reg.f |= cpu.FLAGS.C;
       cpu.reg.a = res & 0xFF;
       cpu.reg.m = 1; cpu.reg.t = 4;
@@ -309,8 +309,8 @@ export const cpu = {
       let val = mmu.rb(cpu.hl);
       let res = cpu.reg.a - val;
       cpu.reg.f = cpu.FLAGS.N;
-      if (!(res & 0xFF)) cpu.reg.f |= cpu.FLAGS.Z;
-      if ((cpu.reg.a & 0xF) < (val & 0xF)) cpu.reg.f |= cpu.FLAGS.H;
+      if ((res & 0xFF) === 0) cpu.reg.f |= cpu.FLAGS.Z;
+      if (((cpu.reg.a & 0x0F) - (val & 0x0F)) < 0) cpu.reg.f |= cpu.FLAGS.H;
       if (res < 0) cpu.reg.f |= cpu.FLAGS.C;
       cpu.reg.a = res & 0xFF;
       cpu.reg.m = 2; cpu.reg.t = 8;
@@ -319,8 +319,8 @@ export const cpu = {
       let val = mmu.rb(cpu.reg.pc); cpu.reg.pc = (cpu.reg.pc + 1) & 0xFFFF;
       let res = cpu.reg.a - val;
       cpu.reg.f = cpu.FLAGS.N;
-      if (!(res & 0xFF)) cpu.reg.f |= cpu.FLAGS.Z;
-      if ((cpu.reg.a & 0xF) < (val & 0xF)) cpu.reg.f |= cpu.FLAGS.H;
+      if ((res & 0xFF) === 0) cpu.reg.f |= cpu.FLAGS.Z;
+      if (((cpu.reg.a & 0x0F) - (val & 0x0F)) < 0) cpu.reg.f |= cpu.FLAGS.H;
       if (res < 0) cpu.reg.f |= cpu.FLAGS.C;
       cpu.reg.a = res & 0xFF;
       cpu.reg.m = 2; cpu.reg.t = 8;
@@ -330,8 +330,8 @@ export const cpu = {
       let carry = (cpu.reg.f & cpu.FLAGS.C) ? 1 : 0;
       let res = cpu.reg.a - val - carry;
       cpu.reg.f = cpu.FLAGS.N;
-      if (!(res & 0xFF)) cpu.reg.f |= cpu.FLAGS.Z;
-      if ((cpu.reg.a & 0xF) < (val & 0xF) + carry) cpu.reg.f |= cpu.FLAGS.H;
+      if ((res & 0xFF) === 0) cpu.reg.f |= cpu.FLAGS.Z;
+      if (((cpu.reg.a & 0x0F) - (val & 0x0F) - carry) < 0) cpu.reg.f |= cpu.FLAGS.H;
       if (res < 0) cpu.reg.f |= cpu.FLAGS.C;
       cpu.reg.a = res & 0xFF;
       cpu.reg.m = 1; cpu.reg.t = 4;
@@ -341,8 +341,8 @@ export const cpu = {
       let carry = (cpu.reg.f & cpu.FLAGS.C) ? 1 : 0;
       let res = cpu.reg.a - val - carry;
       cpu.reg.f = cpu.FLAGS.N;
-      if (!(res & 0xFF)) cpu.reg.f |= cpu.FLAGS.Z;
-      if ((cpu.reg.a & 0xF) < (val & 0xF) + carry) cpu.reg.f |= cpu.FLAGS.H;
+      if ((res & 0xFF) === 0) cpu.reg.f |= cpu.FLAGS.Z;
+      if (((cpu.reg.a & 0x0F) - (val & 0x0F) - carry) < 0) cpu.reg.f |= cpu.FLAGS.H;
       if (res < 0) cpu.reg.f |= cpu.FLAGS.C;
       cpu.reg.a = res & 0xFF;
       cpu.reg.m = 2; cpu.reg.t = 8;
@@ -352,8 +352,8 @@ export const cpu = {
       let carry = (cpu.reg.f & cpu.FLAGS.C) ? 1 : 0;
       let res = cpu.reg.a - val - carry;
       cpu.reg.f = cpu.FLAGS.N;
-      if (!(res & 0xFF)) cpu.reg.f |= cpu.FLAGS.Z;
-      if ((cpu.reg.a & 0xF) < (val & 0xF) + carry) cpu.reg.f |= cpu.FLAGS.H;
+      if ((res & 0xFF) === 0) cpu.reg.f |= cpu.FLAGS.Z;
+      if (((cpu.reg.a & 0x0F) - (val & 0x0F) - carry) < 0) cpu.reg.f |= cpu.FLAGS.H;
       if (res < 0) cpu.reg.f |= cpu.FLAGS.C;
       cpu.reg.a = res & 0xFF;
       cpu.reg.m = 2; cpu.reg.t = 8;
@@ -416,8 +416,8 @@ export const cpu = {
       let val = (cpu.reg as any)[r];
       let res = cpu.reg.a - val;
       cpu.reg.f = cpu.FLAGS.N;
-      if (!(res & 0xFF)) cpu.reg.f |= cpu.FLAGS.Z;
-      if ((cpu.reg.a & 0xF) < (val & 0xF)) cpu.reg.f |= cpu.FLAGS.H;
+      if ((res & 0xFF) === 0) cpu.reg.f |= cpu.FLAGS.Z;
+      if (((cpu.reg.a & 0x0F) - (val & 0x0F)) < 0) cpu.reg.f |= cpu.FLAGS.H;
       if (res < 0) cpu.reg.f |= cpu.FLAGS.C;
       cpu.reg.m = 1; cpu.reg.t = 4;
     },
@@ -425,8 +425,8 @@ export const cpu = {
       let val = mmu.rb(cpu.hl);
       let res = cpu.reg.a - val;
       cpu.reg.f = cpu.FLAGS.N;
-      if (!(res & 0xFF)) cpu.reg.f |= cpu.FLAGS.Z;
-      if ((cpu.reg.a & 0xF) < (val & 0xF)) cpu.reg.f |= cpu.FLAGS.H;
+      if ((res & 0xFF) === 0) cpu.reg.f |= cpu.FLAGS.Z;
+      if (((cpu.reg.a & 0x0F) - (val & 0x0F)) < 0) cpu.reg.f |= cpu.FLAGS.H;
       if (res < 0) cpu.reg.f |= cpu.FLAGS.C;
       cpu.reg.m = 2; cpu.reg.t = 8;
     },
@@ -434,8 +434,8 @@ export const cpu = {
       let val = mmu.rb(cpu.reg.pc); cpu.reg.pc = (cpu.reg.pc + 1) & 0xFFFF;
       let res = cpu.reg.a - val;
       cpu.reg.f = cpu.FLAGS.N;
-      if (!(res & 0xFF)) cpu.reg.f |= cpu.FLAGS.Z;
-      if ((cpu.reg.a & 0xF) < (val & 0xF)) cpu.reg.f |= cpu.FLAGS.H;
+      if ((res & 0xFF) === 0) cpu.reg.f |= cpu.FLAGS.Z;
+      if (((cpu.reg.a & 0x0F) - (val & 0x0F)) < 0) cpu.reg.f |= cpu.FLAGS.H;
       if (res < 0) cpu.reg.f |= cpu.FLAGS.C;
       cpu.reg.m = 2; cpu.reg.t = 8;
     },
@@ -443,8 +443,8 @@ export const cpu = {
       let val = (cpu.reg as any)[r];
       let res = (val + 1) & 0xFF;
       cpu.reg.f &= cpu.FLAGS.C;
-      if (!res) cpu.reg.f |= cpu.FLAGS.Z;
-      if ((val & 0xF) === 0xF) cpu.reg.f |= cpu.FLAGS.H;
+      if (res === 0) cpu.reg.f |= cpu.FLAGS.Z;
+      if ((val & 0x0F) === 0x0F) cpu.reg.f |= cpu.FLAGS.H;
       (cpu.reg as any)[r] = res;
       cpu.reg.m = 1; cpu.reg.t = 4;
     },
@@ -452,8 +452,8 @@ export const cpu = {
       let val = mmu.rb(cpu.hl);
       let res = (val + 1) & 0xFF;
       cpu.reg.f &= cpu.FLAGS.C;
-      if (!res) cpu.reg.f |= cpu.FLAGS.Z;
-      if ((val & 0xF) === 0xF) cpu.reg.f |= cpu.FLAGS.H;
+      if (res === 0) cpu.reg.f |= cpu.FLAGS.Z;
+      if ((val & 0x0F) === 0x0F) cpu.reg.f |= cpu.FLAGS.H;
       mmu.wb(cpu.hl, res);
       cpu.reg.m = 3; cpu.reg.t = 12;
     },
@@ -462,8 +462,8 @@ export const cpu = {
       let res = (val - 1) & 0xFF;
       cpu.reg.f &= cpu.FLAGS.C;
       cpu.reg.f |= cpu.FLAGS.N;
-      if (!res) cpu.reg.f |= cpu.FLAGS.Z;
-      if (!(val & 0xF)) cpu.reg.f |= cpu.FLAGS.H;
+      if (res === 0) cpu.reg.f |= cpu.FLAGS.Z;
+      if ((val & 0x0F) === 0) cpu.reg.f |= cpu.FLAGS.H;
       (cpu.reg as any)[r] = res;
       cpu.reg.m = 1; cpu.reg.t = 4;
     },
@@ -472,8 +472,8 @@ export const cpu = {
       let res = (val - 1) & 0xFF;
       cpu.reg.f &= cpu.FLAGS.C;
       cpu.reg.f |= cpu.FLAGS.N;
-      if (!res) cpu.reg.f |= cpu.FLAGS.Z;
-      if (!(val & 0xF)) cpu.reg.f |= cpu.FLAGS.H;
+      if (res === 0) cpu.reg.f |= cpu.FLAGS.Z;
+      if ((val & 0x0F) === 0) cpu.reg.f |= cpu.FLAGS.H;
       mmu.wb(cpu.hl, res);
       cpu.reg.m = 3; cpu.reg.t = 12;
     },
@@ -482,7 +482,7 @@ export const cpu = {
     ADD_hl_rr: (rr: string) => {
       let val = (cpu as any)[rr];
       let res = cpu.hl + val;
-      cpu.reg.f &= cpu.FLAGS.Z;
+      cpu.reg.f &= cpu.FLAGS.Z; // Z is preserved
       if (((cpu.hl & 0xFFF) + (val & 0xFFF)) > 0xFFF) cpu.reg.f |= cpu.FLAGS.H;
       if (res > 0xFFFF) cpu.reg.f |= cpu.FLAGS.C;
       cpu.hl = res & 0xFFFF;
@@ -497,9 +497,8 @@ export const cpu = {
       const result = (sp + n) & 0xFFFF;
 
       cpu.reg.f = 0;
-      // H/C are computed from the low-byte add using the immediate's raw 8-bit value.
       if (((sp & 0xF) + (imm & 0xF)) > 0xF) cpu.reg.f |= cpu.FLAGS.H;
-      if (((sp & 0xFF) + imm) > 0xFF) cpu.reg.f |= cpu.FLAGS.C;
+      if (((sp & 0xFF) + (imm & 0xFF)) > 0xFF) cpu.reg.f |= cpu.FLAGS.C;
 
       cpu.reg.sp = result;
       cpu.reg.m = 4; cpu.reg.t = 16;
@@ -512,7 +511,7 @@ export const cpu = {
       let carry = (cpu.reg.a & 0x80) ? 1 : 0;
       cpu.reg.a = ((cpu.reg.a << 1) | carry) & 0xFF;
       cpu.reg.f = carry ? cpu.FLAGS.C : 0;
-      cpu.reg.f &= ~cpu.FLAGS.Z;
+      // Z flag is always 0 for RLCA
       cpu.reg.m = 1; cpu.reg.t = 4;
     },
     RLA: () => {
@@ -520,14 +519,14 @@ export const cpu = {
       let newCarry = (cpu.reg.a & 0x80) ? 1 : 0;
       cpu.reg.a = ((cpu.reg.a << 1) | carry) & 0xFF;
       cpu.reg.f = newCarry ? cpu.FLAGS.C : 0;
-      cpu.reg.f &= ~cpu.FLAGS.Z;
+      // Z flag is always 0 for RLA
       cpu.reg.m = 1; cpu.reg.t = 4;
     },
     RRCA: () => {
       let carry = (cpu.reg.a & 0x01) ? 1 : 0;
       cpu.reg.a = ((cpu.reg.a >> 1) | (carry << 7)) & 0xFF;
       cpu.reg.f = carry ? cpu.FLAGS.C : 0;
-      cpu.reg.f &= ~cpu.FLAGS.Z;
+      // Z flag is always 0 for RRCA
       cpu.reg.m = 1; cpu.reg.t = 4;
     },
     RRA: () => {
@@ -535,7 +534,7 @@ export const cpu = {
       let newCarry = (cpu.reg.a & 0x01) ? 1 : 0;
       cpu.reg.a = ((cpu.reg.a >> 1) | (carry << 7)) & 0xFF;
       cpu.reg.f = newCarry ? cpu.FLAGS.C : 0;
-      cpu.reg.f &= ~cpu.FLAGS.Z;
+      // Z flag is always 0 for RRA
       cpu.reg.m = 1; cpu.reg.t = 4;
     },
 
@@ -553,7 +552,7 @@ export const cpu = {
       let carry = (val & 0x80) ? 1 : 0;
       let res = ((val << 1) | carry) & 0xFF;
       cpu.reg.f = carry ? cpu.FLAGS.C : 0;
-      if (!res) cpu.reg.f |= cpu.FLAGS.Z;
+      if (res === 0) cpu.reg.f |= cpu.FLAGS.Z;
       mmu.wb(cpu.hl, res);
       cpu.reg.m = 4; cpu.reg.t = 16;
     },
@@ -563,7 +562,7 @@ export const cpu = {
       let newCarry = (val & 0x80) ? 1 : 0;
       let res = ((val << 1) | carry) & 0xFF;
       cpu.reg.f = newCarry ? cpu.FLAGS.C : 0;
-      if (!res) cpu.reg.f |= cpu.FLAGS.Z;
+      if (res === 0) cpu.reg.f |= cpu.FLAGS.Z;
       (cpu.reg as any)[r] = res;
       cpu.reg.m = 2; cpu.reg.t = 8;
     },
@@ -573,7 +572,7 @@ export const cpu = {
       let newCarry = (val & 0x80) ? 1 : 0;
       let res = ((val << 1) | carry) & 0xFF;
       cpu.reg.f = newCarry ? cpu.FLAGS.C : 0;
-      if (!res) cpu.reg.f |= cpu.FLAGS.Z;
+      if (res === 0) cpu.reg.f |= cpu.FLAGS.Z;
       mmu.wb(cpu.hl, res);
       cpu.reg.m = 4; cpu.reg.t = 16;
     },
@@ -582,7 +581,7 @@ export const cpu = {
       let carry = (val & 0x01) ? 1 : 0;
       let res = ((val >> 1) | (carry << 7)) & 0xFF;
       cpu.reg.f = carry ? cpu.FLAGS.C : 0;
-      if (!res) cpu.reg.f |= cpu.FLAGS.Z;
+      if (res === 0) cpu.reg.f |= cpu.FLAGS.Z;
       (cpu.reg as any)[r] = res;
       cpu.reg.m = 2; cpu.reg.t = 8;
     },
@@ -591,7 +590,7 @@ export const cpu = {
       let carry = (val & 0x01) ? 1 : 0;
       let res = ((val >> 1) | (carry << 7)) & 0xFF;
       cpu.reg.f = carry ? cpu.FLAGS.C : 0;
-      if (!res) cpu.reg.f |= cpu.FLAGS.Z;
+      if (res === 0) cpu.reg.f |= cpu.FLAGS.Z;
       mmu.wb(cpu.hl, res);
       cpu.reg.m = 4; cpu.reg.t = 16;
     },
@@ -601,7 +600,7 @@ export const cpu = {
       let newCarry = (val & 0x01) ? 1 : 0;
       let res = ((val >> 1) | (carry << 7)) & 0xFF;
       cpu.reg.f = newCarry ? cpu.FLAGS.C : 0;
-      if (!res) cpu.reg.f |= cpu.FLAGS.Z;
+      if (res === 0) cpu.reg.f |= cpu.FLAGS.Z;
       (cpu.reg as any)[r] = res;
       cpu.reg.m = 2; cpu.reg.t = 8;
     },
@@ -611,7 +610,7 @@ export const cpu = {
       let newCarry = (val & 0x01) ? 1 : 0;
       let res = ((val >> 1) | (carry << 7)) & 0xFF;
       cpu.reg.f = newCarry ? cpu.FLAGS.C : 0;
-      if (!res) cpu.reg.f |= cpu.FLAGS.Z;
+      if (res === 0) cpu.reg.f |= cpu.FLAGS.Z;
       mmu.wb(cpu.hl, res);
       cpu.reg.m = 4; cpu.reg.t = 16;
     },
@@ -620,7 +619,7 @@ export const cpu = {
       let carry = (val & 0x80) ? 1 : 0;
       let res = (val << 1) & 0xFF;
       cpu.reg.f = carry ? cpu.FLAGS.C : 0;
-      if (!res) cpu.reg.f |= cpu.FLAGS.Z;
+      if (res === 0) cpu.reg.f |= cpu.FLAGS.Z;
       (cpu.reg as any)[r] = res;
       cpu.reg.m = 2; cpu.reg.t = 8;
     },
@@ -629,7 +628,7 @@ export const cpu = {
       let carry = (val & 0x80) ? 1 : 0;
       let res = (val << 1) & 0xFF;
       cpu.reg.f = carry ? cpu.FLAGS.C : 0;
-      if (!res) cpu.reg.f |= cpu.FLAGS.Z;
+      if (res === 0) cpu.reg.f |= cpu.FLAGS.Z;
       mmu.wb(cpu.hl, res);
       cpu.reg.m = 4; cpu.reg.t = 16;
     },
@@ -638,7 +637,7 @@ export const cpu = {
       let carry = (val & 0x01) ? 1 : 0;
       let res = ((val >> 1) | (val & 0x80)) & 0xFF;
       cpu.reg.f = carry ? cpu.FLAGS.C : 0;
-      if (!res) cpu.reg.f |= cpu.FLAGS.Z;
+      if (res === 0) cpu.reg.f |= cpu.FLAGS.Z;
       (cpu.reg as any)[r] = res;
       cpu.reg.m = 2; cpu.reg.t = 8;
     },
@@ -647,7 +646,7 @@ export const cpu = {
       let carry = (val & 0x01) ? 1 : 0;
       let res = ((val >> 1) | (val & 0x80)) & 0xFF;
       cpu.reg.f = carry ? cpu.FLAGS.C : 0;
-      if (!res) cpu.reg.f |= cpu.FLAGS.Z;
+      if (res === 0) cpu.reg.f |= cpu.FLAGS.Z;
       mmu.wb(cpu.hl, res);
       cpu.reg.m = 4; cpu.reg.t = 16;
     },
@@ -656,7 +655,7 @@ export const cpu = {
       let carry = (val & 0x01) ? 1 : 0;
       let res = (val >> 1) & 0xFF;
       cpu.reg.f = carry ? cpu.FLAGS.C : 0;
-      if (!res) cpu.reg.f |= cpu.FLAGS.Z;
+      if (res === 0) cpu.reg.f |= cpu.FLAGS.Z;
       (cpu.reg as any)[r] = res;
       cpu.reg.m = 2; cpu.reg.t = 8;
     },
@@ -665,21 +664,21 @@ export const cpu = {
       let carry = (val & 0x01) ? 1 : 0;
       let res = (val >> 1) & 0xFF;
       cpu.reg.f = carry ? cpu.FLAGS.C : 0;
-      if (!res) cpu.reg.f |= cpu.FLAGS.Z;
+      if (res === 0) cpu.reg.f |= cpu.FLAGS.Z;
       mmu.wb(cpu.hl, res);
       cpu.reg.m = 4; cpu.reg.t = 16;
     },
     SWAP: (r: string) => {
       let val = (cpu.reg as any)[r];
       let res = ((val & 0xF) << 4) | (val >> 4);
-      cpu.reg.f = res ? 0 : cpu.FLAGS.Z;
+      cpu.reg.f = (res === 0) ? cpu.FLAGS.Z : 0;
       (cpu.reg as any)[r] = res;
       cpu.reg.m = 2; cpu.reg.t = 8;
     },
     SWAP_hl: () => {
       let val = mmu.rb(cpu.hl);
       let res = ((val & 0xF) << 4) | (val >> 4);
-      cpu.reg.f = res ? 0 : cpu.FLAGS.Z;
+      cpu.reg.f = (res === 0) ? cpu.FLAGS.Z : 0;
       mmu.wb(cpu.hl, res);
       cpu.reg.m = 4; cpu.reg.t = 16;
     },
@@ -753,16 +752,22 @@ export const cpu = {
     // Misc
     DAA: () => {
       let a = cpu.reg.a;
-      let d = 0;
-      if ((cpu.reg.f & cpu.FLAGS.H) || (!(cpu.reg.f & cpu.FLAGS.N) && (a & 0x0F) > 9)) d |= 0x06;
-      if ((cpu.reg.f & cpu.FLAGS.C) || (!(cpu.reg.f & cpu.FLAGS.N) && a > 0x99)) {
-        d |= 0x60;
-        cpu.reg.f |= cpu.FLAGS.C;
+      if (!(cpu.reg.f & cpu.FLAGS.N)) {
+        if ((cpu.reg.f & cpu.FLAGS.H) || (a & 0x0F) > 9) a += 6;
+        if ((cpu.reg.f & cpu.FLAGS.C) || a > 0x9F) {
+          a += 0x60;
+          cpu.reg.f |= cpu.FLAGS.C;
+        }
+      } else {
+        if (cpu.reg.f & cpu.FLAGS.H) a = (a - 6) & 0xFF;
+        if (cpu.reg.f & cpu.FLAGS.C) a -= 0x60;
       }
-      cpu.reg.a = ((cpu.reg.f & cpu.FLAGS.N) ? (a - d) : (a + d)) & 0xFF;
+
+      cpu.reg.a = a & 0xFF;
       cpu.reg.f &= ~(cpu.FLAGS.Z | cpu.FLAGS.H);
-      if (!cpu.reg.a) cpu.reg.f |= cpu.FLAGS.Z;
-      cpu.reg.m = 1; cpu.reg.t = 4;
+      if (cpu.reg.a === 0) cpu.reg.f |= cpu.FLAGS.Z;
+      cpu.reg.m = 1;
+      cpu.reg.t = 4;
     },
     CPL: () => { cpu.reg.a ^= 0xFF; cpu.reg.f |= (cpu.FLAGS.N | cpu.FLAGS.H); cpu.reg.m = 1; cpu.reg.t = 4; },
     SCF: () => { cpu.reg.f &= ~cpu.FLAGS.N; cpu.reg.f &= ~cpu.FLAGS.H; cpu.reg.f |= cpu.FLAGS.C; cpu.reg.m = 1; cpu.reg.t = 4; },

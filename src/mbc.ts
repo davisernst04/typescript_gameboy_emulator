@@ -62,7 +62,7 @@ export class MBC1 implements IMBC {
   }
 
   readByte(addr: number): number {
-    // 0x0000 - 0x3FFF: ROM Bank 00 (Fixed)
+    // 0x0000 - 0x3FFF: ROM Bank 00 (Fixed, but can be banked in Mode 1)
     if (addr >= 0x0000 && addr <= 0x3fff) {
       let bank = 0;
       if (this.mode === 1) {

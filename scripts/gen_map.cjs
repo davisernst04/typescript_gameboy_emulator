@@ -88,7 +88,7 @@ const cbops = [
 ];
 
 // Check which cbops actually exist in cpu.ops
-const content = fs.readFileSync('src/emulator/cpu.ts', 'utf8');
+const content = fs.readFileSync('src/cpu.ts', 'utf8');
 const final_cbops = cbops.map(op => {
   if (content.includes(op + ': () => {')) return op;
   return 'XX';

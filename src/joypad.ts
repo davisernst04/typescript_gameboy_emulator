@@ -23,10 +23,14 @@ export const joypad = {
    */
   init: () => {
     window.addEventListener('keydown', (e) => {
-      joypad.keyDown(e.code);
+      if (joypad.keyDown(e.code)) {
+        e.preventDefault();
+      }
     });
     window.addEventListener('keyup', (e) => {
-      joypad.keyUp(e.code);
+      if (joypad.keyUp(e.code)) {
+        e.preventDefault();
+      }
     });
     log.out('JOY', 'Joypad event listeners attached.');
   },
@@ -58,7 +62,7 @@ export const joypad = {
     return finalVal;
   },
 
-  keyDown: (code: string) => {
+  keyDown: (code: string): boolean => {
     let pressed = true;
     switch (code) {
       case 'ArrowRight': joypad.directions &= ~0x01; break; // Right
@@ -76,9 +80,11 @@ export const joypad = {
       console.log(`Joypad key down: ${code}`);
       mmu.intf |= 0x10; // Joypad interrupt
     }
+    return pressed;
   },
 
-  keyUp: (code: string) => {
+  keyUp: (code: string): boolean => {
+    let handled = true;
     switch (code) {
       case 'ArrowRight': joypad.directions |= 0x01; break; // Right
       case 'ArrowLeft':  joypad.directions |= 0x02; break; // Left
@@ -89,7 +95,8 @@ export const joypad = {
       case 'ShiftLeft':
       case 'ShiftRight': joypad.buttons    |= 0x04; break; // Select
       case 'Enter':      joypad.buttons    |= 0x08; break; // Start
-      default: break;
+      default: handled = false; break;
     }
+    return handled;
   }
 };
