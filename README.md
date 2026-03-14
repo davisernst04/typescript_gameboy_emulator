@@ -4,7 +4,7 @@ A Game Boy emulator written in TypeScript. Available as an NPM package for use i
 
 [![npm version](https://img.shields.io/badge/npm-1.0.0-blue)](https://www.npmjs.com/package/gameboy_emulator_core)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue)](https://www.typescriptlang.org/)
-[![License: ISC](https://img.shields.io/badge/License-ISC-yellow.svg)](https://opensource.org/licenses/ISC)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 ## Features
 
