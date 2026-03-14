@@ -1,7 +1,7 @@
 {
-  "name": "gameboy_emulator_core",
+  "name": "typescript-gameboy-emulator",
   "version": "1.0.0",
-  "description": "A bare-bones high-fidelity Game Boy (DMG-01) emulator core written in TypeScript.",
+  "description": "A  Game Boy emulator written in TypeScript.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "type": "module",
