@@ -270,12 +270,6 @@ roms/                Test ROMs used for development
 
 This emulator is provided for educational and personal development purposes. Please only use ROMs that you are legally entitled to possess.
 
-## License
-
-Licensed under the ISC License.
-
-
----
 
 ## License
 
