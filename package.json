@@ -1,29 +1,36 @@
 {
   "name": "gameboy_emulator_core",
   "version": "1.0.0",
-  "description": "A high-fidelity Game Boy (DMG-01) emulator core written in TypeScript.",
+  "description": "A bare-bones high-fidelity Game Boy (DMG-01) emulator core written in TypeScript.",
   "main": "dist/bundle.js",
   "type": "module",
   "scripts": {
-    "test": "node tests/test_cpu_instrs.cjs",
+    "build": "node scripts/build_browser_bundle.cjs",
+    "test": "npm run bundle:node && node tests/test_cpu_instrs.cjs",
     "lint": "eslint src/",
-    "bundle:node": "node scripts/build_node_bundle.cjs",
-    "bundle": "node scripts/build_browser_bundle.cjs",
-    "web:dev": "cd web && npm run dev"
+    "bundle:node": "node scripts/build_node_bundle.cjs"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/davisernst04/typescript_gameboy_emulator.git"
   },
-  "keywords": ["emulator", "gameboy", "typescript", "dmg-01"],
+  "keywords": [
+    "emulator",
+    "gameboy",
+    "typescript",
+    "dmg-01"
+  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^20",
     "esbuild": "^0.27.3",
     "eslint": "^9",
-    "puppeteer": "^24.38.0",
+    "puppeteer": "^24.39.1",
     "typescript": "^5",
     "vite": "^7.3.1"
+  },
+  "overrides": {
+    "yauzl": "3.2.1"
   }
 }

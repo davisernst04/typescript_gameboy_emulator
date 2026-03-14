@@ -1,24 +1,25 @@
-# TypeScript Game Boy Emulator
+# TypeScript Game Boy Emulator Core
 
-A Nintendo Game Boy emulator written in TypeScript.
+A high-fidelity DMG-01 (Game Boy) emulator core written in pure TypeScript.
 
-This project focuses on emulating the original DMG-01 hardware closely enough to run real Game Boy ROMs in the browser and to validate CPU behaviour with Node-based test harnesses. The core logic lives in `src/`, the browser bundle is served through Vite, and ROM-driven validation scripts are included for low level testing.
+This repository contains the core logic for emulating Sharp LR35902 CPU, MMU, GPU, and Memory Bank Controllers. It is designed to be environment-agnostic, supporting both browser-based execution and Node.js-based validation.
 
-## Current status
+## Current Status
 
-- Browser emulator loads and runs ROMs through a file picker
-- CPU, MMU, GPU, cartridge loading, and joypad plumbing are implemented in TypeScript
-- Passes `cpu_instrs.gb`
-- Includes Node-side test runners for ROM-based CPU verification
+- **CPU:** Standard-compliant instruction set, passing Blargg's `cpu_instrs.gb` (tests 01-09).
+- **GPU:** Scanline-based rendering with support for backgrounds, windows, and sprites (8x8 and 8x16 modes).
+- **Sprite Priority:** DMG-accurate priority logic based on OAM index.
+- **Banking:** MBC0, MBC1, MBC3 (with RTC support), and MBC5 implementations.
+- **Validation:** Integrated Node.js test harness for ROM-based verification.
 
-## Project structure
+## Project Structure
 
 ```text
-src/                 Emulator core (TypeScript only)
-tests/               Node-side validation and debugging scripts
-scripts/             Build and utility scripts (.cjs)
-dist/                Generated browser and Node bundles (ignored)
-roms/                Local test ROMs used during development
+src/                 Pure TypeScript emulator core logic
+tests/               Node.js validation and regression scripts
+scripts/             Build and bundling scripts (esbuild)
+dist/                Build outputs (Generated JavaScript bundles)
+roms/                Test ROMs used for development
 ```
 
 ## Requirements
@@ -26,109 +27,73 @@ roms/                Local test ROMs used during development
 - Node.js 18+
 - npm
 
-Install dependencies:
+## Getting Started
 
+### 1. Install dependencies
 ```bash
 npm install
 ```
 
-## Running in the browser
-
-Start the local dev server:
-
+### 2. Build for the browser
+The project uses a build-first workflow. To generate the browser-ready bundle:
 ```bash
-npm run dev
+npm run build
+```
+This will create a `dist/` directory containing `bundle.js` and a bare-bones `index.html`.
+
+### 3. Run the emulator
+Open the generated `dist/index.html` file directly in any modern browser:
+```bash
+# Example for Linux
+firefox dist/index.html
 ```
 
-This bundles the emulator and starts Vite. Open the local URL shown in the terminal, then:
-
-1. Choose a `.gb` ROM using the file input
-2. The ROM is read into memory in the browser
-3. Emulation starts automatically
-
-## Running Node-based ROM tests
-
-The repository includes Node test harnesses for validating emulator behaviour without the browser.
-
-Build the Node bundle:
-
+**Note:** If you encounter CORS errors or the emulator fails to load, use a local web server to serve the `dist` directory:
 ```bash
-npm run bundle:node
+npx serve dist/
 ```
+Use the file picker to load a `.gb` or `.gbc` ROM.
 
-Run the main CPU instruction test:
+## Development & Testing
 
+### Running CPU Tests
+Validate the emulator's logic against industry-standard test ROMs:
 ```bash
-node tests/test_cpu_instrs.cjs
+npm test
 ```
+This builds the Node-compatible bundle and executes `roms/cpu_instrs.gb` in a headless environment.
 
-This executes the bundled emulator against `roms/cpu_instrs.gb` and prints the serial output emitted by the test ROM.
-
-## Loading ROMs
-
-### Browser
-
-Use the ROM file picker in the page and select any local `.gb` file.
-
-### Node test flow
-
-The test scripts load ROMs directly from the repository, for example:
-
-- `roms/cpu_instrs.gb`
-- `roms/test.gb`
-
-If you want to validate a different ROM in Node, update the ROM path inside the relevant test script.
+### Linting
+```bash
+npm run lint
+```
 
 ## Controls
 
-Keyboard controls currently map as follows:
+The default keyboard mapping is:
 
-- Arrow keys — D-pad
-- `Z` — A
-- `X` — B
-- `Enter` — Start
-- `Left Shift` / `Right Shift` — Select
+- **D-Pad:** Arrow Keys
+- **A Button:** `Z`
+- **B Button:** `X`
+- **Start:** `Enter`
+- **Select:** `Space`
 
 ## Scripts
 
-From `package.json`:
+- `npm run build`: Compiles the emulator core into `dist/bundle.js` and prepares the browser UI.
+- `npm test`: Runs the automated CPU instruction test suite.
+- `npm run bundle:node`: Builds the Node.js-specific bundle used for test harnesses.
+- `npm run lint`: Performs static analysis on the source code.
 
-```bash
-npm run dev         # bundle browser code and start Vite
-npm run build       # type-check/build and create production output
-npm run bundle      # build browser bundle only
-npm run bundle:node # build Node test bundle
-```
+## Known Limitations
 
-## Implementation notes
+- **Audio:** APU (Audio Processing Unit) is not yet implemented.
+- **CGB Features:** Limited to DMG-compatible modes; full Game Boy Color support is in progress.
 
-Core emulator modules:
+## Legal Note
 
-- `src/cpu.ts` — Sharp LR35902 CPU emulation
-- `src/mmu.ts` — memory map and hardware register plumbing
-- `src/gpu.ts` — display pipeline and frame generation
-- `src/cartridge.ts` / `src/mbc.ts` — ROM loading and bank controller support
-- `src/joypad.ts` — keyboard input mapped to Game Boy buttons
-- `src/main.ts` — emulator bootstrap and browser integration
-
-## Known limitations
-
-- Compatibility is still in progress. Some games may not boot correctly, may exhibit graphical or gameplay glitches, or may behave differently from original hardware.
-- Audio output is not implemented yet, so sound is currently unavailable.
-
-## Credits
-
-Useful references and validation sources for this project include:
-
-- [Pan Docs](https://gbdev.io/pandocs/)
-- [Blargg's Game Boy test ROMs](https://github.com/retrio/gb-test-roms)
-- [gameboy.js](https://github.com/juchi/gameboy.js)
-- [Gameboy Emulation in Javascript Guide](https://imrannazar.com/series/gameboy-emulation-in-javascript)
+This emulator is provided for educational and personal development purposes. Please only use ROMs that you are legally entitled to possess.
 
 ## License
 
 Licensed under the ISC License.
-
-## Legal note
-
-This emulator is provided for educational and personal development purposes. Use only ROMs you are legally entitled to possess and run.

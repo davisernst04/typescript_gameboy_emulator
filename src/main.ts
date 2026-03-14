@@ -71,3 +71,5 @@ export const start = () => {
   log.out('EMU', 'Ready. Select a ROM to begin.');
 };
 
+start();
+
