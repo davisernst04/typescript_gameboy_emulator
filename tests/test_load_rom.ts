@@ -1,4 +1,4 @@
-import { loadRom } from '../src/cartridge';
+import { loadRom } from '../src/emulator/cartridge';
 
 const test = async () => {
   console.log('--- Testing loadRom from disk (Node.js) ---');

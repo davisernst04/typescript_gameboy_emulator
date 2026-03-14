@@ -1,2 +1,2 @@
-import { cpu } from '../src/cpu';
+import { cpu } from '../src/emulator/cpu';
 console.log('CPU loaded', cpu);
