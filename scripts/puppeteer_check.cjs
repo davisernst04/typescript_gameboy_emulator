@@ -19,8 +19,8 @@ const puppeteer = require('puppeteer');
   });
 
   try {
-    console.log('Navigating to http://localhost:5173...');
-    await page.goto('http://localhost:5173', { waitUntil: 'networkidle0' });
+    console.log('Navigating to http://localhost:3000...');
+    await page.goto('http://localhost:3000', { waitUntil: 'networkidle0' });
     console.log('Waiting for 10 seconds of emulation...');
     await new Promise(r => setTimeout(r, 10000));
     console.log('Finished waiting.');

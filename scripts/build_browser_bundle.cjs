@@ -34,14 +34,20 @@ const html = `<!DOCTYPE html>
 `;
 
 (async () => {
-  await esbuild.build({
-    entryPoints: [path.join(projectRoot, 'src', 'main.ts')],
-    bundle: true,
-    outfile: path.join(distDir, 'bundle.js'),
-    platform: 'browser',
-    format: 'esm',
-  });
+  try {
+    await esbuild.build({
+      entryPoints: [path.join(projectRoot, 'src', 'emulator', 'main.ts')],
+      bundle: true,
+      outfile: path.join(distDir, 'bundle.js'),
+      platform: 'browser',
+      format: 'esm',
+    });
 
-  fs.mkdirSync(distDir, { recursive: true });
-  fs.writeFileSync(distHtml, html);
+    fs.mkdirSync(distDir, { recursive: true });
+    fs.writeFileSync(distHtml, html);
+    console.log('Build successful!');
+  } catch (e) {
+    console.error('Build failed!', e);
+    process.exit(1);
+  }
 })();

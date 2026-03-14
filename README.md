@@ -2,7 +2,7 @@
 
 A Nintendo Game Boy emulator written in TypeScript.
 
-This project focuses on emulating the original DMG-01 hardware closely enough to run real Game Boy ROMs in the browser and to validate CPU behaviour with Node-based test harnesses. The core logic lives in `src/`, the browser bundle is served through Vite, and ROM-driven validation scripts are included for low level testing.
+This project focuses on emulating the original DMG-01 hardware closely enough to run real Game Boy ROMs in the browser and to validate CPU behaviour with Node-based test harnesses. The core logic lives in `src/emulator/`, the browser bundle is served through Vite, and ROM-driven validation scripts are included for low level testing.
 
 ## Current status
 
@@ -14,7 +14,7 @@ This project focuses on emulating the original DMG-01 hardware closely enough to
 ## Project structure
 
 ```text
-src/                 Emulator core (TypeScript only)
+src/emulator/                 Emulator core (TypeScript only)
 tests/               Node-side validation and debugging scripts
 scripts/             Build and utility scripts (.cjs)
 dist/                Generated browser and Node bundles (ignored)
@@ -104,12 +104,12 @@ npm run bundle:node # build Node test bundle
 
 Core emulator modules:
 
-- `src/cpu.ts` — Sharp LR35902 CPU emulation
-- `src/mmu.ts` — memory map and hardware register plumbing
-- `src/gpu.ts` — display pipeline and frame generation
-- `src/cartridge.ts` / `src/mbc.ts` — ROM loading and bank controller support
-- `src/joypad.ts` — keyboard input mapped to Game Boy buttons
-- `src/main.ts` — emulator bootstrap and browser integration
+- `src/emulator/cpu.ts` — Sharp LR35902 CPU emulation
+- `src/emulator/mmu.ts` — memory map and hardware register plumbing
+- `src/emulator/gpu.ts` — display pipeline and frame generation
+- `src/emulator/cartridge.ts` / `src/emulator/mbc.ts` — ROM loading and bank controller support
+- `src/emulator/joypad.ts` — keyboard input mapped to Game Boy buttons
+- `src/emulator/main.ts` — emulator bootstrap and browser integration
 
 ## Known limitations
 

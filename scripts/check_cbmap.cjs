@@ -1,6 +1,6 @@
 
 const fs = require('fs');
-const content = fs.readFileSync('src/cpu.ts', 'utf8');
+const content = fs.readFileSync('src/emulator/cpu.ts', 'utf8');
 
 // Find the map initialization
 const cbMapMatch = content.match(/cpu\.cbmap = \[([\s\S]*?)\];/);
