@@ -274,3 +274,11 @@ This emulator is provided for educational and personal development purposes. Ple
 
 Licensed under the ISC License.
 
+
+---
+
+## License
+
+MIT License - see [LICENSE](LICENSE) file for details.
+
+Copyright (c) 2026 Davis Ernst
