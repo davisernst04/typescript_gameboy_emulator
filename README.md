@@ -1,6 +1,6 @@
 # TypeScript GameBoy Emulator
 
-A high-fidelity DMG-01 (Game Boy) emulator core written in pure TypeScript. Available as an NPM package for use in browser-based applications and Node.js projects.
+A Game Boy emulator written in TypeScript. Available as an NPM package for use in browser applications and Node.js projects.
 
 [![npm version](https://img.shields.io/badge/npm-1.0.0-blue)](https://www.npmjs.com/package/gameboy_emulator_core)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue)](https://www.typescriptlang.org/)
@@ -8,10 +8,10 @@ A high-fidelity DMG-01 (Game Boy) emulator core written in pure TypeScript. Avai
 
 ## Features
 
-- **CPU:** Standard-compliant Sharp LR35902 instruction set, passing Blargg's `cpu_instrs.gb` (tests 01-09)
-- **GPU:** Scanline-based rendering with support for backgrounds, windows, and sprites (8x8 and 8x16 modes)
-- **Memory Banking:** MBC0, MBC1, MBC3 (with RTC support), and MBC5 implementations
-- **Sprite Priority:** DMG-accurate priority logic based on OAM index
+- **CPU:** Sharp LR35902 instruction set
+- **GPU:** Scanline rendering with support for backgrounds, windows and sprites
+- **Memory Banking:** MBC0, MBC1, MBC3 and MBC5 implementations
+- **Sprite Priority:** DMG priority logic based on OAM index
 - **Environment Agnostic:** Works in both browsers and Node.js environments
 
 ## Installation
@@ -22,7 +22,7 @@ npm install davisernst04/typescript_gameboy_emulator
 
 ## Usage
 
-### Basic Example (Browser)
+### Example of it used in the Browser
 
 ```typescript
 import { emulator, loadRom, joypad } from 'gameboy_emulator_core';
@@ -95,7 +95,7 @@ document.addEventListener('keyup', (e) => {
 });
 ```
 
-### Advanced: Direct Component Access
+### Direct Component Access
 
 ```typescript
 import { cpu, mmu, gpu } from 'gameboy_emulator_core';
@@ -117,13 +117,13 @@ console.log(`LCD enabled: ${gpu.lcdc.lcdEnable}`);
 ### Main Exports
 
 ```typescript
-export { cpu } from './cpu.js';           // CPU emulation core
-export { gpu } from './gpu.js';           // Graphics processing unit
-export { mmu } from './mmu.js';           // Memory management unit
-export { log } from './log.js';           // Logging utilities
-export { joypad } from './joypad.js';     // Input handling
+export { cpu } from './cpu.js';     // Control processing unit
+export { gpu } from './gpu.js';     // Graphics processing unit
+export { mmu } from './mmu.js';     // Memory management unit
+export { log } from './log.js';     // Logging utilities
+export { joypad } from './joypad.js';   // Input handling
 export { loadRom, ICartridge } from './cartridge.js';  // ROM loading
-export { emulator } from './main.js';     // Main emulator orchestrator
+export { emulator } from './main.js';   // Main emulator
 ```
 
 ### `emulator`
@@ -222,7 +222,7 @@ This generates the compiled JavaScript in `dist/` with type definitions.
 
 ### Run Tests
 
-Validate the emulator against industry-standard test ROMs:
+Validate the emulator against test ROMs:
 
 ```bash
 npm test
@@ -250,13 +250,6 @@ npm run clean
 
 Requires ES6 module support and `BigInt64Array` for cycle-accurate timing.
 
-### CORS Note
-
-When running locally, serve files through a local web server rather than opening `index.html` directly:
-
-```bash
-npx serve dist/
-```
 
 ## Project Structure
 
@@ -281,6 +274,3 @@ This emulator is provided for educational and personal development purposes. Ple
 
 Licensed under the ISC License.
 
-## GitHub
-
-Source code available at: https://github.com/davisernst04/typescript_gameboy_emulator
