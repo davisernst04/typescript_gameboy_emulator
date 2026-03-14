@@ -224,7 +224,9 @@ export const cpu = {
       cpu.reg.m = 4; cpu.reg.t = 16;
     },
     POP_rr: (rr: string) => {
-      (cpu as any)[rr] = mmu.rw(cpu.reg.sp);
+      const val = mmu.rw(cpu.reg.sp);
+      if (rr === 'af') cpu.af = val;
+      else (cpu as any)[rr] = val;
       cpu.reg.sp = (cpu.reg.sp + 2) & 0xFFFF;
       cpu.reg.m = 3; cpu.reg.t = 12;
     },

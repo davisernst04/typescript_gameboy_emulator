@@ -212,7 +212,7 @@ export const loadRom = async (source: string | Uint8Array): Promise<ICartridge> 
 
   const cartridge: ICartridge = {
     rom,
-    mbc: createMBC(rom, headerInfo.type, headerInfo.ramSize),
+    mbc: createMBC(rom, headerInfo.type, headerInfo.ramSize, headerInfo.romBanks, headerInfo.ramBanks),
     ...headerInfo,
   };
 
@@ -225,9 +225,11 @@ export const loadRom = async (source: string | Uint8Array): Promise<ICartridge> 
  * @param rom - The ROM data.
  * @param type - The cartridge type code from the header.
  * @param ramSize - The RAM size in bytes.
+ * @param romBanks - Number of ROM banks.
+ * @param ramBanks - Number of RAM banks.
  * @returns An instance of a class implementing IMBC.
  */
-const createMBC = (rom: Uint8Array, type: number, ramSize: number): IMBC => {
+const createMBC = (rom: Uint8Array, type: number, ramSize: number, romBanks: number, ramBanks: number): IMBC => {
   switch (type) {
     case 0x00: // ROM ONLY
     case 0x08: // ROM+RAM
@@ -236,20 +238,20 @@ const createMBC = (rom: Uint8Array, type: number, ramSize: number): IMBC => {
     case 0x01: // MBC1
     case 0x02: // MBC1+RAM
     case 0x03: // MBC1+RAM+BATTERY
-      return new MBC1(rom, ramSize);
+      return new MBC1(rom, ramSize, romBanks, ramBanks);
     case 0x0f: // MBC3+TIMER+BATTERY
     case 0x10: // MBC3+TIMER+RAM+BATTERY
     case 0x11: // MBC3
     case 0x12: // MBC3+RAM
     case 0x13: // MBC3+RAM+BATTERY
-      return new MBC3(rom, ramSize);
+      return new MBC3(rom, ramSize, romBanks, ramBanks);
     case 0x19: // MBC5
     case 0x1a: // MBC5+RAM
     case 0x1b: // MBC5+RAM+BATTERY
     case 0x1c: // MBC5+RUMBLE
     case 0x1d: // MBC5+RUMBLE+RAM
     case 0x1e: // MBC5+RUMBLE+RAM+BATTERY
-      return new MBC5(rom, ramSize);
+      return new MBC5(rom, ramSize, romBanks, ramBanks);
     default:
       console.warn(`Unsupported cartridge type: 0x${type.toString(16)}. Defaulting to MBC0.`);
       return new MBC0(rom);

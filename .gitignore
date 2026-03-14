@@ -62,3 +62,4 @@ node_test_bundle*.cjs
 /*.gb
 !/roms/**/*.gb
 
+GEMINI.md

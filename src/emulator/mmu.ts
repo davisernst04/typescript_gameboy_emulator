@@ -145,16 +145,16 @@ export class MMU {
           return 0xff;
         } else if (addr >= 0xff00 && addr <= 0xff7f) {
           // I/O Registers
-          if (addr >= 0xff40 && addr <= 0xff4f) return gpu.rb(addr);
-          if (addr === 0xff0f) return this.intf;
           if (addr === 0xff00) return joypad.rb(joypad.select);
           if (addr === 0xff01) return this.serialData;
           if (addr === 0xff02) return this.serialControl;
           if (addr === 0xff04) return this.div;
-          if (addr === 0xff4d) return 0x7e | (this.cgbDoubleSpeed ? 0x80 : 0) | (this.cgbPrepareSpeedSwitch ? 0x01 : 0);
           if (addr === 0xff05) return this.tima;
           if (addr === 0xff06) return this.tma;
           if (addr === 0xff07) return this.tac;
+          if (addr === 0xff0f) return this.intf | 0xe0;
+          if (addr === 0xff4d) return 0x7e | (this.cgbDoubleSpeed ? 0x80 : 0) | (this.cgbPrepareSpeedSwitch ? 0x01 : 0);
+          if (addr >= 0xff40 && addr <= 0xff4f) return gpu.rb(addr);
           return 0xff; // TODO: implement other I/O
         } else if (addr >= 0xff80 && addr <= 0xfffe) {
           // HRAM (High RAM / Zero Page RAM)
@@ -262,12 +262,12 @@ export class MMU {
             this.tma = val;
           } else if (addr === 0xff07) {
             this.tac = val & 7;
+          } else if (addr === 0xff0f) {
+            this.intf = val;
           } else if (addr === 0xff4d) {
             this.cgbPrepareSpeedSwitch = val & 0x01;
           } else if (addr >= 0xff40 && addr <= 0xff4f) {
             gpu.wb(addr, val);
-          } else if (addr === 0xff0f) {
-            this.intf = val;
           } else if (addr === 0xff50 && val === 1) {
             this.inbios = 0;
           }

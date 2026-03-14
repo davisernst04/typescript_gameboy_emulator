@@ -1,6 +1,6 @@
 # TypeScript Game Boy Emulator
 
-A compact Nintendo Game Boy emulator written in TypeScript.
+A Nintendo Game Boy emulator written in TypeScript.
 
 This project focuses on emulating the original DMG-01 hardware closely enough to run real Game Boy ROMs in the browser and to validate CPU behaviour with Node-based test harnesses. The core logic lives in `src/`, the browser bundle is served through Vite, and ROM-driven validation scripts are included for low level testing.
 
@@ -45,12 +45,6 @@ This bundles the emulator and starts Vite. Open the local URL shown in the termi
 1. Choose a `.gb` ROM using the file input
 2. The ROM is read into memory in the browser
 3. Emulation starts automatically
-
-For a production-style build:
-
-```bash
-npm run build
-```
 
 ## Running Node-based ROM tests
 
