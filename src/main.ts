@@ -1,9 +1,9 @@
-import { cpu } from './cpu';
-import { gpu } from './gpu';
-import { mmu } from './mmu';
-import { log } from './log';
-import { loadRom, ICartridge } from './cartridge';
-import { joypad } from './joypad';
+import { cpu } from './cpu.js';
+import { gpu } from './gpu.js';
+import { mmu } from './mmu.js';
+import { log } from './log.js';
+import { loadRom, ICartridge } from './cartridge.js';
+import { joypad } from './joypad.js';
 
 export { cpu, gpu, mmu, log, joypad };
 

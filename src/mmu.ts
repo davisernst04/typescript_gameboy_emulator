@@ -1,6 +1,6 @@
-import { gpu } from "./gpu";
-import { IMBC, MBC0 } from "./mbc";
-import { joypad } from "./joypad";
+import { gpu } from "./gpu.js";
+import { IMBC, MBC0 } from "./mbc.js";
+import { joypad } from "./joypad.js";
 
 /**
  * Memory Management Unit (MMU) for the Game Boy.

@@ -2,13 +2,26 @@
   "name": "gameboy_emulator_core",
   "version": "1.0.0",
   "description": "A bare-bones high-fidelity Game Boy (DMG-01) emulator core written in TypeScript.",
-  "main": "dist/bundle.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
-    "build": "node scripts/build_browser_bundle.cjs",
+    "build": "tsc",
     "test": "npm run bundle:node && node tests/test_cpu_instrs.cjs",
     "lint": "eslint src/",
-    "bundle:node": "node scripts/build_node_bundle.cjs"
+    "bundle:node": "node scripts/build_node_bundle.cjs",
+    "clean": "rm -rf dist"
   },
   "repository": {
     "type": "git",

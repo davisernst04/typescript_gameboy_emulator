@@ -1,4 +1,4 @@
-import { IMBC, MBC0, MBC1, MBC3, MBC5 } from './mbc';
+import { IMBC, MBC0, MBC1, MBC3, MBC5 } from './mbc.js';
 
 /**
  * Interface representing a Game Boy cartridge.

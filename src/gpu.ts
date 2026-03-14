@@ -1,6 +1,6 @@
-import { log } from "./log";
-import { cpu } from "./cpu";
-import { mmu } from "./mmu";
+import { log } from "./log.js";
+import { cpu } from "./cpu.js";
+import { mmu } from "./mmu.js";
 
 export const gpu = {
   vram: new Uint8Array(8192),

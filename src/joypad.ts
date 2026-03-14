@@ -1,5 +1,5 @@
-import { mmu } from "./mmu";
-import { log } from "./log";
+import { mmu } from "./mmu.js";
+import { log } from "./log.js";
 
 /**
  * Joypad handling for the Game Boy.

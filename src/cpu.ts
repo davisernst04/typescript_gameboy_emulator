@@ -1,5 +1,5 @@
-import { mmu } from "./mmu";
-import { gpu } from "./gpu";
+import { mmu } from "./mmu.js";
+import { gpu } from "./gpu.js";
 
 /**
  * CPU object.
