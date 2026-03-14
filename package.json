@@ -33,7 +33,7 @@
     "typescript"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@types/node": "^20",
     "esbuild": "^0.27.3",
