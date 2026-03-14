@@ -5,9 +5,11 @@
   "main": "dist/bundle.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "npm run bundle && vite",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
     "bundle:node": "node scripts/build_node_bundle.cjs",
-    "build": "tsc && npm run bundle && vite build",
     "bundle": "node scripts/build_browser_bundle.cjs"
   },
   "repository": {
@@ -22,10 +24,22 @@
     "url": "https://github.com/davisernst04/typescript_gameboy_emulator/issues"
   },
   "homepage": "https://github.com/davisernst04/typescript_gameboy_emulator#readme",
+  "dependencies": {
+    "next": "16.1.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
     "esbuild": "^0.27.3",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.6",
     "puppeteer": "^24.38.0",
-    "typescript": "^5.9.3",
+    "tailwindcss": "^4",
+    "typescript": "^5",
     "vite": "^7.3.1"
   }
 }
