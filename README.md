@@ -1,94 +1,277 @@
-# TypeScript Game Boy Emulator Core
+# TypeScript GameBoy Emulator
 
-A high-fidelity DMG-01 (Game Boy) emulator core written in pure TypeScript.
+A high-fidelity DMG-01 (Game Boy) emulator core written in pure TypeScript. Available as an NPM package for use in browser-based applications and Node.js projects.
 
-This repository contains the core logic for emulating Sharp LR35902 CPU, MMU, GPU, and Memory Bank Controllers. It is designed to be environment-agnostic, supporting both browser-based execution and Node.js-based validation.
+[![npm version](https://img.shields.io/badge/npm-1.0.0-blue)](https://www.npmjs.com/package/gameboy_emulator_core)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue)](https://www.typescriptlang.org/)
+[![License: ISC](https://img.shields.io/badge/License-ISC-yellow.svg)](https://opensource.org/licenses/ISC)
 
-## Current Status
+## Features
 
-- **CPU:** Standard-compliant instruction set, passing Blargg's `cpu_instrs.gb` (tests 01-09).
-- **GPU:** Scanline-based rendering with support for backgrounds, windows, and sprites (8x8 and 8x16 modes).
-- **Sprite Priority:** DMG-accurate priority logic based on OAM index.
-- **Banking:** MBC0, MBC1, MBC3 (with RTC support), and MBC5 implementations.
-- **Validation:** Integrated Node.js test harness for ROM-based verification.
+- **CPU:** Standard-compliant Sharp LR35902 instruction set, passing Blargg's `cpu_instrs.gb` (tests 01-09)
+- **GPU:** Scanline-based rendering with support for backgrounds, windows, and sprites (8x8 and 8x16 modes)
+- **Memory Banking:** MBC0, MBC1, MBC3 (with RTC support), and MBC5 implementations
+- **Sprite Priority:** DMG-accurate priority logic based on OAM index
+- **Environment Agnostic:** Works in both browsers and Node.js environments
 
-## Project Structure
+## Installation
 
-```text
-src/                 Pure TypeScript emulator core logic
-tests/               Node.js validation and regression scripts
-scripts/             Build and bundling scripts (esbuild)
-dist/                Build outputs (Generated JavaScript bundles)
-roms/                Test ROMs used for development
+```bash
+npm install davisernst04/typescript_gameboy_emulator
 ```
 
-## Requirements
+## Usage
+
+### Basic Example (Browser)
+
+```typescript
+import { emulator, loadRom, joypad } from 'gameboy_emulator_core';
+
+// Load a ROM file
+const romBuffer = await fetch('path/to/game.gb').then(r => r.arrayBuffer());
+const rom = new Uint8Array(romBuffer);
+
+// Load the cartridge
+const cartridge = loadRom(rom);
+
+// Initialize and run the emulator
+emulator.init(cartridge);
+
+// Start the emulation loop
+function gameLoop() {
+    emulator.step();
+    requestAnimationFrame(gameLoop);
+}
+gameLoop();
+```
+
+### Rendering to Canvas
+
+```typescript
+import { gpu } from 'gameboy_emulator_core';
+
+const canvas = document.getElementById('gameboy-screen') as HTMLCanvasElement;
+const ctx = canvas.getContext('2d')!;
+
+// Get the rendered frame buffer
+const frameBuffer = gpu.getFrameBuffer(); // 160x144 pixels
+
+// Render to canvas
+const imageData = ctx.createImageData(160, 144);
+imageData.data.set(frameBuffer);
+ctx.putImageData(imageData, 0, 0);
+```
+
+### Input Handling
+
+```typescript
+import { joypad } from 'gameboy_emulator_core';
+
+// Map keyboard inputs to GameBoy buttons
+document.addEventListener('keydown', (e) => {
+    switch(e.key) {
+        case 'ArrowUp':    joypad.pressUp(); break;
+        case 'ArrowDown':  joypad.pressDown(); break;
+        case 'ArrowLeft':  joypad.pressLeft(); break;
+        case 'ArrowRight': joypad.pressRight(); break;
+        case 'z':          joypad.pressA(); break;
+        case 'x':          joypad.pressB(); break;
+        case 'Enter':      joypad.pressStart(); break;
+        case ' ':          joypad.pressSelect(); break;
+    }
+});
+
+document.addEventListener('keyup', (e) => {
+    switch(e.key) {
+        case 'ArrowUp':    joypad.releaseUp(); break;
+        case 'ArrowDown':  joypad.releaseDown(); break;
+        case 'ArrowLeft':  joypad.releaseLeft(); break;
+        case 'ArrowRight': joypad.releaseRight(); break;
+        case 'z':          joypad.releaseA(); break;
+        case 'x':          joypad.releaseB(); break;
+        case 'Enter':      joypad.releaseStart(); break;
+        case ' ':          joypad.releaseSelect(); break;
+    }
+});
+```
+
+### Advanced: Direct Component Access
+
+```typescript
+import { cpu, mmu, gpu } from 'gameboy_emulator_core';
+
+// Access CPU state
+console.log(`PC: ${cpu.pc}, A: ${cpu.a}, F: ${cpu.f}`);
+
+// Read/write memory directly
+const byte = mmu.readByte(0x8000);
+mmu.writeByte(0x8000, 0xFF);
+
+// Access GPU state
+console.log(`Current scanline: ${gpu.ly}`);
+console.log(`LCD enabled: ${gpu.lcdc.lcdEnable}`);
+```
+
+## API Reference
+
+### Main Exports
+
+```typescript
+export { cpu } from './cpu.js';           // CPU emulation core
+export { gpu } from './gpu.js';           // Graphics processing unit
+export { mmu } from './mmu.js';           // Memory management unit
+export { log } from './log.js';           // Logging utilities
+export { joypad } from './joypad.js';     // Input handling
+export { loadRom, ICartridge } from './cartridge.js';  // ROM loading
+export { emulator } from './main.js';     // Main emulator orchestrator
+```
+
+### `emulator`
+
+The main orchestrator that manages the emulation loop.
+
+```typescript
+emulator.init(cartridge: ICartridge): void  // Initialize with a loaded ROM
+emulator.step(): void                       // Execute one frame of emulation
+emulator.reset(): void                      // Reset the emulator state
+```
+
+### `loadRom(rom: Uint8Array): ICartridge`
+
+Loads a GameBoy ROM and returns a cartridge object with the appropriate memory bank controller (MBC) initialized.
+
+### `cpu`
+
+The Sharp LR35902 CPU implementation.
+
+```typescript
+cpu.pc: number      // Program counter
+cpu.sp: number      // Stack pointer
+cpu.a, cpu.b, cpu.c, cpu.d, cpu.e, cpu.h, cpu.l: number  // Registers
+cpu.f: number       // Flags register
+cpu.clock: number   // Clock cycles counter
+```
+
+### `gpu`
+
+The graphics processing unit for rendering.
+
+```typescript
+gpu.getFrameBuffer(): Uint8Array  // Get the current 160x144 frame (RGBA)
+gpu.ly: number                    // Current scanline
+gpu.lcdc: object                  // LCD control register state
+```
+
+### `mmu`
+
+Memory management unit for reading/writing system memory.
+
+```typescript
+mmu.readByte(address: number): number
+mmu.writeByte(address: number, value: number): void
+mmu.readWord(address: number): number
+mmu.writeWord(address: number, value: number): void
+```
+
+### `joypad`
+
+Input handling for the GameBoy buttons.
+
+```typescript
+joypad.pressA(): void
+joypad.pressB(): void
+joypad.pressStart(): void
+joypad.pressSelect(): void
+joypad.pressUp(): void
+joypad.pressDown(): void
+joypad.pressLeft(): void
+joypad.pressRight(): void
+
+joypad.releaseA(): void
+joypad.releaseB(): void
+joypad.releaseStart(): void
+joypad.releaseSelect(): void
+joypad.releaseUp(): void
+joypad.releaseDown(): void
+joypad.releaseLeft(): void
+joypad.releaseRight(): void
+```
+
+## Development Setup
+
+### Prerequisites
 
 - Node.js 18+
 - npm
 
-## Getting Started
+### Install Dependencies
 
-### 1. Install dependencies
 ```bash
 npm install
 ```
 
-### 2. Build for the browser
-The project uses a build-first workflow. To generate the browser-ready bundle:
+### Build
+
+Compile the TypeScript source:
+
 ```bash
 npm run build
 ```
-This will create a `dist/` directory containing `bundle.js` and a bare-bones `index.html`.
 
-### 3. Run the emulator
-Open the generated `dist/index.html` file directly in any modern browser:
-```bash
-# Example for Linux
-firefox dist/index.html
-```
+This generates the compiled JavaScript in `dist/` with type definitions.
 
-**Note:** If you encounter CORS errors or the emulator fails to load, use a local web server to serve the `dist` directory:
-```bash
-npx serve dist/
-```
-Use the file picker to load a `.gb` or `.gbc` ROM.
+### Run Tests
 
-## Development & Testing
+Validate the emulator against industry-standard test ROMs:
 
-### Running CPU Tests
-Validate the emulator's logic against industry-standard test ROMs:
 ```bash
 npm test
 ```
-This builds the Node-compatible bundle and executes `roms/cpu_instrs.gb` in a headless environment.
+
+This runs Blargg's `cpu_instrs.gb` test suite in a headless Node.js environment.
 
 ### Linting
+
 ```bash
 npm run lint
 ```
 
-## Controls
+### Clean Build
 
-The default keyboard mapping is:
+```bash
+npm run clean
+```
 
-- **D-Pad:** Arrow Keys
-- **A Button:** `Z`
-- **B Button:** `X`
-- **Start:** `Enter`
-- **Select:** `Space`
+## Browser Requirements
 
-## Scripts
+- **Chrome/Edge:** 88+
+- **Firefox:** 85+
+- **Safari:** 14+
 
-- `npm run build`: Compiles the emulator core into `dist/bundle.js` and prepares the browser UI.
-- `npm test`: Runs the automated CPU instruction test suite.
-- `npm run bundle:node`: Builds the Node.js-specific bundle used for test harnesses.
-- `npm run lint`: Performs static analysis on the source code.
+Requires ES6 module support and `BigInt64Array` for cycle-accurate timing.
+
+### CORS Note
+
+When running locally, serve files through a local web server rather than opening `index.html` directly:
+
+```bash
+npx serve dist/
+```
+
+## Project Structure
+
+```
+src/                 Pure TypeScript emulator core logic
+tests/               Node.js validation and regression scripts
+scripts/             Build and bundling scripts
+dist/                Build outputs (Generated JavaScript + type definitions)
+roms/                Test ROMs used for development
+```
 
 ## Known Limitations
 
-- **Audio:** APU (Audio Processing Unit) is not yet implemented.
-- **CGB Features:** Limited to DMG-compatible modes; full Game Boy Color support is in progress.
+- **Audio:** APU (Audio Processing Unit) is not yet implemented
+- **CGB Features:** Limited to DMG-compatible modes; full Game Boy Color support is in progress
 
 ## Legal Note
 
@@ -97,3 +280,7 @@ This emulator is provided for educational and personal development purposes. Ple
 ## License
 
 Licensed under the ISC License.
+
+## GitHub
+
+Source code available at: https://github.com/davisernst04/typescript_gameboy_emulator
