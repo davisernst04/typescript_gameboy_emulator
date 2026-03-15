@@ -1,16 +1,10 @@
 {
   "name": "typescript-gameboy-emulator",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A  Game Boy emulator written in TypeScript.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "type": "module",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
   "files": [
     "dist",
     "README.md",
